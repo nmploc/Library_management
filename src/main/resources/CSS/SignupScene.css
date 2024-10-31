@@ -1,0 +1,32 @@
+#signUpButton:hover {
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-background-color: #4c70ba;
+    -fx-font-family: 'Montserrat';
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.4), 15, 0, 0, 4);
+    -fx-cursor: hand;
+}
+
+#signUpButton {
+    -fx-background-color: #3b5998;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+#backButton:hover {
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-background-color: #4c70ba;
+    -fx-font-family: 'Montserrat';
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.4), 15, 0, 0, 4);
+    -fx-cursor: hand;
+}
+
+#backButton {
+    -fx-background-color: #3b5998;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}

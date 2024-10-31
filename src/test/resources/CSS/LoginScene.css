@@ -1,0 +1,55 @@
+/* Forgot Password Button Styles */
+#forgotPasswordButton:hover {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-family: 'Montserrat';
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+#forgotPasswordButton {
+    -fx-background-color: transparent;
+    -fx-text-fill: black;
+    -fx-font-family: 'Montserrat';
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+/* Create Account Button Styles */
+#createAccountButton:hover {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-family: 'Montserrat';
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+#createAccountButton {
+    -fx-background-color: transparent;
+    -fx-text-fill: black;
+    -fx-font-family: 'Montserrat';
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+/* Login Button Styles */
+#loginButton:hover {
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-background-color: #4c70ba;
+    -fx-font-family: 'Montserrat';
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 15, 0, 0, 4);
+    -fx-cursor: hand;
+}
+
+#loginButton {
+    -fx-scale-x: 1.0;
+    -fx-scale-y: 1.0;
+    -fx-background-color: #3b5998;
+    -fx-font-family: 'Montserrat';
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}

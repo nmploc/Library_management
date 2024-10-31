@@ -1,0 +1,24 @@
+.dashboardButton {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+}
+
+.dashboardButton:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.menu-item {
+    -fx-background-color: #f2f2f2;
+    -fx-text-fill: black;
+}
+
+.menu-item:hover {
+    -fx-background-color: #dcdcdc;
+}

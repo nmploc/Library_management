@@ -1,0 +1,11 @@
+.date-picker-disabled .text-field {
+    -fx-opacity: 1;  /* Make text fully opaque */
+    -fx-text-fill: black;  /* Ensure the text remains black */
+    -fx-background-color: white;  /* Background stays white */
+}
+
+.date-picker-disabled .arrow-button {
+    -fx-opacity: 0.5;  /* Keep the calendar button disabled and slightly grayed out */
+    -fx-cursor: default; /* Remove pointer events */
+    -fx-background-color: lightgray;
+}

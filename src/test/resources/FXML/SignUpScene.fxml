@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane fx:id="Dashboard" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" style="-fx-background-color: transparent;" stylesheets="@../CSS/SignupScene.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.SignUpController">
+   <children>
+      <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background-color: transparent; -fx-border: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <content>
+            <HBox fx:id="signUpHBox" alignment="CENTER" prefHeight="620.0" prefWidth="1200.0" spacing="0.0" style="-fx-padding: 20; -fx-background-color: #C0C0C0;">
+               <children>
+                  <AnchorPane fx:id="login" prefHeight="571.0" prefWidth="1139.0" style="-fx-background-color: transparent;">
+                     <children>
+                        <VBox alignment="CENTER" layoutX="24.0" layoutY="22.0" prefHeight="536.0" prefWidth="243.0" spacing="5.0">
+                           <children>
+                              <Label prefHeight="60.0" prefWidth="129.0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-font-family: 'Montserrat';" text="    Sign up" />
+                              <Label style="-fx-font-size: 14px; -fx-font-family: 'Montserrat';" text="Username" />
+                              <TextField fx:id="nameField" prefHeight="29.0" prefWidth="249.0" promptText="Name" />
+                              <Text fx:id="nameError" fill="red" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
+                              <Label style="-fx-font-size: 14px; -fx-font-family: 'Montserrat';" text="Phone Number" />
+                              <TextField fx:id="phoneField" prefHeight="29.0" prefWidth="249.0" promptText="Phone Number" VBox.vgrow="ALWAYS" />
+                              <Label style="-fx-font-size: 14px; -fx-font-family: 'Montserrat';" text="Email" />
+                              <TextField fx:id="emailField" prefHeight="29.0" prefWidth="249.0" promptText="Email" VBox.vgrow="ALWAYS" />
+                              <Label style="-fx-font-size: 14px; -fx-font-family: 'Montserrat';" text="Password" />
+                              <StackPane alignment="CENTER_RIGHT" prefHeight="47.0" prefWidth="238.0">
+                                 <children>
+                                    <PasswordField fx:id="passwordField" promptText="Password" />
+                                    <TextField fx:id="passwordTextField" prefHeight="29.0" prefWidth="175.0" promptText="Password" />
+                                    <Button fx:id="showPassword" mnemonicParsing="false" onAction="#handleShowPassword" prefHeight="25.0" prefWidth="29.0" style="-fx-background-color: transparent; -fx-border-radius: 5; -fx-font-family: Montserrat; -fx-cursor: hand;" text="🙈" />
+                                 </children>
+                              </StackPane>
+                              <Label style="-fx-font-size: 14px; -fx-font-family: 'Montserrat';" text="Confirm Password" />
+                              <StackPane alignment="CENTER_RIGHT" prefHeight="37.0" prefWidth="238.0">
+                                 <children>
+                                    <PasswordField fx:id="confirmPasswordField" promptText="Confirm password">
+                                       <font>
+                                          <Font size="13.0" />
+                                       </font>
+                                    </PasswordField>
+                                    <TextField fx:id="confirmPasswordTextField" prefHeight="49.0" prefWidth="243.0" promptText="Confirm password">
+                                       <font>
+                                          <Font size="13.0" />
+                                       </font>
+                                    </TextField>
+                                    <Button fx:id="showConfirmPassword" mnemonicParsing="false" onAction="#handleShowConfirmPassword" prefHeight="14.0" prefWidth="30.0" style="-fx-background-color: transparent; -fx-border-radius: 5; -fx-font-family: Montserrat; -fx-cursor: hand;" text="🙈" />
+                                 </children>
+                              </StackPane>
+                              <Text fx:id="passwordError" fill="red" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
+                              <CheckBox fx:id="checkBox" mnemonicParsing="false" prefHeight="55.0" prefWidth="258.0" style="-fx-cursor: hand;" text="I have read and agree to all terms and services" underline="true" wrapText="true" />
+                              <Text fx:id="checkboxError" fill="red" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
+                                 <children>
+                                    <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" prefHeight="39.0" prefWidth="86.0" style="-fx-cursor: hand;" text="Back">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font>
+                                    </Button>
+                                    <Button fx:id="signUpButton" mnemonicParsing="false" style="-fx-background-color: #3b5998; -fx-text-fill: white; -fx-cursor: hand;" text="Sign up" textFill="WHITE">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font>
+                                    </Button>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                        <ImageView fx:id="imageView" fitHeight="555.0" fitWidth="741.0" layoutX="302.0" layoutY="12.0" pickOnBounds="true" preserveRatio="false" AnchorPane.bottomAnchor="11.399999999999977" AnchorPane.leftAnchor="302.0" AnchorPane.rightAnchor="97.79999999999995" AnchorPane.topAnchor="12.0">
+                           <image>
+                              <Image url="@../image/pic.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </AnchorPane>
+               </children>
+            </HBox>
+         </content>
+      </ScrollPane>
+   </children>
+</AnchorPane>
