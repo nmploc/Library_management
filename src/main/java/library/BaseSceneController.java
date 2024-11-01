@@ -44,6 +44,12 @@ public class BaseSceneController extends Controller
     }
 
     @FXML
+    private void handleBooksButtonAction() {
+        // Tải giao diện books.fxml và sử dụng BooksController
+        loadFXMLtoAnchorPane("books", contentPane); // đảm bảo tên tệp là chính xác (không cần .fxml)
+    }
+
+    @FXML
     private void UserProfile() {
         loadFXMLtoAnchorPane("ProfileScene", contentPane);
     }
