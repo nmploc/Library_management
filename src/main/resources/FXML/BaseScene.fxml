@@ -11,13 +11,16 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+<!-- Thẻ gốc AnchorPane là container chính cho toàn bộ giao diện -->
 <AnchorPane fx:id="Dashboard" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" style="-fx-background-color: white;" stylesheets="@../CSS/BaseScene.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.BaseSceneController">
    <children>
-      <!--      Anchor pane của navigation bar-->
+      <!-- Anchor pane cho thanh điều hướng bên trái -->
       <AnchorPane prefHeight="620.0" prefWidth="200.0" style="-fx-background-color: #e95e50;" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="40.0">
          <children>
+            <!-- VBox chứa các nút điều hướng theo chiều dọc -->
             <VBox fx:id="navigationBar" prefHeight="500.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
+                  <!-- Nút Dashboard -->
                   <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleDashBoardButton" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Dashboard">
                      <graphic>
                         <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
@@ -31,6 +34,7 @@
                      </font>
                   </Button>
 
+                  <!-- Nút Books -->
                   <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Books">
                      <graphic>
                         <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
@@ -44,6 +48,7 @@
                      </font>
                   </Button>
 
+                  <!-- Nút Report với hành động khi nhấn -->
                   <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleReportButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Report">
                      <graphic>
                         <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
@@ -58,25 +63,27 @@
                   </Button>
                </children>
             </VBox>
-         </children></AnchorPane>
+         </children>
+      </AnchorPane>
 
-      <!--      Main workspace-->
+      <!-- Khu vực làm việc chính -->
       <AnchorPane fx:id="contentPane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: #ecf0f5;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0" />
 
-      <!--      Anchor pane của thanh điều khiển bên trên phải-->
+      <!-- Thanh điều khiển phía trên bên phải -->
       <AnchorPane prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: #d12345;" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <HBox alignment="CENTER" spacing="10" AnchorPane.rightAnchor="0.0">
+            <!-- Biểu tượng người dùng -->
             <ImageView fitHeight="20" fitWidth="20" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@../image/user.png" />
                </image>
             </ImageView>
-   
-            <!-- Dropdown menu -->
+
+            <!-- Dropdown menu cho người dùng -->
             <MenuButton prefHeight="40.0" text="admin">
                <items>
-                  <MenuItem onAction="#UserProfile" text="Profile"  />
-                  <MenuItem onAction="#Logout" text="Logout" />
+                  <MenuItem onAction="#UserProfile" text="Profile"  /> <!-- Mục Profile -->
+                  <MenuItem onAction="#Logout" text="Logout" /> <!-- Mục Logout -->
                </items>
                <font>
                   <Font size="14.0" />
@@ -87,7 +94,8 @@
             </MenuButton>
          </HBox>
       </AnchorPane>
-      <!--      Anchor pane top left (use image or tile for this)-->
+
+      <!-- Thanh điều khiển phía trên bên trái (có thể để logo hoặc thông tin khác) -->
       <AnchorPane prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: silver;" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
    </children>
 </AnchorPane>
