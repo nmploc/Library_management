@@ -11,6 +11,7 @@ import javafx.scene.layout.VBox;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+// Quản lý giao diện người dùng
 public class BaseSceneController extends Controller
 {
     @FXML

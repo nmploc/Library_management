@@ -30,12 +30,13 @@ public class Controller implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
     }
 
+    // Tạo chuyển trang
     public void loadNewScene(String name, ActionEvent actionEvent) {
         String url = "/FXML/" + name + ".fxml";
         try {
             Object obj = null;
             try {
-                obj = FXMLLoader.load(this.getClass().getResource(url));
+                obj = FXMLLoader.load(this.getClass().getResource(url)); //Load trang
             } catch (IOException e) {
                 System.out.println("Get resource from " + url + " is null");
                 e.printStackTrace();
@@ -52,7 +53,7 @@ public class Controller implements Initializable {
         }
     }
 
-
+    // Show cảnh báo (Ví dụ mật khẩu sai)
     public static void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -61,6 +62,7 @@ public class Controller implements Initializable {
         alert.showAndWait();
     }
 
+    // Chuyển về trang trước
     public static Stage loadCurrentStage(ActionEvent actionEvent) {
         Object source = actionEvent.getSource();
 
@@ -71,6 +73,7 @@ public class Controller implements Initializable {
         }
         return null;
     }
+
 
     public void loadFXMLtoAnchorPane(String fxml, AnchorPane pane) {
         try {

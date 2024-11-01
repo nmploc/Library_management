@@ -2,6 +2,7 @@ package library;
 
 import java.sql.*;
 
+// Connection Database
 public class DatabaseHelper {
     private static final String URL = "jdbc:mysql://localhost:3306/librarydb";
     private static final String USERNAME = "root";

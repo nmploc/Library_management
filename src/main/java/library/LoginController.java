@@ -35,6 +35,8 @@ public class LoginController extends Controller {
     @FXML
     private Button loginButton;
 
+
+    //log in
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
         passwordField.setPromptText("Password");
@@ -52,6 +54,7 @@ public class LoginController extends Controller {
         });
     }
 
+    //
     public void setupFieldFocusListener(TextInputControl a, String p) {
         a.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
@@ -64,6 +67,7 @@ public class LoginController extends Controller {
         });
     }
 
+    //ẩn pass
     @FXML
     private void togglePasswordVisibility(ActionEvent event) {
         boolean isHiddenVisible = passwordFieldHidden.isVisible();
@@ -80,6 +84,7 @@ public class LoginController extends Controller {
         }
     }
 
+    //Login succes
     @FXML
     public void handleLogin(ActionEvent actionEvent) {
         String username = usernameField.getText();
@@ -103,7 +108,7 @@ public class LoginController extends Controller {
     //todo: đang cần  App Passwords của gmail.
     public void sendEmail(String recipientEmail, String newPassword) {
         String host = "smtp.gmail.com";
-        String from = "phandangnhat6a2005@gmail.com";
+        String from = "trungabc498@gmail.com";
         String password = "abcxyz"; // App Passwords.
 
         Properties properties = System.getProperties();

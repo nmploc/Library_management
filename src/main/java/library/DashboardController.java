@@ -33,6 +33,8 @@ public class DashboardController extends Controller
         {
             String bookQuery = "select count(*) from documents";
             String userQuery = "select count(*) from users";
+
+            //Truy vấn lượng sách
             PreparedStatement statement = connection.prepareStatement(bookQuery);
             ResultSet res = statement.executeQuery();
 
@@ -42,6 +44,7 @@ public class DashboardController extends Controller
                 labelTotalBooks.setText("Total books: " + numOfBooks);
             }
 
+            //Truy vấn số người dùng
             statement = connection.prepareStatement(userQuery);
             res = statement.executeQuery();
             if(res.next())
