@@ -6,7 +6,7 @@
 
 - IntelliJ IDEA
 - JDK17
-- OpenJFX 21
+- OpenJFX 22
 
 ### Step by step
 
