@@ -95,6 +95,7 @@ public class LoginController extends Controller {
         }
     }
 
+    // Random pass => ko lỗi
     public String generateRandomPassword(int length) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder password = new StringBuilder();
@@ -137,6 +138,7 @@ public class LoginController extends Controller {
         }
     }
 
+    // Tạo
     @FXML
     public void handleForgotPassword(ActionEvent actionEvent) {
         TextInputDialog dialog = new TextInputDialog();
@@ -174,6 +176,7 @@ public class LoginController extends Controller {
         });
     }
 
+    // đăng nhập thành công
     public boolean login(String username, String password) {
         DatabaseHelper.connectToDatabase();
         try (Connection conn = DatabaseHelper.getConnection()) {

@@ -4,7 +4,7 @@ public class Books {
     private int documentID;
     private String documentName;
     private String authors;
-    private String category; // Add category as a string
+    private String category;
 
     // Constructor
     public Books(int documentID, String documentName, String authors, String category) {
@@ -14,7 +14,7 @@ public class Books {
         this.category = category;
     }
 
-    // Getters and setters
+    // Getters
     public int getDocumentID() {
         return documentID;
     }
