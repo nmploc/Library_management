@@ -12,7 +12,7 @@
 
 <AnchorPane fx:id="BooksPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" style="-fx-background-color: white;" stylesheets="@../CSS/BaseScene.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.BooksController">
     <children>
-        <!-- Thanh điều khiển phía trên -->
+        <!-- Top control panel -->
         <AnchorPane prefHeight="40.0" prefWidth="1200.0" style="-fx-background-color: #d12345;">
             <HBox alignment="CENTER" spacing="10">
                 <Label text="Books" styleClass="titleLabel" />
@@ -21,23 +21,18 @@
             </HBox>
         </AnchorPane>
 
-        <!-- Khu vực làm việc chính -->
+        <!-- Main working area -->
         <VBox spacing="10" AnchorPane.topAnchor="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <TableView fx:id="booksTable">
-                <!-- Định nghĩa cột cho bảng sách -->
-                <columns>
-                    <TableColumn fx:id="idColumn" text="ID" />
-                    <TableColumn fx:id="titleColumn" text="Title" />
-                    <TableColumn fx:id="authorColumn" text="Author" />
-                </columns>
+                <!-- No column definitions here -->
             </TableView>
 
             <HBox spacing="20" alignment="CENTER">
-                <!-- Nút Edit -->
+                <!-- Edit Button -->
                 <Button fx:id="editBookButton" text="Edit" onAction="#handleEditBook"
                         style="-fx-font-family: 'Montserrat'; -fx-text-fill: white; -fx-background-color: #3b5998; -fx-font-weight: bold; -fx-cursor: hand; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;" />
 
-                <!-- Nút Delete -->
+                <!-- Delete Button -->
                 <Button fx:id="deleteBookButton" text="Delete" onAction="#handleDeleteBook"
                         style="-fx-font-family: 'Montserrat'; -fx-text-fill: white; -fx-background-color: #3b5998; -fx-font-weight: bold; -fx-cursor: hand; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;" />
             </HBox>
