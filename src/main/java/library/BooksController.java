@@ -1,17 +1,20 @@
 package library;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import java.util.Optional;
 
 public class BooksController extends Controller {
     @FXML
@@ -24,11 +27,11 @@ public class BooksController extends Controller {
 
     @FXML
     public void initialize() {
-        // Khởi tạo bảng sách và tải dữ liệu
-        DatabaseHelper.connectToDatabase(); // Kết nối cơ sở dữ liệu một lần
+        // Initialize database connection and load data
+        DatabaseHelper.connectToDatabase();
         loadBooksData();
 
-        // Cấu hình cột cho bảng sách
+        // Configure columns for the TableView
         TableColumn<Books, Integer> idColumn = new TableColumn<>("ID");
         idColumn.setCellValueFactory(new PropertyValueFactory<>("documentID"));
 
@@ -40,7 +43,7 @@ public class BooksController extends Controller {
 
         booksTable.getColumns().addAll(idColumn, titleColumn, authorColumn);
 
-        // Thiết lập trình xử lý cho các nút
+        // Set up button event handlers
         addBookButton.setOnAction(event -> handleAddBook());
         editBookButton.setOnAction(event -> handleEditBook());
         deleteBookButton.setOnAction(event -> handleDeleteBook());
@@ -48,7 +51,7 @@ public class BooksController extends Controller {
 
     private void loadBooksData() {
         booksList = FXCollections.observableArrayList();
-        // Tải dữ liệu từ cơ sở dữ liệu
+        // Load data from the database
         try (Connection conn = DatabaseHelper.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT * FROM documents")) {
@@ -69,24 +72,87 @@ public class BooksController extends Controller {
 
     @FXML
     private void handleAddBook() {
-        // Hiển thị dialog hoặc form để thêm sách
-        System.out.println("Add Book functionality not implemented yet.");
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Book");
+        dialog.setHeaderText("Enter the book details");
+
+        // Get input for title
+        dialog.setContentText("Enter Book Title:");
+        Optional<String> title = dialog.showAndWait();
+
+        // Get input for author
+        dialog.setContentText("Enter Author Name:");
+        Optional<String> author = dialog.showAndWait();
+
+        if (title.isPresent() && author.isPresent()) {
+            try (Connection conn = DatabaseHelper.getConnection()) {
+                String query = "INSERT INTO documents (documentName, authors) VALUES (?, ?)";
+                PreparedStatement stmt = conn.prepareStatement(query);
+                stmt.setString(1, title.get());
+                stmt.setString(2, author.get());
+                stmt.executeUpdate();
+
+                // Refresh data in TableView
+                loadBooksData();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @FXML
     private void handleEditBook() {
-        // Hiển thị dialog hoặc form để chỉnh sửa sách
-        System.out.println("Edit Book functionality not implemented yet.");
+        Books selectedBook = booksTable.getSelectionModel().getSelectedItem();
+        if (selectedBook == null) {
+            System.out.println("No book selected for editing.");
+            return;
+        }
+
+        TextInputDialog dialog = new TextInputDialog(selectedBook.getDocumentName());
+        dialog.setTitle("Edit Book");
+        dialog.setHeaderText("Edit the book details");
+
+        // Edit book title
+        dialog.setContentText("Edit Book Title:");
+        Optional<String> title = dialog.showAndWait();
+
+        // Edit author name
+        dialog.setContentText("Edit Author Name:");
+        Optional<String> author = dialog.showAndWait();
+
+        if (title.isPresent() && author.isPresent()) {
+            try (Connection conn = DatabaseHelper.getConnection()) {
+                String query = "UPDATE documents SET documentName = ?, authors = ? WHERE documentID = ?";
+                PreparedStatement stmt = conn.prepareStatement(query);
+                stmt.setString(1, title.get());
+                stmt.setString(2, author.get());
+                stmt.setInt(3, selectedBook.getDocumentID());
+                stmt.executeUpdate();
+
+                // Refresh data in TableView
+                loadBooksData();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @FXML
     private void handleDeleteBook() {
-        // Implement delete book functionality
         Books selectedBook = booksTable.getSelectionModel().getSelectedItem();
         if (selectedBook != null) {
-            booksList.remove(selectedBook);
-            // Implement actual deletion from database
-            System.out.println("Deleted book: " + selectedBook.getDocumentName());
+            try (Connection conn = DatabaseHelper.getConnection()) {
+                String query = "DELETE FROM documents WHERE documentID = ?";
+                PreparedStatement stmt = conn.prepareStatement(query);
+                stmt.setInt(1, selectedBook.getDocumentID());
+                stmt.executeUpdate();
+
+                // Remove from TableView and database
+                booksList.remove(selectedBook);
+                System.out.println("Deleted book: " + selectedBook.getDocumentName());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
