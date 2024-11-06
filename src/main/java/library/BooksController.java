@@ -29,11 +29,9 @@ public class BooksController {
 
     @FXML
     public void initialize() {
-        // Initialize database connection and load data
-        DatabaseHelper.connectToDatabase();
         loadBooksData();
 
-        // Configure columns for the TableView
+        // Cấu hình các cột cho TableView
         TableColumn<Books, Integer> idColumn = new TableColumn<>("ID");
         idColumn.setCellValueFactory(new PropertyValueFactory<>("documentID"));
 
@@ -46,10 +44,10 @@ public class BooksController {
         TableColumn<Books, String> categoryColumn = new TableColumn<>("Category");
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
 
-        // Add columns to TableView
+        // Thêm các cột vào TableView
         booksTable.getColumns().addAll(idColumn, titleColumn, authorColumn, categoryColumn);
 
-        // Set up button event handlers
+        // Thiết lập các sự kiện cho nút
         addBookButton.setOnAction(event -> handleAddBook());
         editBookButton.setOnAction(event -> handleEditBook());
         deleteBookButton.setOnAction(event -> handleDeleteBook());
@@ -101,6 +99,15 @@ public class BooksController {
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == addButtonType) {
+                // Kiểm tra thông tin đầu vào
+                if (titleField.getText().isEmpty() || authorField.getText().isEmpty() || categoryField.getText().isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Input Error");
+                    alert.setHeaderText("Missing Information");
+                    alert.setContentText("Please fill in all fields.");
+                    alert.showAndWait();
+                    return null; // Ngăn không cho thêm
+                }
                 String title = titleField.getText();
                 String authors = authorField.getText();
                 String category = categoryField.getText();
@@ -111,18 +118,36 @@ public class BooksController {
 
         Optional<Books> result = dialog.showAndWait();
         result.ifPresent(newBook -> {
-            try (Connection conn = DatabaseHelper.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement("INSERT INTO documents (documentName, authors, categoryID) VALUES (?, ?, ?)")) {
-
-                pstmt.setString(1, newBook.getDocumentName());
-                pstmt.setString(2, newBook.getAuthors());
-                pstmt.setInt(3, getCategoryIdByName(newBook.getCategory()));
-                pstmt.executeUpdate();
-                loadBooksData(); // Tải lại dữ liệu sau khi thêm
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            addBookToDatabase(newBook);
         });
+    }
+
+    private void addBookToDatabase(Books newBook) {
+        String insertQuery = "INSERT INTO documents (documentName, authors, categoryID) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
+
+            pstmt.setString(1, newBook.getDocumentName());
+            pstmt.setString(2, newBook.getAuthors());
+            int categoryId = getCategoryIdByName(newBook.getCategory());
+
+            if (categoryId == -1) {
+                System.err.println("Category not found: " + newBook.getCategory());
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Input Error");
+                alert.setHeaderText("Invalid Category");
+                alert.setContentText("The specified category does not exist.");
+                alert.showAndWait();
+                return;
+            }
+
+            pstmt.setInt(3, categoryId);
+            pstmt.executeUpdate();
+            loadBooksData(); // Tải lại dữ liệu sau khi thêm
+        } catch (SQLException e) {
+            System.err.println("Error adding book: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -153,6 +178,15 @@ public class BooksController {
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == editButtonType) {
+                // Kiểm tra thông tin đầu vào
+                if (titleField.getText().isEmpty() || authorField.getText().isEmpty() || categoryField.getText().isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Input Error");
+                    alert.setHeaderText("Missing Information");
+                    alert.setContentText("Please fill in all fields.");
+                    alert.showAndWait();
+                    return null; // Ngăn không cho cập nhật
+                }
                 return new Books(selectedBook.getDocumentID(), titleField.getText(), authorField.getText(), categoryField.getText());
             }
             return null;
@@ -160,19 +194,24 @@ public class BooksController {
 
         Optional<Books> result = dialog.showAndWait();
         result.ifPresent(updatedBook -> {
-            try (Connection conn = DatabaseHelper.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement("UPDATE documents SET documentName = ?, authors = ?, categoryID = ? WHERE documentID = ?")) {
-
-                pstmt.setString(1, updatedBook.getDocumentName());
-                pstmt.setString(2, updatedBook.getAuthors());
-                pstmt.setInt(3, getCategoryIdByName(updatedBook.getCategory()));
-                pstmt.setInt(4, updatedBook.getDocumentID());
-                pstmt.executeUpdate();
-                loadBooksData(); // Tải lại dữ liệu sau khi chỉnh sửa
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            updateBookInDatabase(updatedBook);
         });
+    }
+
+    private void updateBookInDatabase(Books updatedBook) {
+        String updateQuery = "UPDATE documents SET documentName = ?, authors = ?, categoryID = ? WHERE documentID = ?";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+
+            pstmt.setString(1, updatedBook.getDocumentName());
+            pstmt.setString(2, updatedBook.getAuthors());
+            pstmt.setInt(3, getCategoryIdByName(updatedBook.getCategory()));
+            pstmt.setInt(4, updatedBook.getDocumentID());
+            pstmt.executeUpdate();
+            loadBooksData(); // Tải lại dữ liệu sau khi cập nhật
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -194,27 +233,34 @@ public class BooksController {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            try (Connection conn = DatabaseHelper.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement("DELETE FROM documents WHERE documentID = ?")) {
-
-                pstmt.setInt(1, selectedBook.getDocumentID());
-                pstmt.executeUpdate();
-                loadBooksData(); // Tải lại dữ liệu sau khi xóa
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            deleteBookFromDatabase(selectedBook.getDocumentID());
         }
     }
 
-    // Phương thức để lấy ID thể loại từ tên
-    private int getCategoryIdByName(String categoryName) {
+    private void deleteBookFromDatabase(int documentID) {
+        String deleteQuery = "DELETE FROM documents WHERE documentID = ?";
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement("SELECT categoryID FROM categories WHERE categoryName = ?")) {
+             PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
+
+            pstmt.setInt(1, documentID);
+            pstmt.executeUpdate();
+            loadBooksData(); // Tải lại dữ liệu sau khi xóa
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Phương thức để lấy ID danh mục theo tên
+    private int getCategoryIdByName(String categoryName) {
+        String selectQuery = "SELECT categoryID FROM categories WHERE categoryName = ?";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(selectQuery)) {
 
             pstmt.setString(1, categoryName);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("categoryID");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("categoryID");
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
