@@ -31,7 +31,7 @@ public class BooksController {
     public void initialize() {
         loadBooksData();
 
-        // Cấu hình các cột cho TableView
+        // Configure columns for TableView
         TableColumn<Books, Integer> idColumn = new TableColumn<>("ID");
         idColumn.setCellValueFactory(new PropertyValueFactory<>("documentID"));
 
@@ -44,10 +44,11 @@ public class BooksController {
         TableColumn<Books, String> categoryColumn = new TableColumn<>("Category");
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
 
-        // Thêm các cột vào TableView
-        booksTable.getColumns().addAll(idColumn, titleColumn, authorColumn, categoryColumn);
+        TableColumn<Books, Integer> quantityColumn = new TableColumn<>("Quantity");
+        quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
 
-        // Thiết lập các sự kiện cho nút
+        booksTable.getColumns().addAll(idColumn, titleColumn, authorColumn, categoryColumn, quantityColumn);
+
         addBookButton.setOnAction(event -> handleAddBook());
         editBookButton.setOnAction(event -> handleEditBook());
         deleteBookButton.setOnAction(event -> handleDeleteBook());
@@ -55,7 +56,7 @@ public class BooksController {
 
     private void loadBooksData() {
         booksList = FXCollections.observableArrayList();
-        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName " +
+        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity " +
                 "FROM documents d LEFT JOIN categories c ON d.categoryID = c.categoryID";
 
         try (Connection conn = DatabaseHelper.getConnection();
@@ -67,8 +68,9 @@ public class BooksController {
                 String name = rs.getString("documentName");
                 String authors = rs.getString("authors");
                 String category = rs.getString("categoryName");
+                int quantity = rs.getInt("quantity");
 
-                booksList.add(new Books(id, name, authors, category));
+                booksList.add(new Books(id, name, authors, category, quantity));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -93,59 +95,51 @@ public class BooksController {
         TextField categoryField = new TextField();
         categoryField.setPromptText("Category");
 
+        TextField quantityField = new TextField();
+        quantityField.setPromptText("Quantity");
+
         VBox vbox = new VBox(10);
-        vbox.getChildren().addAll(new Label("Title:"), titleField, new Label("Author:"), authorField, new Label("Category:"), categoryField);
+        vbox.getChildren().addAll(
+                new Label("Title:"), titleField,
+                new Label("Author:"), authorField,
+                new Label("Category:"), categoryField,
+                new Label("Quantity:"), quantityField
+        );
         dialog.getDialogPane().setContent(vbox);
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == addButtonType) {
-                // Kiểm tra thông tin đầu vào
-                if (titleField.getText().isEmpty() || authorField.getText().isEmpty() || categoryField.getText().isEmpty()) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Input Error");
-                    alert.setHeaderText("Missing Information");
-                    alert.setContentText("Please fill in all fields.");
-                    alert.showAndWait();
-                    return null; // Ngăn không cho thêm
+                if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
+                        categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
+                    showAlert("Input Error", "Please fill in all fields.");
+                    return null;
                 }
                 String title = titleField.getText();
                 String authors = authorField.getText();
                 String category = categoryField.getText();
-                return new Books(0, title, authors, category);
+                int quantity = Integer.parseInt(quantityField.getText());
+
+                return new Books(0, title, authors, category, quantity);
             }
             return null;
         });
 
         Optional<Books> result = dialog.showAndWait();
-        result.ifPresent(newBook -> {
-            addBookToDatabase(newBook);
-        });
+        result.ifPresent(this::addBookToDatabase);
     }
 
     private void addBookToDatabase(Books newBook) {
-        String insertQuery = "INSERT INTO documents (documentName, authors, categoryID) VALUES (?, ?, ?)";
+        String insertQuery = "INSERT INTO documents (documentName, authors, categoryID, quantity) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
 
             pstmt.setString(1, newBook.getDocumentName());
             pstmt.setString(2, newBook.getAuthors());
-            int categoryId = getCategoryIdByName(newBook.getCategory());
-
-            if (categoryId == -1) {
-                System.err.println("Category not found: " + newBook.getCategory());
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Input Error");
-                alert.setHeaderText("Invalid Category");
-                alert.setContentText("The specified category does not exist.");
-                alert.showAndWait();
-                return;
-            }
-
-            pstmt.setInt(3, categoryId);
+            pstmt.setInt(3, getCategoryIdByName(newBook.getCategory()));
+            pstmt.setInt(4, newBook.getQuantity());
             pstmt.executeUpdate();
-            loadBooksData(); // Tải lại dữ liệu sau khi thêm
+            loadBooksData();
         } catch (SQLException e) {
-            System.err.println("Error adding book: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -154,11 +148,7 @@ public class BooksController {
     private void handleEditBook() {
         Books selectedBook = booksTable.getSelectionModel().getSelectedItem();
         if (selectedBook == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Selection");
-            alert.setHeaderText("No Book Selected");
-            alert.setContentText("Please select a book to edit.");
-            alert.showAndWait();
+            showAlert("No Selection", "Please select a book to edit.");
             return;
         }
 
@@ -171,44 +161,42 @@ public class BooksController {
         TextField titleField = new TextField(selectedBook.getDocumentName());
         TextField authorField = new TextField(selectedBook.getAuthors());
         TextField categoryField = new TextField(selectedBook.getCategory());
+        TextField quantityField = new TextField(String.valueOf(selectedBook.getQuantity()));
 
         VBox vbox = new VBox(10);
-        vbox.getChildren().addAll(new Label("Title:"), titleField, new Label("Author:"), authorField, new Label("Category:"), categoryField);
+        vbox.getChildren().addAll(new Label("Title:"), titleField, new Label("Author:"), authorField,
+                new Label("Category:"), categoryField, new Label("Quantity:"), quantityField);
         dialog.getDialogPane().setContent(vbox);
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == editButtonType) {
-                // Kiểm tra thông tin đầu vào
-                if (titleField.getText().isEmpty() || authorField.getText().isEmpty() || categoryField.getText().isEmpty()) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Input Error");
-                    alert.setHeaderText("Missing Information");
-                    alert.setContentText("Please fill in all fields.");
-                    alert.showAndWait();
-                    return null; // Ngăn không cho cập nhật
+                if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
+                        categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
+                    showAlert("Input Error", "Please fill in all fields.");
+                    return null;
                 }
-                return new Books(selectedBook.getDocumentID(), titleField.getText(), authorField.getText(), categoryField.getText());
+                return new Books(selectedBook.getDocumentID(), titleField.getText(), authorField.getText(),
+                        categoryField.getText(), Integer.parseInt(quantityField.getText()));
             }
             return null;
         });
 
         Optional<Books> result = dialog.showAndWait();
-        result.ifPresent(updatedBook -> {
-            updateBookInDatabase(updatedBook);
-        });
+        result.ifPresent(this::updateBookInDatabase);
     }
 
     private void updateBookInDatabase(Books updatedBook) {
-        String updateQuery = "UPDATE documents SET documentName = ?, authors = ?, categoryID = ? WHERE documentID = ?";
+        String updateQuery = "UPDATE documents SET documentName = ?, authors = ?, categoryID = ?, quantity = ? WHERE documentID = ?";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
 
             pstmt.setString(1, updatedBook.getDocumentName());
             pstmt.setString(2, updatedBook.getAuthors());
             pstmt.setInt(3, getCategoryIdByName(updatedBook.getCategory()));
-            pstmt.setInt(4, updatedBook.getDocumentID());
+            pstmt.setInt(4, updatedBook.getQuantity());
+            pstmt.setInt(5, updatedBook.getDocumentID());
             pstmt.executeUpdate();
-            loadBooksData(); // Tải lại dữ liệu sau khi cập nhật
+            loadBooksData();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -218,11 +206,7 @@ public class BooksController {
     private void handleDeleteBook() {
         Books selectedBook = booksTable.getSelectionModel().getSelectedItem();
         if (selectedBook == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Selection");
-            alert.setHeaderText("No Book Selected");
-            alert.setContentText("Please select a book to delete.");
-            alert.showAndWait();
+            showAlert("No Selection", "Please select a book to delete.");
             return;
         }
 
@@ -244,27 +228,33 @@ public class BooksController {
 
             pstmt.setInt(1, documentID);
             pstmt.executeUpdate();
-            loadBooksData(); // Tải lại dữ liệu sau khi xóa
+            loadBooksData();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // Phương thức để lấy ID danh mục theo tên
     private int getCategoryIdByName(String categoryName) {
-        String selectQuery = "SELECT categoryID FROM categories WHERE categoryName = ?";
+        String query = "SELECT categoryID FROM categories WHERE categoryName = ?";
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(selectQuery)) {
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, categoryName);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("categoryID");
-                }
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("categoryID");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1; // Trả về -1 nếu không tìm thấy
+        return -1; // Return -1 if category is not found
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

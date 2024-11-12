@@ -10,10 +10,10 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="BooksPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" style="-fx-background-color: white;" stylesheets="@../CSS/BaseScene.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.BooksController">
+<AnchorPane fx:id="BooksPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" style="-fx-background-color: white;" stylesheets="@../CSS/Books.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.BooksController">
     <children>
         <!-- Top control panel -->
-        <AnchorPane prefHeight="40.0" prefWidth="1200.0" style="-fx-background-color: #d12345;">
+        <AnchorPane prefHeight="40.0" prefWidth="1200.0" style="-fx-background-color: white;">
             <HBox alignment="CENTER" spacing="10">
                 <Label text="Books" styleClass="title-label" />
                 <Button fx:id="addBookButton" text="Add Book" onAction="#handleAddBook"

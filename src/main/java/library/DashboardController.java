@@ -2,6 +2,9 @@ package library;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
@@ -11,51 +14,87 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 
-public class DashboardController extends Controller
-{
+public class DashboardController extends Controller {
     @FXML
-    public VBox VBoxTotalBooks;
+    private VBox VBoxTotalBooks;
 
     @FXML
-    public VBox VBoxTotalUsers;
+    private VBox VBoxTotalUsers;
 
     @FXML
-    public Label labelTotalBooks;
+    private Label labelTotalBooks;
 
     @FXML
-    public Label labelTotalUsers;
+    private Label labelTotalUsers;
+
+    @FXML
+    private TableView<CategoryBookCount> categoryTable;
+
+    @FXML
+    private TableColumn<CategoryBookCount, String> categoryColumn;
+
+    @FXML
+    private TableColumn<CategoryBookCount, Integer> totalBooksColumn;
 
     @Override
-    public void initialize(URL url, ResourceBundle resourceBundle)
-    {
+    public void initialize(URL url, ResourceBundle resourceBundle) {
         DatabaseHelper.connectToDatabase();
-        try (Connection connection=DatabaseHelper.getConnection())
-        {
-            String bookQuery = "select count(*) from documents";
-            String userQuery = "select count(*) from users";
 
-            //Truy vấn lượng sách
-            PreparedStatement statement = connection.prepareStatement(bookQuery);
-            ResultSet res = statement.executeQuery();
+        // Initialize table columns
+        categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
+        totalBooksColumn.setCellValueFactory(new PropertyValueFactory<>("totalBooks"));
 
-            if(res.next())
-            {
-                int numOfBooks = res.getInt("count(*)");
-                labelTotalBooks.setText("Total books: " + numOfBooks);
+        loadTotalBooksAndUsers();
+        loadCategoryBookCounts();
+    }
+
+    private void loadTotalBooksAndUsers() {
+        try (Connection connection = DatabaseHelper.getConnection()) {
+            String bookQuery = "SELECT COUNT(*) FROM documents";
+            String userQuery = "SELECT COUNT(*) FROM users";
+
+            // Query total books
+            try (PreparedStatement bookStatement = connection.prepareStatement(bookQuery);
+                 ResultSet bookResult = bookStatement.executeQuery()) {
+                if (bookResult.next()) {
+                    int numOfBooks = bookResult.getInt(1);
+                    labelTotalBooks.setText("Total books: " + numOfBooks);
+                }
             }
 
-            //Truy vấn số người dùng
-            statement = connection.prepareStatement(userQuery);
-            res = statement.executeQuery();
-            if(res.next())
-            {
-                int numOfUers = res.getInt("count(*)");
-                labelTotalUsers.setText("Total users: " + numOfUers);
+            // Query total users
+            try (PreparedStatement userStatement = connection.prepareStatement(userQuery);
+                 ResultSet userResult = userStatement.executeQuery()) {
+                if (userResult.next()) {
+                    int numOfUsers = userResult.getInt(1);
+                    labelTotalUsers.setText("Total users: " + numOfUsers);
+                }
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            labelTotalBooks.setText("Error fetching data");
+            labelTotalUsers.setText("Error fetching data");
         }
-        catch (SQLException e)
-        {
-            e.printStackTrace();;
+    }
+
+    private void loadCategoryBookCounts() {
+        String categoryBookCountQuery = "SELECT c.categoryName, COUNT(d.documentID) AS totalBooks " +
+                "FROM categories c LEFT JOIN documents d ON c.categoryID = d.categoryID " +
+                "GROUP BY c.categoryName";
+
+        try (Connection connection = DatabaseHelper.getConnection();
+             PreparedStatement statement = connection.prepareStatement(categoryBookCountQuery);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String categoryName = resultSet.getString("categoryName");
+                int totalBooks = resultSet.getInt("totalBooks");
+                categoryTable.getItems().add(new CategoryBookCount(categoryName, totalBooks));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

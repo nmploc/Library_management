@@ -5,13 +5,15 @@ public class Books {
     private String documentName;
     private String authors;
     private String category;
+    private int quantity; // New quantity attribute
 
-    // Constructor
-    public Books(int documentID, String documentName, String authors, String category) {
+    // Constructor with quantity
+    public Books(int documentID, String documentName, String authors, String category, int quantity) {
         this.documentID = documentID;
         this.documentName = documentName;
         this.authors = authors;
         this.category = category;
+        this.quantity = quantity;
     }
 
     // Getters
@@ -29,5 +31,14 @@ public class Books {
 
     public String getCategory() {
         return category;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    // Setter for quantity
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 }
