@@ -1,19 +1,43 @@
+/* Title Label */
 .title-label {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 20px;
 }
 
+/* Table View Font */
 .table-view {
     -fx-font-size: 14px;
 }
 
+/* Button Style */
 .button {
-    -fx-font-size: 14px;
-    -fx-background-color: #007bff; /* Blue background */
+    -fx-background-color: #3b5998; /* Dark blue background */
     -fx-text-fill: white; /* White text */
+    -fx-cursor: hand; /* Hand cursor */
+    -fx-font-size: 12px; /* Smaller font size */
+    -fx-background-radius: 5; /* Rounded corners */
+    -fx-padding: 6px 12px; /* Reduced padding for smaller button */
 }
 
+/* Button Hover */
 .button:hover {
-    -fx-background-color: #0056b3; /* Darker blue on hover */
+    -fx-scale-x: 1.05; /* Slight scale on hover */
+    -fx-scale-y: 1.05; /* Slight scale on hover */
+    -fx-background-color: #4c70ba; /* Lighter blue on hover */
+    -fx-font-family: 'Montserrat'; /* Set font to Montserrat */
+    -fx-text-fill: white; /* White text on hover */
+    -fx-background-radius: 5; /* Rounded corners */
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.4), 15, 0, 0, 4); /* Drop shadow effect */
+    -fx-cursor: hand; /* Hand cursor on hover */
+}
+
+/* Button Icon Adjustment */
+.button .graphic {
+    -fx-padding: 0 6px 0 0; /* Reduced padding between icon and text */
+}
+
+/* Button Focused */
+.button:focused {
+    -fx-background-color: #2d4373; /* Darker blue on focus */
 }

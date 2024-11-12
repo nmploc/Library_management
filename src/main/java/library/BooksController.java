@@ -1,6 +1,7 @@
 package library;
 
 import javafx.collections.FXCollections;
+import javafx.collections.transformation.FilteredList;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -15,6 +16,10 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.control.Button;
+
 import java.sql.*;
 import java.util.Optional;
 
@@ -23,7 +28,10 @@ public class BooksController {
     private TableView<Books> booksTable;
 
     @FXML
-    private Button addBookButton, editBookButton, deleteBookButton;
+    private Button addBookButton, editBookButton, deleteBookButton, findBookButton;
+
+    @FXML
+    private TextField searchField;
 
     private ObservableList<Books> booksList;
 
@@ -49,6 +57,12 @@ public class BooksController {
 
         booksTable.getColumns().addAll(idColumn, titleColumn, authorColumn, categoryColumn, quantityColumn);
 
+        /*findBookButton.setGraphic(createImageView("/resources/image/FindBook_icon.png"));
+        addBookButton.setGraphic(createImageView("/resources/image/AddBook_icon.png"));
+        editBookButton.setGraphic(createImageView("/resources/image/EditBook_icon.png"));
+        deleteBookButton.setGraphic(createImageView("/resources/image/DeleteBook_icon.png")); */
+
+        findBookButton.setOnAction(event -> handleFindBook());
         addBookButton.setOnAction(event -> handleAddBook());
         editBookButton.setOnAction(event -> handleEditBook());
         deleteBookButton.setOnAction(event -> handleDeleteBook());
@@ -249,6 +263,34 @@ public class BooksController {
         }
         return -1; // Return -1 if category is not found
     }
+
+    @FXML
+    private void handleFindBook() {
+        String searchQuery = searchField.getText().trim();
+        if (searchQuery.isEmpty()) {
+            showAlert("Input Error", "Please enter a search term.");
+            return;
+        }
+
+        FilteredList<Books> filteredList = new FilteredList<>(booksList, book ->
+                book.getDocumentName().toLowerCase().contains(searchQuery.toLowerCase()) ||
+                        book.getAuthors().toLowerCase().contains(searchQuery.toLowerCase())
+        );
+
+        booksTable.setItems(filteredList);
+
+        if (filteredList.isEmpty()) {
+            showAlert("No Results", "No books found matching the search term.");
+        }
+    }
+
+    /*private ImageView createImageView(String imagePath) {
+        Image image = new Image(getClass().getResourceAsStream(imagePath)); // Path relative to the resource folder
+        ImageView imageView = new ImageView(image);
+        imageView.setFitHeight(20); // Adjust size
+        imageView.setFitWidth(20);  // Adjust size
+        return imageView;
+    }*/
 
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

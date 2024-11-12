@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -16,22 +17,24 @@
         <AnchorPane prefHeight="40.0" prefWidth="1200.0" style="-fx-background-color: white;">
             <HBox alignment="CENTER" spacing="10">
                 <Label text="Books" styleClass="title-label" />
-                <Button fx:id="addBookButton" text="Add Book" onAction="#handleAddBook"
-                        styleClass="button" />
+
+                <!-- Search bar for finding books -->
+                <TextField fx:id="searchField" promptText="Search by Title, Author, or Category" />
+                <Button fx:id="findBookButton" text="Find" onAction="#handleFindBook" styleClass="button" />
+
+                <Button fx:id="addBookButton" text="Add Book" onAction="#handleAddBook" styleClass="button" />
             </HBox>
         </AnchorPane>
 
         <!-- Main working area -->
         <VBox spacing="10" AnchorPane.topAnchor="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <TableView fx:id="booksTable">
-                <!-- No column definitions here -->
+
             </TableView>
 
             <HBox spacing="20" alignment="CENTER">
-                <Button fx:id="editBookButton" text="Edit" onAction="#handleEditBook"
-                        styleClass="button" />
-                <Button fx:id="deleteBookButton" text="Delete" onAction="#handleDeleteBook"
-                        styleClass="button" />
+                <Button fx:id="editBookButton" text="Edit" onAction="#handleEditBook" styleClass="button" />
+                <Button fx:id="deleteBookButton" text="Delete" onAction="#handleDeleteBook" styleClass="button" />
             </HBox>
         </VBox>
     </children>
