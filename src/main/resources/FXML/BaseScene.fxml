@@ -12,93 +12,93 @@
 <?import javafx.scene.control.Label?>
 
 <AnchorPane fx:id="Dashboard" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" stylesheets="@../CSS/BaseScene.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.BaseSceneController">
-   <children>
-      <!-- Top Bar Left -->
-      <AnchorPane prefHeight="40.0" prefWidth="200.0" styleClass="top-bar-left" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+    <children>
+        <!-- Top Bar Left -->
+        <AnchorPane prefHeight="40.0" prefWidth="200.0" styleClass="top-bar-left" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
 
-      <!-- Top Bar Right -->
-      <AnchorPane fx:id="topBarRight" prefHeight="40.0" prefWidth="200.0" styleClass="top-bar-right" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <HBox alignment="CENTER" spacing="10" AnchorPane.rightAnchor="0.0">
-            <!-- User Icon -->
-            <ImageView fitHeight="20" fitWidth="20" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../image/user.png" />
-               </image>
-            </ImageView>
+        <!-- Top Bar Right -->
+        <AnchorPane fx:id="topBarRight" prefHeight="40.0" prefWidth="200.0" styleClass="top-bar-right" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <HBox alignment="CENTER" spacing="10" AnchorPane.rightAnchor="0.0">
+                <!-- User Icon -->
+                <ImageView fitHeight="20" fitWidth="20" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../image/user.png" />
+                    </image>
+                </ImageView>
 
-            <!-- User Dropdown Menu -->
-            <MenuButton prefHeight="40.0" text="admin">
-               <items>
-                  <MenuItem onAction="#UserProfile" text="Profile" />
-                  <MenuItem onAction="#Logout" text="Logout" />
-               </items>
-               <HBox.margin>
-                  <Insets />
-               </HBox.margin>
-            </MenuButton>
-         </HBox>
-      </AnchorPane>
+                <!-- User Dropdown Menu -->
+                <MenuButton prefHeight="40.0" text="admin" styleClass="menu-button">
+                    <items>
+                        <MenuItem onAction="#UserProfile" text="Profile" styleClass="menu-item"/>
+                        <MenuItem onAction="#Logout" text="Logout" styleClass="menu-item"/>
+                    </items>
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
+                </MenuButton>
+            </HBox>
+        </AnchorPane>
 
-      <!-- Left Navigation Bar -->
-      <AnchorPane prefHeight="620.0" prefWidth="200.0" styleClass="navigationBar" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="40.0">
-         <children>
-            <!-- VBox with full height inside AnchorPane -->
-            <VBox fx:id="navigationBar" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0">
-               <children>
-                  <!-- Dashboard Button -->
-                  <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleDashBoardButton" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Dashboard">
-                     <graphic>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../image/home.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
+        <!-- Left Navigation Bar -->
+        <AnchorPane prefHeight="620.0" prefWidth="200.0" styleClass="navigationBar" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="40.0">
+            <children>
+                <!-- VBox with full height inside AnchorPane -->
+                <VBox fx:id="navigationBar" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0">
+                    <children>
+                        <!-- Dashboard Button -->
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleDashBoardButton" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Dashboard">
+                            <graphic>
+                                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/home.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
 
-                  <!-- Books Button -->
-                  <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleBooksButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Books">
-                     <graphic>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../image/book.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
+                        <!-- Books Button -->
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleBooksButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Books">
+                            <graphic>
+                                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/book.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
 
-                  <!-- Readers Button -->
-                  <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleReadersButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Readers">
-                     <graphic>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../image/readers.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
+                        <!-- Readers Button -->
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleReadersButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Readers">
+                            <graphic>
+                                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/readers.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
 
-                  <!-- Report Button -->
-                  <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleReportButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Report">
-                     <graphic>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../image/report.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-               </children>
-            </VBox>
-         </children>
-      </AnchorPane>
+                        <!-- Report Button -->
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleReportButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Report">
+                            <graphic>
+                                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/report.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
 
-      <!-- Content Area -->
-      <AnchorPane fx:id="contentPane" prefHeight="200.0" prefWidth="200.0" styleClass="contentPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
-         <children>
-            <!-- Scene Title -->
-            <Label fx:id="sceneTitle" text="Dashboard" styleClass="scene-title" layoutX="20.0" layoutY="10.0" />
-         </children>
-      </AnchorPane>
-   </children>
+        <!-- Content Area -->
+        <AnchorPane fx:id="contentPane" prefHeight="200.0" prefWidth="200.0" styleClass="contentPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+            <children>
+                <!-- Scene Title -->
+                <Label fx:id="sceneTitle" text="Dashboard" styleClass="scene-title" layoutX="20.0" layoutY="10.0" />
+            </children>
+        </AnchorPane>
+    </children>
 </AnchorPane>
