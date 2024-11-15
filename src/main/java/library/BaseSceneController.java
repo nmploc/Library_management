@@ -55,7 +55,7 @@ public class BaseSceneController extends Controller
 
     @FXML
     private void handleReadersButtonAction() {
-        loadFXMLtoAnchorPane("ReadersScene", contentPane);
+        loadFXMLtoAnchorPane("Readers", contentPane);
     }
 
 

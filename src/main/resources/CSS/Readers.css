@@ -1,0 +1,96 @@
+/* Title label styling */
+.title-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333; /* Dark text color */
+}
+
+/* Search bar styling */
+.search-bar {
+    -fx-pref-width: 300px;
+    -fx-background-color: #f8f8f8;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 5px;
+}
+
+/* Button styling */
+.button {
+    -fx-font-family: 'Montserrat';
+    -fx-text-fill: white;
+    -fx-background-color: #3b5998;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-padding: 10px;
+    -fx-border-radius: 5px;
+}
+
+/* Content area styling */
+.content-area {
+    -fx-background-color: #ffffff; /* White background for content area */
+    -fx-padding: 20px;
+}
+
+/* Additional button styles for hover and active states */
+.button:hover {
+    -fx-background-color: #4e70b5;
+}
+
+.button:pressed {
+    -fx-background-color: #34578f;
+}
+
+/* TableView styling */
+.table-view {
+    -fx-font-family: 'Arial';
+    -fx-font-size: 14px;
+    -fx-table-cell-border-color: #ccc;
+    -fx-background-color: #ffffff;
+}
+
+/* Column header styling */
+.table-column {
+    -fx-font-weight: bold;
+    -fx-background-color: #f0f0f0;
+    -fx-alignment: CENTER;
+}
+
+/* TableRow styling (optional) */
+.table-row-cell {
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Label styling for table rows */
+.table-view .column-header .label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+}
+
+/* Styling for the top panel */
+.top-panel {
+    -fx-background-color: #3b5998;
+    -fx-padding: 10px;
+}
+
+/* Styling for the title label in the top panel */
+.top-panel .title-label {
+    -fx-font-size: 28px;
+    -fx-text-fill: white;
+}
+
+/* Styling for the buttons in the top control panel */
+.top-panel .button {
+    -fx-font-size: 14px;
+    -fx-padding: 8px 16px;
+    -fx-background-color: #4e70b5;
+}
+
+/* Styling for the buttons in the control panel when hovered or pressed */
+.top-panel .button:hover {
+    -fx-background-color: #2d448d;
+}
+
+.top-panel .button:pressed {
+    -fx-background-color: #1e3c75;
+}
