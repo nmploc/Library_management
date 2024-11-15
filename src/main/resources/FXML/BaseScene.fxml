@@ -48,6 +48,19 @@
                      </font>
                   </Button>
 
+                  <!-- Nút Readers -->
+                  <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleReadersButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Readers">
+                     <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/readers.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Button>
 
                   <!-- Nút Report với hành động khi nhấn -->
                   <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleReportButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Report">
