@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="library.ReaderController">
+    <TableView fx:id="readerTable">
+        <columns>
+            <TableColumn text="ID"/>
+            <TableColumn text="Name"/>
+            <TableColumn text="Email"/>
+            <TableColumn text="Phone Number"/>
+        </columns>
+    </TableView>
+    <HBox spacing="10">
+        <Button fx:id="addReaderButton" text="Add Reader"/>
+        <Button fx:id="editReaderButton" text="Edit Reader"/>
+        <Button fx:id="deleteReaderButton" text="Delete Reader"/>
+    </HBox>
+    <TextField fx:id="searchField" promptText="Search"/>
+</VBox>
