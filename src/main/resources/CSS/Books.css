@@ -1,43 +1,43 @@
-/* Title Label */
+
+/* Title label styling */
 .title-label {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333; /* Dark text color */
 }
 
-/* Table View Font */
-.table-view {
-    -fx-font-size: 14px;
+/* Search bar styling */
+.search-bar {
+    -fx-pref-width: 300px;
+    -fx-background-color: #f8f8f8;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 5px;
 }
 
-/* Button Style */
+/* Button styling */
 .button {
-    -fx-background-color: #3b5998; /* Dark blue background */
-    -fx-text-fill: white; /* White text */
-    -fx-cursor: hand; /* Hand cursor */
-    -fx-font-size: 12px; /* Smaller font size */
-    -fx-background-radius: 5; /* Rounded corners */
-    -fx-padding: 6px 12px; /* Reduced padding for smaller button */
+    -fx-font-family: 'Montserrat';
+    -fx-text-fill: white;
+    -fx-background-color: #3b5998;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-padding: 10px;
+    -fx-border-radius: 5px;
 }
 
-/* Button Hover */
+/* Content area styling */
+.content-area {
+    -fx-background-color: #ffffff; /* White background for content area */
+    -fx-padding: 20px;
+}
+
+/* Additional button styles for hover and active states */
 .button:hover {
-    -fx-scale-x: 1.05; /* Slight scale on hover */
-    -fx-scale-y: 1.05; /* Slight scale on hover */
-    -fx-background-color: #4c70ba; /* Lighter blue on hover */
-    -fx-font-family: 'Montserrat'; /* Set font to Montserrat */
-    -fx-text-fill: white; /* White text on hover */
-    -fx-background-radius: 5; /* Rounded corners */
-    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.4), 15, 0, 0, 4); /* Drop shadow effect */
-    -fx-cursor: hand; /* Hand cursor on hover */
+    -fx-background-color: #4e70b5;
 }
 
-/* Button Icon Adjustment */
-.button .graphic {
-    -fx-padding: 0 6px 0 0; /* Reduced padding between icon and text */
-}
-
-/* Button Focused */
-.button:focused {
-    -fx-background-color: #2d4373; /* Darker blue on focus */
+.button:pressed {
+    -fx-background-color: #34578f;
 }

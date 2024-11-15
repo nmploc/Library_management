@@ -46,7 +46,8 @@
       <!-- Left Navigation Bar -->
       <AnchorPane prefHeight="620.0" prefWidth="200.0" styleClass="navigationBar" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="40.0">
          <children>
-            <VBox fx:id="navigationBar" prefHeight="500.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <!-- VBox with full height inside AnchorPane -->
+            <VBox fx:id="navigationBar" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0">
                <children>
                   <!-- Dashboard Button -->
                   <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleDashBoardButton" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" text="Dashboard">
