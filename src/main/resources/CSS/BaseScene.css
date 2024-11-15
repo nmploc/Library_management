@@ -12,7 +12,7 @@
 .menu-button {
     -fx-background-color: transparent;
     -fx-text-fill: rgb(235, 233, 233); /* Off-white text */
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
 /* Menu Item Style */

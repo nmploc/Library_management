@@ -2,6 +2,7 @@ package library;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -16,6 +17,9 @@ public class BaseSceneController extends Controller
 {
     @FXML
     private VBox navigationBar;
+
+    @FXML
+    private Label sceneTitle;
 
     @FXML
     private AnchorPane contentPane;

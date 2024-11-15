@@ -9,7 +9,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 <?import javafx.scene.control.Label?>
 
 <AnchorPane fx:id="Dashboard" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" stylesheets="@../CSS/BaseScene.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.BaseSceneController">
@@ -33,9 +32,6 @@
                   <MenuItem onAction="#UserProfile" text="Profile" styleClass="menu-item"/>
                   <MenuItem onAction="#Logout" text="Logout" styleClass="menu-item"/>
                </items>
-               <font>
-                  <Font size="14.0" />
-               </font>
                <HBox.margin>
                   <Insets />
                </HBox.margin>
@@ -58,9 +54,6 @@
                            </image>
                         </ImageView>
                      </graphic>
-                     <font>
-                        <Font size="18.0" />
-                     </font>
                   </Button>
 
                   <!-- Books Button -->
@@ -72,9 +65,6 @@
                            </image>
                         </ImageView>
                      </graphic>
-                     <font>
-                        <Font size="18.0" />
-                     </font>
                   </Button>
 
                   <!-- Readers Button -->
@@ -86,9 +76,6 @@
                            </image>
                         </ImageView>
                      </graphic>
-                     <font>
-                        <Font size="18.0" />
-                     </font>
                   </Button>
 
                   <!-- Report Button -->
@@ -100,9 +87,6 @@
                            </image>
                         </ImageView>
                      </graphic>
-                     <font>
-                        <Font size="18.0" />
-                     </font>
                   </Button>
                </children>
             </VBox>
