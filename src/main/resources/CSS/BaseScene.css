@@ -1,24 +1,59 @@
+/* Base Scene Background Color */
+.root {
+    -fx-background-color: rgb(243, 248, 242); /* Light soft green background */
+}
+
+/* Navigation Bar Color */
+#navigationBar {
+    -fx-background-color: rgb(53, 129, 184); /* Blue background */
+}
+
+/* Dashboard Button Style */
 .dashboardButton {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-text-fill: white;
+    -fx-text-fill: rgb(235, 233, 233); /* Soft off-white text color */
 }
 
 .dashboardButton:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-color: rgba(252, 176, 126, 0.2); /* Soft orange on hover */
 }
 
+/* Menu Button Style */
 .menu-button {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
+    -fx-text-fill: rgb(235, 233, 233); /* Off-white text */
     -fx-font-size: 14px;
 }
 
+/* Menu Item Style */
 .menu-item {
-    -fx-background-color: #f2f2f2;
+    -fx-background-color: rgb(222, 226, 214); /* Light grayish background */
     -fx-text-fill: black;
 }
 
 .menu-item:hover {
-    -fx-background-color: #dcdcdc;
+    -fx-background-color: rgb(252, 176, 126); /* Orange on hover */
+}
+
+/* Scene Title Label Style */
+.scene-title {
+    -fx-text-fill: rgb(239, 233, 233); /* Light off-white */
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+/* Content Pane Background */
+#contentPane {
+    -fx-background-color: rgb(222, 226, 214); /* Light grayish green */
+}
+
+/* Top Bar Background (Right) */
+.top-bar-right {
+    -fx-background-color: rgb(53, 129, 184); /* Blue */
+}
+
+/* Top Bar Background (Left) */
+.top-bar-left {
+    -fx-background-color: rgb(252, 176, 126); /* Soft orange */
 }
