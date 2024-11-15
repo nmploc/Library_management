@@ -28,10 +28,10 @@
             </ImageView>
 
             <!-- User Dropdown Menu -->
-            <MenuButton prefHeight="40.0" text="admin">
+            <MenuButton prefHeight="40.0" text="admin" styleClass="menu-button">
                <items>
-                  <MenuItem onAction="#UserProfile" text="Profile" />
-                  <MenuItem onAction="#Logout" text="Logout" />
+                  <MenuItem onAction="#UserProfile" text="Profile" styleClass="menu-item"/>
+                  <MenuItem onAction="#Logout" text="Logout" styleClass="menu-item"/>
                </items>
                <font>
                   <Font size="14.0" />

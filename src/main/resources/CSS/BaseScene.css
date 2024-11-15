@@ -1,22 +1,11 @@
 /* Base Scene Background Color */
 .root {
-    -fx-background-color: rgb(243, 248, 242); /* Light soft green background */
+    -fx-background-color: rgb(236, 240, 241); /* Soft grayish background */
 }
 
 /* Navigation Bar Color */
 #navigationBar {
     -fx-background-color: rgb(53, 129, 184); /* Blue background */
-}
-
-/* Dashboard Button Style */
-.dashboardButton {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-text-fill: rgb(235, 233, 233); /* Soft off-white text color */
-}
-
-.dashboardButton:hover {
-    -fx-background-color: rgba(252, 176, 126, 0.2); /* Soft orange on hover */
 }
 
 /* Menu Button Style */
@@ -45,7 +34,7 @@
 
 /* Content Pane Background */
 #contentPane {
-    -fx-background-color: rgb(222, 226, 214); /* Light grayish green */
+    -fx-background-color: rgb(255, 255, 255); /* White background (overrides green) */
 }
 
 /* Top Bar Background (Right) */
@@ -55,5 +44,30 @@
 
 /* Top Bar Background (Left) */
 .top-bar-left {
-    -fx-background-color: rgb(252, 176, 126); /* Soft orange */
+    -fx-background-color: rgb(53, 129, 184); /* Blue */
+}
+
+/* General Button Style */
+.button {
+    -fx-background-color: rgb(53, 129, 184); /* Same color as the navigation bar */
+    -fx-text-fill: white; /* White text */
+    -fx-cursor: hand; /* Hand cursor on hover */
+    -fx-font-family: 'Montserrat'; /* Font style */
+    -fx-background-radius: 5; /* Rounded corners */
+    -fx-padding: 6px 12px; /* Padding for buttons */
+}
+
+/* Button Hover Effect */
+.button:hover {
+    -fx-scale-x: 1.05; /* Slight scale on hover */
+    -fx-scale-y: 1.05; /* Slight scale on hover */
+    -fx-background-color: #4c70ba; /* Lighter blue on hover */
+    -fx-text-fill: white; /* White text on hover */
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.4), 15, 0, 0, 4); /* Drop shadow effect */
+    -fx-cursor: hand; /* Hand cursor on hover */
+}
+
+/* Focused Button Style */
+.button:focused {
+    -fx-background-color: #2d4373; /* Darker blue on focus */
 }
