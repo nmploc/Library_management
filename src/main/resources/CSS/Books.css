@@ -1,52 +1,43 @@
+
 /* Title label styling */
 .title-label {
     -fx-font-size: 24px;
     -fx-font-weight: bold;
-    -fx-text-fill: #000000; /* Black text color */
+    -fx-text-fill: #333333; /* Dark text color */
 }
 
 /* Search bar styling */
 .search-bar {
     -fx-pref-width: 300px;
-    -fx-background-color: rgb(248, 248, 248); /* Soft light gray background */
-    -fx-border-color: rgb(204, 204, 204); /* Light gray border */
+    -fx-background-color: #f8f8f8;
+    -fx-border-color: #ccc;
     -fx-border-radius: 5px;
 }
 
-/* General Button Style */
+/* Button styling */
 .button {
-    -fx-background-color: #36C2CE; /* Button color updated */
-    -fx-text-fill: white; /* White text */
-    -fx-font-family: 'Montserrat'; /* Font style */
-    -fx-font-weight: bold; /* Bold font */
-    -fx-cursor: hand; /* Hand cursor on hover */
-    -fx-background-radius: 10; /* Rounded corners */
-    -fx-padding: 6px 12px; /* Smaller padding */
-    -fx-min-width: 100px; /* Set a smaller min width */
-    -fx-min-height: 30px; /* Set a smaller min height */
-    -fx-border-radius: 10; /* Border radius to match the button background */
-    -fx-font-size: 14px; /* Font size for button label */
-}
-
-/* Button Hover Effect */
-.button:hover {
-    -fx-background-color: #2d9fa0; /* Slightly darker shade for hover */
-    -fx-scale-x: 1.05; /* Slight scale on hover */
-    -fx-scale-y: 1.05; /* Slight scale on hover */
-    -fx-text-fill: white; /* White text on hover */
-    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.4), 15, 0, 0, 4); /* Drop shadow effect */
-    -fx-cursor: hand; /* Hand cursor on hover */
-}
-
-/* Focused Button Style */
-.button:focused {
-    -fx-background-color: #2d9fa0; /* Slightly darker shade for focus */
-    -fx-background-radius: 10; /* Matching focus radius */
-    -fx-border-radius: 10; /* Border radius for focused button */
+    -fx-font-family: 'Montserrat';
+    -fx-text-fill: white;
+    -fx-background-color: #3b5998;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-padding: 10px;
+    -fx-border-radius: 5px;
 }
 
 /* Content area styling */
 .content-area {
-    -fx-background-color: rgb(255, 255, 255); /* White background for content area */
+    -fx-background-color: #ffffff; /* White background for content area */
     -fx-padding: 20px;
+}
+
+/* Additional button styles for hover and active states */
+.button:hover {
+    -fx-background-color: #4e70b5;
+}
+
+.button:pressed {
+    -fx-background-color: #34578f;
 }
