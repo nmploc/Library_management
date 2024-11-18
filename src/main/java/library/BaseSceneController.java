@@ -58,6 +58,13 @@ public class BaseSceneController extends Controller
         loadFXMLtoAnchorPane("Readers", contentPane);
     }
 
+    @FXML
+    private void handleBorrowingsButtonAction() {
+        // Load the Borrowings FXML
+        loadFXMLtoAnchorPane("Borrowings", contentPane);
+        sceneTitle.setText("Borrowings");
+    }
+
 
     @FXML
     private void UserProfile() {

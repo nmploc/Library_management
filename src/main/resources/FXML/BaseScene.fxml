@@ -72,6 +72,18 @@
                             </graphic>
                         </Button>
 
+                        <!-- Borrowings Button -->
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleBorrowingsButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" stylesheets="@../CSS/BaseScene.css" text="Borrowings">
+                            <graphic>
+                                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../image/borrowings.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+
+
                         <!-- Report Button -->
                         <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#handleReportButtonAction" prefHeight="42.0" prefWidth="200.0" styleClass="dashboardButton" stylesheets="@../CSS/BaseScene.css" text="Report">
                             <graphic>
