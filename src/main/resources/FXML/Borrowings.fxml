@@ -20,12 +20,7 @@
         <VBox spacing="10" styleClass="content-area" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
             <TableView fx:id="borrowingsTable" stylesheets="@../CSS/Books.css">
                 <columns>
-                    <TableColumn fx:id="colBorrowingID" text="ID" prefWidth="100.0" />
-                    <TableColumn fx:id="colReaderName" text="Reader Name" prefWidth="200.0" />
-                    <TableColumn fx:id="colDocumentName" text="Document Name" prefWidth="200.0" />
-                    <TableColumn fx:id="colBorrowDate" text="Borrow Date" prefWidth="150.0" />
-                    <TableColumn fx:id="colDueDate" text="Due Date" prefWidth="150.0" />
-                    <TableColumn fx:id="colStatus" text="Status" prefWidth="100.0" />
+                    
                 </columns>
             </TableView>
 
