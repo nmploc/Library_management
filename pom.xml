@@ -14,7 +14,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-
     <dependencies>
         <!--    BEGIN DEPENDENCIES FOR DATABASE DRIVERS-->
         <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
@@ -25,49 +24,50 @@
         </dependency>
         <!--    END DEPENDENCIES FOR DATABASE DRIVERS-->
 
-        <!--    BEGIN DEPENDENCIES FOR JAVAFX 21.0.4-->
+        <!--    BEGIN DEPENDENCIES FOR JAVAFX 22.0.2-->
         <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-controls -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>21.0.4</version>
+            <version>22.0.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-graphics -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
-            <version>21.0.4</version>
+            <version>22.0.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-base -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-base</artifactId>
-            <version>21.0.4</version>
+            <version>22.0.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>21.0.4</version>
+            <version>22.0.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-web -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-web</artifactId>
-            <version>21.0.4</version>
+            <version>22.0.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-media -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-media</artifactId>
-            <version>21.0.4</version>
+            <version>22.0.2</version>
         </dependency>
         <!--    END DEPENDENCIES FOR JAVAFX-->
+
         <!-- mail -->
         <dependency>
             <groupId>com.sun.mail</groupId>
