@@ -35,7 +35,7 @@ public class ReaderController {
         TableColumn<Reader, String> nameColumn = new TableColumn<>("Name");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("readerName"));
 
-        TableColumn<Reader, String> fullNameColumn = new TableColumn<>("Full Name");  // New column for full name
+        TableColumn<Reader, String> fullNameColumn = new TableColumn<>("Full Name");
         fullNameColumn.setCellValueFactory(new PropertyValueFactory<>("fullName"));
 
         TableColumn<Reader, String> emailColumn = new TableColumn<>("Email");
@@ -62,7 +62,7 @@ public class ReaderController {
             while (rs.next()) {
                 int id = rs.getInt("readerID");
                 String name = rs.getString("readerName");
-                String fullName = rs.getString("fullName");  // Fetch full name
+                String fullName = rs.getString("fullName");
                 String email = rs.getString("email");
                 String phoneNumber = rs.getString("phoneNumber");
 
@@ -85,7 +85,7 @@ public class ReaderController {
         TextField nameField = new TextField();
         nameField.setPromptText("Name");
 
-        TextField fullNameField = new TextField();  // New field for full name
+        TextField fullNameField = new TextField();
         fullNameField.setPromptText("Full Name");
 
         TextField emailField = new TextField();
@@ -97,7 +97,7 @@ public class ReaderController {
         VBox vbox = new VBox(10);
         vbox.getChildren().addAll(
                 new Label("Name:"), nameField,
-                new Label("Full Name:"), fullNameField,  // Add full name field
+                new Label("Full Name:"), fullNameField,
                 new Label("Email:"), emailField,
                 new Label("Phone Number:"), phoneField
         );
@@ -110,7 +110,7 @@ public class ReaderController {
                     return null;
                 }
                 String name = nameField.getText();
-                String fullName = fullNameField.getText();  // Get full name
+                String fullName = fullNameField.getText();
                 String email = emailField.getText();
                 String phoneNumber = phoneField.getText();
 
@@ -129,7 +129,7 @@ public class ReaderController {
              PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
 
             pstmt.setString(1, newReader.getReaderName());
-            pstmt.setString(2, newReader.getFullName());  // Insert full name
+            pstmt.setString(2, newReader.getFullName());
             pstmt.setString(3, newReader.getEmail());
             pstmt.setString(4, newReader.getPhoneNumber());
             pstmt.executeUpdate();
@@ -156,7 +156,7 @@ public class ReaderController {
         TextField nameField = new TextField(selectedReader.getReaderName());
         nameField.setPromptText("Name");
 
-        TextField fullNameField = new TextField(selectedReader.getFullName());  // Initialize full name field
+        TextField fullNameField = new TextField(selectedReader.getFullName());
         fullNameField.setPromptText("Full Name");
 
         TextField emailField = new TextField(selectedReader.getEmail());
@@ -168,7 +168,7 @@ public class ReaderController {
         VBox vbox = new VBox(10);
         vbox.getChildren().addAll(
                 new Label("Name:"), nameField,
-                new Label("Full Name:"), fullNameField,  // Add full name field
+                new Label("Full Name:"), fullNameField,
                 new Label("Email:"), emailField,
                 new Label("Phone Number:"), phoneField
         );
@@ -181,7 +181,7 @@ public class ReaderController {
                     return null;
                 }
                 selectedReader.setReaderName(nameField.getText());
-                selectedReader.setFullName(fullNameField.getText());  // Set full name
+                selectedReader.setFullName(fullNameField.getText());
                 selectedReader.setEmail(emailField.getText());
                 selectedReader.setPhoneNumber(phoneField.getText());
                 return selectedReader;
@@ -199,7 +199,7 @@ public class ReaderController {
              PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
 
             pstmt.setString(1, updatedReader.getReaderName());
-            pstmt.setString(2, updatedReader.getFullName());  // Update full name
+            pstmt.setString(2, updatedReader.getFullName());
             pstmt.setString(3, updatedReader.getEmail());
             pstmt.setString(4, updatedReader.getPhoneNumber());
             pstmt.setInt(5, updatedReader.getReaderID());
@@ -249,7 +249,6 @@ public class ReaderController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
     @FXML
     private void handleFindReader() {
         String searchQuery = searchField.getText().trim();
@@ -258,11 +257,17 @@ public class ReaderController {
             return;
         }
 
-        FilteredList<Reader> filteredList = new FilteredList<>(readerList, reader ->
-                reader.getReaderName().toLowerCase().contains(searchQuery.toLowerCase()) ||
-                        reader.getEmail().toLowerCase().contains(searchQuery.toLowerCase()) ||
-                        reader.getPhoneNumber().toLowerCase().contains(searchQuery.toLowerCase())
-        );
+        FilteredList<Reader> filteredList = new FilteredList<>(readerList, reader -> {
+            String readerName = reader.getReaderName() != null ? reader.getReaderName().toLowerCase() : "";
+            String fullName = reader.getFullName() != null ? reader.getFullName().toLowerCase() : "";
+            String email = reader.getEmail() != null ? reader.getEmail().toLowerCase() : "";
+            String phoneNumber = reader.getPhoneNumber() != null ? reader.getPhoneNumber().toLowerCase() : "";
+
+            return readerName.contains(searchQuery.toLowerCase()) ||
+                    fullName.contains(searchQuery.toLowerCase()) ||
+                    email.contains(searchQuery.toLowerCase()) ||
+                    phoneNumber.contains(searchQuery.toLowerCase());
+        });
 
         readerTable.setItems(filteredList);
 
@@ -270,4 +275,5 @@ public class ReaderController {
             showAlert("No Results", "No readers found matching the search term.");
         }
     }
+
 }
