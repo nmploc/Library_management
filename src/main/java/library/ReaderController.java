@@ -2,6 +2,7 @@ package library;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -221,6 +222,24 @@ public class ReaderController {
         alert.showAndWait();
     }
 
-    public void handleFindReader(ActionEvent actionEvent) {
+    @FXML
+    private void handleFindReader() {
+        String searchQuery = searchField.getText().trim();
+        if (searchQuery.isEmpty()) {
+            showAlert("Input Error", "Please enter a search term.");
+            return;
+        }
+
+        FilteredList<Reader> filteredList = new FilteredList<>(readerList, reader ->
+                reader.getReaderName().toLowerCase().contains(searchQuery.toLowerCase()) ||
+                        reader.getEmail().toLowerCase().contains(searchQuery.toLowerCase()) ||
+                        reader.getPhoneNumber().toLowerCase().contains(searchQuery.toLowerCase())
+        );
+
+        readerTable.setItems(filteredList);
+
+        if (filteredList.isEmpty()) {
+            showAlert("No Results", "No readers found matching the search term.");
+        }
     }
 }
