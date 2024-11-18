@@ -44,17 +44,17 @@ CREATE TABLE IF NOT EXISTS documentOwner (
 );
 
 -- Create the updated borrowings table
-CREATE TABLE IF NOT EXISTS borrowings (
-    borrowingID INT AUTO_INCREMENT PRIMARY KEY,
-    readerID INT,
-    documentID INT,
-    borrowDate DATETIME,
-    dueDate DATE,
-    returnDate DATETIME,
-    borrowingStatus VARCHAR(20),
-    FOREIGN KEY (documentID) REFERENCES documents(documentID) ON UPDATE CASCADE,
-    FOREIGN KEY (readerID) REFERENCES readers(readerID) ON UPDATE CASCADE
-);
+--CREATE TABLE IF NOT EXISTS borrowings (
+--    borrowingID INT AUTO_INCREMENT PRIMARY KEY,
+--    readerID INT,
+--    documentID INT,
+--    borrowDate DATETIME,
+--    dueDate DATE,
+--    returnDate DATETIME,
+--    borrowingStatus VARCHAR(20),
+--    FOREIGN KEY (documentID) REFERENCES documents(documentID) ON UPDATE CASCADE,
+--    FOREIGN KEY (readerID) REFERENCES readers(readerID) ON UPDATE CASCADE
+--);
 
 -- Table to store reports (for user complaints or issues)
 CREATE TABLE IF NOT EXISTS reports (
@@ -78,4 +78,16 @@ CREATE TABLE IF NOT EXISTS readers (
 status VARCHAR(50) DEFAULT 'Active',                -- Trạng thái tài khoản (ví dụ: Active, Inactive)
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,      -- Thời gian tạo tài khoản
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Thời gian cập nhật tài khoản
+);
+CREATE TABLE IF NOT EXISTS BorrowReturn (
+    borrowID INT AUTO_INCREMENT PRIMARY KEY,           -- ID cho mỗi giao dịch mượn trả
+    borrowDate DATE NOT NULL,                          -- Ngày mượn sách
+    returnDate DATE,                                   -- Ngày trả sách
+    readerID INT NOT NULL,                             -- ID người đọc (liên kết đến bảng readers)
+    bookID INT NOT NULL,                               -- ID sách (liên kết đến bảng books)
+    status VARCHAR(50) DEFAULT 'Borrowed',             -- Trạng thái của giao dịch (ví dụ: Borrowed, Returned)
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,     -- Thời gian tạo giao dịch
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Thời gian cập nhật giao dịch
+    FOREIGN KEY (readerID) REFERENCES readers(readerID), -- Khóa ngoại liên kết đến bảng readers
+    FOREIGN KEY (bookID) REFERENCES books(documentID)  -- Khóa ngoại liên kết đến bảng books
 );
