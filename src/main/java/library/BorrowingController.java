@@ -240,6 +240,7 @@ public class BorrowingController {
         }
     }
 
+    @FXML
     private void handleFindBorrowing() {
         String searchText = searchField.getText().toLowerCase();
         ObservableList<Borrowing> filteredList = FXCollections.observableArrayList();
