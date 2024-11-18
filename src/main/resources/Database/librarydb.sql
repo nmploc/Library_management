@@ -43,17 +43,17 @@ CREATE TABLE IF NOT EXISTS documentOwner (
     FOREIGN KEY (ownerID) REFERENCES users(userID) ON UPDATE CASCADE
 );
 
--- Table to store borrowings (tracking books borrowed by users)
+-- Create the updated borrowings table
 CREATE TABLE IF NOT EXISTS borrowings (
     borrowingID INT AUTO_INCREMENT PRIMARY KEY,
-    userID INT,
+    readerID INT,
     documentID INT,
     borrowDate DATETIME,
     dueDate DATE,
     returnDate DATETIME,
     borrowingStatus VARCHAR(20),
     FOREIGN KEY (documentID) REFERENCES documents(documentID) ON UPDATE CASCADE,
-    FOREIGN KEY (userID) REFERENCES users(userID) ON UPDATE CASCADE
+    FOREIGN KEY (readerID) REFERENCES readers(readerID) ON UPDATE CASCADE
 );
 
 -- Table to store reports (for user complaints or issues)
