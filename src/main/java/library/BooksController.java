@@ -19,7 +19,14 @@ import javafx.scene.layout.VBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.*;
 import java.util.Optional;
 
@@ -268,10 +275,11 @@ public class BooksController  {
     private void handleFindBook() {
         String searchQuery = searchField.getText().trim();
         if (searchQuery.isEmpty()) {
-            showAlert("Input Error", "Please enter a search term.");
+            showAlert("Lỗi nhập liệu", "Vui lòng nhập từ khóa tìm kiếm.");
             return;
         }
 
+        // Tìm kiếm trong cơ sở dữ liệu
         FilteredList<Books> filteredList = new FilteredList<>(booksList, book ->
                 book.getDocumentName().toLowerCase().contains(searchQuery.toLowerCase()) ||
                         book.getAuthors().toLowerCase().contains(searchQuery.toLowerCase())
@@ -279,10 +287,103 @@ public class BooksController  {
 
         booksTable.setItems(filteredList);
 
+        // Nếu không tìm thấy, gọi API
         if (filteredList.isEmpty()) {
-            showAlert("No Results", "No books found matching the search term.");
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Không tìm thấy sách");
+            alert.setHeaderText("Sách không tồn tại trong cơ sở dữ liệu.");
+            alert.setContentText("Bạn có muốn tìm kiếm sách này trên API không?");
+            Optional<ButtonType> result = alert.showAndWait();
+
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                searchBookFromAPI(searchQuery);
+            }
         }
     }
+
+    private void searchBookFromAPI(String searchQuery) {
+        String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=" + searchQuery;
+
+        try {
+            // Gửi yêu cầu GET đến API
+            HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
+            connection.setRequestMethod("GET");
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                // Đọc phản hồi từ API
+                StringBuilder response = new StringBuilder();
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
+
+                // Phân tích JSON trả về
+                parseAPIResponse(response.toString());
+            } else {
+                showAlert("Lỗi API", "Không thể kết nối đến API. Mã lỗi: " + responseCode);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Lỗi", "Đã xảy ra lỗi khi tìm kiếm sách trên API.");
+        }
+    }
+
+    private void parseAPIResponse(String jsonResponse) {
+        try {
+            // Phân tích JSON từ phản hồi API
+            JSONObject jsonObject = new JSONObject(jsonResponse);
+            JSONArray items = jsonObject.getJSONArray("items");
+
+            ObservableList<Books> apiBooksList = FXCollections.observableArrayList();
+
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject item = items.getJSONObject(i);
+                JSONObject volumeInfo = item.getJSONObject("volumeInfo");
+
+                String title = volumeInfo.optString("title", "Không rõ");
+                String authors = volumeInfo.has("authors") ? volumeInfo.getJSONArray("authors").join(", ").replace("\"", "") : "Không rõ";
+                String category = volumeInfo.has("categories") ? volumeInfo.getJSONArray("categories").join(", ").replace("\"", "") : "Không rõ";
+                int quantity = 0; // Giả định số lượng = 0 nếu từ API
+
+                apiBooksList.add(new Books(0, title, authors, category, quantity));
+            }
+
+            // Hiển thị sách tìm được từ API trong một cửa sổ mới
+            if (!apiBooksList.isEmpty()) {
+                showBooksFromAPI(apiBooksList);
+            } else {
+                showAlert("Không tìm thấy", "Không tìm thấy sách nào trên API.");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            showAlert("Lỗi JSON", "Đã xảy ra lỗi khi phân tích dữ liệu từ API.");
+        }
+    }
+
+    private void showBooksFromAPI(ObservableList<Books> apiBooksList) {
+        TableView<Books> apiBooksTable = new TableView<>(apiBooksList);
+
+        TableColumn<Books, String> titleColumn = new TableColumn<>("Title");
+        titleColumn.setCellValueFactory(new PropertyValueFactory<>("documentName"));
+
+        TableColumn<Books, String> authorColumn = new TableColumn<>("Author");
+        authorColumn.setCellValueFactory(new PropertyValueFactory<>("authors"));
+
+        TableColumn<Books, String> categoryColumn = new TableColumn<>("Category");
+        categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
+
+        apiBooksTable.getColumns().addAll(titleColumn, authorColumn, categoryColumn);
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Kết quả từ API");
+        dialog.getDialogPane().setContent(apiBooksTable);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.showAndWait();
+    }
+
 
     /*private ImageView createImageView(String imagePath) {
         Image image = new Image(getClass().getResourceAsStream(imagePath)); // Path relative to the resource folder
