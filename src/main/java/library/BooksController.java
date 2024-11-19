@@ -4,33 +4,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
-
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.*;
 import java.util.Optional;
 
-public class BooksController  {
+public class BooksController {
     @FXML
     private TableView<Books> booksTable;
 
@@ -63,12 +46,6 @@ public class BooksController  {
         quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
 
         booksTable.getColumns().addAll(idColumn, titleColumn, authorColumn, categoryColumn, quantityColumn);
-
-        /*findBookButton.setGraphic(createImageView("/resources/image/FindBook_icon.png"));
-        addBookButton.setGraphic(createImageView("/resources/image/AddBook_icon.png"));
-        editBookButton.setGraphic(createImageView("/resources/image/EditBook_icon.png"));
-        deleteBookButton.setGraphic(createImageView("/resources/image/DeleteBook_icon.png")); */
-
         findBookButton.setOnAction(event -> handleFindBook());
         addBookButton.setOnAction(event -> handleAddBook());
         editBookButton.setOnAction(event -> handleEditBook());
@@ -275,92 +252,67 @@ public class BooksController  {
     private void handleFindBook() {
         String searchQuery = searchField.getText().trim();
         if (searchQuery.isEmpty()) {
-            showAlert("Lỗi nhập liệu", "Vui lòng nhập từ khóa tìm kiếm.");
+            showAlert("Input Error", "Please enter a search term.");
             return;
         }
 
-        // Tìm kiếm trong cơ sở dữ liệu
-        FilteredList<Books> filteredList = new FilteredList<>(booksList, book ->
-                book.getDocumentName().toLowerCase().contains(searchQuery.toLowerCase()) ||
-                        book.getAuthors().toLowerCase().contains(searchQuery.toLowerCase())
-        );
+        // Search in the local database first
+        ObservableList<Books> localSearchResults = searchBooksInDatabase(searchQuery);
 
-        booksTable.setItems(filteredList);
-
-        // Nếu không tìm thấy, gọi API
-        if (filteredList.isEmpty()) {
+        if (localSearchResults.isEmpty()) {
+            // If no results are found locally, prompt for API search
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Không tìm thấy sách");
-            alert.setHeaderText("Sách không tồn tại trong cơ sở dữ liệu.");
-            alert.setContentText("Bạn có muốn tìm kiếm sách này trên API không?");
+            alert.setTitle("No Results Found");
+            alert.setHeaderText("No books found in the local database.");
+            alert.setContentText("Would you like to search for books via the API?");
+
             Optional<ButtonType> result = alert.showAndWait();
-
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                searchBookFromAPI(searchQuery);
-            }
-        }
-    }
-
-    private void searchBookFromAPI(String searchQuery) {
-        String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=" + searchQuery;
-
-        try {
-            // Gửi yêu cầu GET đến API
-            HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
-            connection.setRequestMethod("GET");
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                // Đọc phản hồi từ API
-                StringBuilder response = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
+                // Call the API to search for books
+                ObservableList<Books> apiBooks = GoogleBooksService.searchBooks(searchQuery);
+                if (apiBooks.isEmpty()) {
+                    showAlert("No Results", "No books found via the API.");
+                } else {
+                    showBooksFromAPI(apiBooks);
                 }
-
-                // Phân tích JSON trả về
-                parseAPIResponse(response.toString());
-            } else {
-                showAlert("Lỗi API", "Không thể kết nối đến API. Mã lỗi: " + responseCode);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Lỗi", "Đã xảy ra lỗi khi tìm kiếm sách trên API.");
+        } else {
+            // If local database has results, show them
+            booksTable.setItems(localSearchResults);
         }
     }
 
-    private void parseAPIResponse(String jsonResponse) {
-        try {
-            // Phân tích JSON từ phản hồi API
-            JSONObject jsonObject = new JSONObject(jsonResponse);
-            JSONArray items = jsonObject.getJSONArray("items");
+    private ObservableList<Books> searchBooksInDatabase(String searchQuery) {
+        ObservableList<Books> searchResults = FXCollections.observableArrayList();
+        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity " +
+                "FROM documents d " +
+                "LEFT JOIN categories c ON d.categoryID = c.categoryID " +
+                "WHERE d.documentName LIKE ? OR d.authors LIKE ? OR c.categoryName LIKE ?";
 
-            ObservableList<Books> apiBooksList = FXCollections.observableArrayList();
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            for (int i = 0; i < items.length(); i++) {
-                JSONObject item = items.getJSONObject(i);
-                JSONObject volumeInfo = item.getJSONObject("volumeInfo");
+            // Use wildcard search to find partial matches
+            pstmt.setString(1, "%" + searchQuery + "%");
+            pstmt.setString(2, "%" + searchQuery + "%");
+            pstmt.setString(3, "%" + searchQuery + "%");
 
-                String title = volumeInfo.optString("title", "Không rõ");
-                String authors = volumeInfo.has("authors") ? volumeInfo.getJSONArray("authors").join(", ").replace("\"", "") : "Không rõ";
-                String category = volumeInfo.has("categories") ? volumeInfo.getJSONArray("categories").join(", ").replace("\"", "") : "Không rõ";
-                int quantity = 0; // Giả định số lượng = 0 nếu từ API
-
-                apiBooksList.add(new Books(0, title, authors, category, quantity));
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Books book = new Books(
+                        rs.getInt("documentID"),
+                        rs.getString("documentName"),
+                        rs.getString("authors"),
+                        rs.getString("categoryName"),
+                        rs.getInt("quantity")
+                );
+                searchResults.add(book);
             }
-
-            // Hiển thị sách tìm được từ API trong một cửa sổ mới
-            if (!apiBooksList.isEmpty()) {
-                showBooksFromAPI(apiBooksList);
-            } else {
-                showAlert("Không tìm thấy", "Không tìm thấy sách nào trên API.");
-            }
-        } catch (JSONException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-            showAlert("Lỗi JSON", "Đã xảy ra lỗi khi phân tích dữ liệu từ API.");
         }
+
+        return searchResults;
     }
 
     private void showBooksFromAPI(ObservableList<Books> apiBooksList) {
@@ -375,44 +327,41 @@ public class BooksController  {
         TableColumn<Books, String> categoryColumn = new TableColumn<>("Category");
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
 
-        apiBooksTable.getColumns().addAll(titleColumn, authorColumn, categoryColumn);
+        TableColumn<Books, String> coverColumn = new TableColumn<>("Cover");
+        coverColumn.setCellValueFactory(new PropertyValueFactory<>("coverImageUrl"));
+        coverColumn.setCellFactory(col -> new TableCell<>() {
+            private final ImageView imageView = new ImageView();
 
-        // Auto-fit columns to the content
+            {
+                imageView.setFitWidth(50); // Adjust image size
+                imageView.setFitHeight(70);
+            }
+
+            @Override
+            protected void updateItem(String coverImageUrl, boolean empty) {
+                super.updateItem(coverImageUrl, empty);
+                if (empty || coverImageUrl == null) {
+                    setGraphic(null);
+                } else {
+                    imageView.setImage(new Image(coverImageUrl, true));
+                    setGraphic(imageView);
+                }
+            }
+        });
+
+        apiBooksTable.getColumns().addAll(coverColumn, titleColumn, authorColumn, categoryColumn);
         apiBooksTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        // Create a Dialog to display the TableView
         Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Kết quả từ API");
-
-        // Set the dialog content to the TableView
+        dialog.setTitle("Results from API");
         dialog.getDialogPane().setContent(apiBooksTable);
-
-        // Allow the dialog to resize based on content, without setting a fixed size
         dialog.setResizable(true);
-
-        // Optional: Set a reasonable minimum size to prevent it from becoming too small
-        dialog.getDialogPane().setMinSize(600, 400);
-
-        // Add a CLOSE button to the dialog
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-
-        // Show the dialog
         dialog.showAndWait();
     }
 
-
-
-
-    /*private ImageView createImageView(String imagePath) {
-        Image image = new Image(getClass().getResourceAsStream(imagePath)); // Path relative to the resource folder
-        ImageView imageView = new ImageView(image);
-        imageView.setFitHeight(20); // Adjust size
-        imageView.setFitWidth(20);  // Adjust size
-        return imageView;
-    }*/
-
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);

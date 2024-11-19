@@ -1,5 +1,6 @@
 package library;
 
+import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -30,31 +31,42 @@ public class Controller implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
     }
 
-    // Tạo chuyển trang
+    // Tạo chuyển trang (with multithreading)
     public void loadNewScene(String name, ActionEvent actionEvent) {
         String url = "/FXML/" + name + ".fxml";
-        try {
-            Object obj = null;
-            try {
-                obj = FXMLLoader.load(this.getClass().getResource(url)); //Load trang
-            } catch (IOException e) {
-                System.out.println("Get resource from " + url + " is null");
-                e.printStackTrace();
-            }
 
-            root = (Parent) obj;
-            scene = new Scene(root);
-            primaryStage = loadCurrentStage(actionEvent);
-            primaryStage.setScene(scene);
-            primaryStage.show();
-        } catch (Exception e) {
-            System.out.println("Can not load FXML from: " + url);
-            e.printStackTrace();
-        }
+        Task<Void> loadTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    Object obj = FXMLLoader.load(this.getClass().getResource(url)); // Load page
+
+                    root = (Parent) obj;
+                    scene = new Scene(root);
+                    primaryStage = loadCurrentStage(actionEvent);
+
+                    // Update the UI (on the JavaFX application thread)
+                    javafx.application.Platform.runLater(() -> {
+                        primaryStage.setScene(scene);
+                        primaryStage.show();
+                    });
+
+                } catch (IOException e) {
+                    System.out.println("Can not load FXML from: " + url);
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        };
+
+        // Start the task on a background thread
+        Thread loadThread = new Thread(loadTask);
+        loadThread.setDaemon(true); // Allow the thread to exit when the application closes
+        loadThread.start();
     }
 
-    // Show cảnh báo (Ví dụ mật khẩu sai)
-    public static void showAlert(String title, String message) {
+    // Show cảnh báo (e.g., wrong password)
+    public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
@@ -74,15 +86,30 @@ public class Controller implements Initializable {
         return null;
     }
 
-
+    // Load FXML into AnchorPane (with multithreading)
     public void loadFXMLtoAnchorPane(String fxml, AnchorPane pane) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/" + fxml + ".fxml"));
-            Node newContent = loader.load();
-            pane.getChildren().clear();
-            pane.getChildren().add(newContent);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Task<Void> loadTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/" + fxml + ".fxml"));
+                    Node newContent = loader.load();
+
+                    // Update the UI (on the JavaFX application thread)
+                    javafx.application.Platform.runLater(() -> {
+                        pane.getChildren().clear();
+                        pane.getChildren().add(newContent);
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        };
+
+        // Start the task on a background thread
+        Thread loadThread = new Thread(loadTask);
+        loadThread.setDaemon(true); // Allow the thread to exit when the application closes
+        loadThread.start();
     }
 }

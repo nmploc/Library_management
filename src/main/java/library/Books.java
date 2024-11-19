@@ -5,15 +5,24 @@ public class Books {
     private String documentName;
     private String authors;
     private String category;
-    private int quantity; // New quantity attribute
+    private int quantity; // Quantity attribute
+    private String coverImageUrl; // URL for the book cover
 
-    // Constructor with quantity
     public Books(int documentID, String documentName, String authors, String category, int quantity) {
         this.documentID = documentID;
         this.documentName = documentName;
         this.authors = authors;
         this.category = category;
         this.quantity = quantity;
+    }
+    // Constructor with cover image
+    public Books(int documentID, String documentName, String authors, String category, int quantity, String coverImageUrl) {
+        this.documentID = documentID;
+        this.documentName = documentName;
+        this.authors = authors;
+        this.category = category;
+        this.quantity = quantity;
+        this.coverImageUrl = coverImageUrl;
     }
 
     // Getters
@@ -37,8 +46,16 @@ public class Books {
         return quantity;
     }
 
-    // Setter for quantity
+    public String getCoverImageUrl() {
+        return coverImageUrl;
+    }
+
+    // Setters
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public void setCoverImageUrl(String coverImageUrl) {
+        this.coverImageUrl = coverImageUrl;
     }
 }
