@@ -377,12 +377,30 @@ public class BooksController  {
 
         apiBooksTable.getColumns().addAll(titleColumn, authorColumn, categoryColumn);
 
+        // Auto-fit columns to the content
+        apiBooksTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        // Create a Dialog to display the TableView
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Kết quả từ API");
+
+        // Set the dialog content to the TableView
         dialog.getDialogPane().setContent(apiBooksTable);
+
+        // Allow the dialog to resize based on content, without setting a fixed size
+        dialog.setResizable(true);
+
+        // Optional: Set a reasonable minimum size to prevent it from becoming too small
+        dialog.getDialogPane().setMinSize(600, 400);
+
+        // Add a CLOSE button to the dialog
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        // Show the dialog
         dialog.showAndWait();
     }
+
+
 
 
     /*private ImageView createImageView(String imagePath) {
