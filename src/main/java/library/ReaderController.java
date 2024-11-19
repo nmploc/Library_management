@@ -9,10 +9,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 
+import java.net.URL;
 import java.sql.*;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
-public class ReaderController {
+public class ReaderController extends Controller {
     @FXML
     private TableView<Reader> readerTable;
 
@@ -25,7 +27,7 @@ public class ReaderController {
     private ObservableList<Reader> readerList;
 
     @FXML
-    public void initialize() {
+    public void initialize(URL url, ResourceBundle resourceBundle) {
         loadReaderData();
 
         // Configure columns for TableView
@@ -242,7 +244,7 @@ public class ReaderController {
         }
     }
 
-    private void showAlert(String title, String message) {
+    public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);

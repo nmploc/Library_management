@@ -10,10 +10,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
+
+import java.net.URL;
 import java.sql.*;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
-public class BooksController {
+public class BooksController extends Controller {
     @FXML
     private TableView<Books> booksTable;
 
@@ -26,7 +29,7 @@ public class BooksController {
     private ObservableList<Books> booksList;
 
     @FXML
-    public void initialize() {
+    public void initialize(URL url, ResourceBundle resourceBundle) {
         loadBooksData();
 
         // Configure columns for TableView
@@ -316,7 +319,7 @@ public class BooksController {
     }
 
     private void showBooksFromAPI(ObservableList<Books> apiBooksList) {
-        TableView<Books> apiBooksTable = new TableView<>(apiBooksList);
+        {TableView<Books> apiBooksTable = new TableView<>(apiBooksList);
 
         TableColumn<Books, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("documentName"));
@@ -358,9 +361,10 @@ public class BooksController {
         dialog.setResizable(true);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         dialog.showAndWait();
+        }
     }
 
-    private void showAlert(String title, String message) {
+    public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);

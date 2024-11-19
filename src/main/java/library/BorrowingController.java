@@ -18,10 +18,12 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
+import java.net.URL;
 import java.sql.*;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
-public class BorrowingController {
+public class BorrowingController extends Controller {  // Extend Controller
 
     @FXML
     private TableView<Borrowing> borrowingsTable;
@@ -35,7 +37,7 @@ public class BorrowingController {
     private ObservableList<Borrowing> borrowingsList;
 
     @FXML
-    public void initialize() {
+    public void initialize(URL url, ResourceBundle resourceBundle) {
         loadBorrowingsData();
 
         // Configure columns for TableView
@@ -254,7 +256,7 @@ public class BorrowingController {
         }
         borrowingsTable.setItems(filteredList);
     }
-    
+
     public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
