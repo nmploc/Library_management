@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="library.BookDetailController" spacing="10" padding="20">
+    <Label fx:id="titleLabel" style="-fx-font-size: 18px;"/>
+    <Label fx:id="authorLabel"/>
+    <Label fx:id="categoryLabel"/>
+    <Label fx:id="quantityLabel"/>
+    <ImageView fx:id="thumbnailImageView" fitWidth="200" fitHeight="300" />
+</VBox>

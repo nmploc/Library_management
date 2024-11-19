@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -27,6 +28,9 @@ public class BooksController extends Controller {
     private TextField searchField;
 
     private ObservableList<Books> booksList;
+
+    @FXML
+    private AnchorPane contentPane;
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -53,7 +57,38 @@ public class BooksController extends Controller {
         addBookButton.setOnAction(event -> handleAddBook());
         editBookButton.setOnAction(event -> handleEditBook());
         deleteBookButton.setOnAction(event -> handleDeleteBook());
+
+        booksTable.setFocusTraversable(true);  // Ensures the table can receive key events
+
+        booksTable.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                openBookDetail(booksTable.getSelectionModel().getSelectedItem());
+            }
+        });
+
+        booksTable.setOnKeyPressed(event -> {
+            if (event.getCode().toString().equals("ENTER")) {
+                openBookDetail(booksTable.getSelectionModel().getSelectedItem());
+            }
+        });
+
     }
+
+    @FXML
+    private void openBookDetail(Books book) {
+        if (book == null) {
+            showAlert("No Selection", "Please select a book.");
+            return;
+        }
+
+        // Load the book detail scene into the content pane
+        loadFXMLtoAnchorPane("showBookDetail", contentPane, book);
+    }
+
+    private void loadFXMLtoAnchorPane(String fxmlFile, AnchorPane contentPane, Books book) {
+    }
+
+
 
     private void loadBooksData() {
         booksList = FXCollections.observableArrayList();
