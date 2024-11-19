@@ -254,8 +254,8 @@ public class BorrowingController {
         }
         borrowingsTable.setItems(filteredList);
     }
-
-    private void showAlert(String title, String message) {
+    
+    public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
         alert.setContentText(message);
