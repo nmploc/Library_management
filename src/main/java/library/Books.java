@@ -59,4 +59,3 @@ public class Books {
         this.coverImageUrl = coverImageUrl;
     }
 }
-;
