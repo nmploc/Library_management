@@ -460,7 +460,6 @@ public class BooksController extends Controller {
             Books selectedBook = apiBooksTable.getSelectionModel().getSelectedItem();
             if (selectedBook != null) {
                 addBookFromAPI(selectedBook);
-                showAlert("Success", "Book added to the database successfully.");
             }
         });
 
@@ -471,32 +470,6 @@ public class BooksController extends Controller {
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
         dialog.showAndWait();
-    }
-
-    private boolean ensureCategoryExists(String category) {
-        try (Connection connection = DatabaseHelper.getConnection()) {
-            // Kiểm tra xem category đã tồn tại hay chưa
-            String checkQuery = "SELECT COUNT(*) FROM Category WHERE name = ?";
-            try (PreparedStatement checkStmt = connection.prepareStatement(checkQuery)) {
-                checkStmt.setString(1, category);
-                ResultSet resultSet = checkStmt.executeQuery();
-                if (resultSet.next() && resultSet.getInt(1) > 0) {
-                    return true; // Category đã tồn tại
-                }
-            }
-
-            // Nếu chưa tồn tại, thêm category vào database
-            String insertQuery = "INSERT INTO Category (name) VALUES (?)";
-            try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
-                insertStmt.setString(1, category);
-                insertStmt.executeUpdate();
-            }
-
-            return true; // Thêm thành công
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false; // Có lỗi xảy ra
-        }
     }
 
     public void addBookFromAPI(Books book) {
@@ -571,7 +544,7 @@ public class BooksController extends Controller {
                         insertDocumentStmt.setInt(4, quantity);
 
                         insertDocumentStmt.executeUpdate();
-                        //showAlert("Thành công", "Sách đã được thêm vào cơ sở dữ liệu.");
+                        showAlert("Success", "Book added to the database successfully.");
                     }
 
                 } catch (SQLException e) {
