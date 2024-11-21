@@ -10,9 +10,36 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 public class GoogleBooksService {
 
+    // Changed the thread pool size to 5
+    private static final ExecutorService executor = Executors.newFixedThreadPool(5); // Create a thread pool with 5 threads
+
+    // Method to fetch books concurrently based on different queries
+    public static ObservableList<Books> searchBooksConcurrently(String... queries) throws InterruptedException, ExecutionException {
+        // A list to store Future objects that represent the results of each task
+        List<Future<ObservableList<Books>>> futures = new ArrayList<>();
+
+        // Submit tasks for each query
+        for (String query : queries) {
+            futures.add(executor.submit(() -> searchBooks(query)));
+        }
+
+        ObservableList<Books> allBooksList = FXCollections.observableArrayList();
+
+        // Wait for all tasks to complete and merge the results
+        for (Future<ObservableList<Books>> future : futures) {
+            allBooksList.addAll(future.get()); // Collect the results
+        }
+
+        return allBooksList;
+    }
+
+    // Method to fetch books using a single query (unchanged)
     public static ObservableList<Books> searchBooks(String query) {
         ObservableList<Books> apiBooksList = FXCollections.observableArrayList();
         String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=" + query;
@@ -41,6 +68,7 @@ public class GoogleBooksService {
         return apiBooksList;
     }
 
+    // Method to parse the API response and create Books objects (unchanged)
     public static ObservableList<Books> parseAPIResponse(String jsonResponse) {
         ObservableList<Books> apiBooksList = FXCollections.observableArrayList();
 
@@ -61,7 +89,12 @@ public class GoogleBooksService {
 
                     String coverImageUrl = null;
                     if (volumeInfo.has("imageLinks")) {
-                        coverImageUrl = volumeInfo.getJSONObject("imageLinks").optString("thumbnail", null);
+                        JSONObject imageLinks = volumeInfo.getJSONObject("imageLinks");
+                        // Prefer high-quality images if available
+                        coverImageUrl = imageLinks.optString("medium", null); // Medium-resolution
+                        if (coverImageUrl == null) {
+                            coverImageUrl = imageLinks.optString("thumbnail", null); // Default resolution
+                        }
                     }
 
                     apiBooksList.add(new Books(0, title, authors, category, 0, coverImageUrl));
@@ -72,5 +105,10 @@ public class GoogleBooksService {
         }
 
         return apiBooksList;
+    }
+
+    // Shutdown the executor when it's no longer needed
+    public static void shutdownExecutor() {
+        executor.shutdown();
     }
 }

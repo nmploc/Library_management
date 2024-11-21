@@ -412,7 +412,10 @@ public class BooksController extends Controller {
                 if (empty || coverImageUrl == null) {
                     setGraphic(null);
                 } else {
-                    imageView.setImage(new Image(coverImageUrl, true));
+                    // Prioritize high-resolution cover image
+                    String highResCoverImageUrl = getTableView().getItems().get(getIndex()).getHighResCoverImageUrl();
+                    String displayUrl = (highResCoverImageUrl != null) ? highResCoverImageUrl : coverImageUrl;
+                    imageView.setImage(new Image(displayUrl, true));
                     setGraphic(imageView);
                 }
             }
