@@ -14,8 +14,10 @@ import javafx.scene.control.Button;
 
 import java.net.URL;
 import java.sql.*;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Scanner;
 
 public class BooksController extends Controller {
     @FXML
@@ -154,7 +156,6 @@ public class BooksController extends Controller {
 
         TextField titleField = new TextField();
         titleField.setPromptText("Title");
-
         TextField authorField = new TextField();
         authorField.setPromptText("Author");
 
@@ -364,7 +365,6 @@ public class BooksController extends Controller {
             pstmt.setString(1, "%" + searchQuery + "%");
             pstmt.setString(2, "%" + searchQuery + "%");
             pstmt.setString(3, "%" + searchQuery + "%");
-
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 Books book = new Books(
@@ -402,7 +402,7 @@ public class BooksController extends Controller {
             private final ImageView imageView = new ImageView();
 
             {
-                imageView.setFitWidth(50); // Adjust image size
+                imageView.setFitWidth(50);
                 imageView.setFitHeight(70);
             }
 
@@ -435,22 +435,155 @@ public class BooksController extends Controller {
             }
         });
 
-        // Create and show the dialog
+        // Create dialog
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Results from API");
 
-        // Add the table to the dialog content
-        dialog.getDialogPane().setContent(apiBooksTable);
+        VBox vbox = new VBox(10);
+        vbox.getChildren().add(apiBooksTable);
 
-        // Set dialog size and allow resizing
+        // Add "Add to Database" button
+        Button addButton = new Button("Add to Database");
+        addButton.setDisable(true); // Disable initially
+        vbox.getChildren().add(addButton);
+
+        // Enable the button only when a book is selected
+        apiBooksTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            addButton.setDisable(newSelection == null);
+        });
+
+        // Handle "Add to Database" button action
+        addButton.setOnAction(event -> {
+            Books selectedBook = apiBooksTable.getSelectionModel().getSelectedItem();
+            if (selectedBook != null) {
+                addBookFromAPI(selectedBook);
+                showAlert("Success", "Book added to the database successfully.");
+            }
+        });
+
+        // Set dialog content and properties
+        dialog.getDialogPane().setContent(vbox);
         dialog.setResizable(true);
-        dialog.getDialogPane().setPrefSize(800, 600); // Set larger initial size for the dialog
-
-        // Add a close button to the dialog
+        dialog.getDialogPane().setPrefSize(800, 600);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
         dialog.showAndWait();
     }
+
+    private boolean ensureCategoryExists(String category) {
+        try (Connection connection = DatabaseHelper.getConnection()) {
+            // Kiểm tra xem category đã tồn tại hay chưa
+            String checkQuery = "SELECT COUNT(*) FROM Category WHERE name = ?";
+            try (PreparedStatement checkStmt = connection.prepareStatement(checkQuery)) {
+                checkStmt.setString(1, category);
+                ResultSet resultSet = checkStmt.executeQuery();
+                if (resultSet.next() && resultSet.getInt(1) > 0) {
+                    return true; // Category đã tồn tại
+                }
+            }
+
+            // Nếu chưa tồn tại, thêm category vào database
+            String insertQuery = "INSERT INTO Category (name) VALUES (?)";
+            try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
+                insertStmt.setString(1, category);
+                insertStmt.executeUpdate();
+            }
+
+            return true; // Thêm thành công
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // Có lỗi xảy ra
+        }
+    }
+
+    public void addBookFromAPI(Books book) {
+        // Tạo một hộp thoại tùy chỉnh để yêu cầu người dùng nhập số lượng sách
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Nhập số lượng");
+        dialog.setHeaderText("Nhập số lượng sách bạn muốn thêm:");
+
+        // Tạo một TextField để người dùng nhập số lượng
+        TextField quantityField = new TextField();
+        quantityField.setPromptText("Số lượng");
+
+        // Tạo một layout để chứa TextField
+        VBox vbox = new VBox(10);
+        vbox.getChildren().add(quantityField);
+
+        // Thiết lập nội dung cho hộp thoại
+        dialog.getDialogPane().setContent(vbox);
+
+        // Thêm nút "OK" và "Cancel" vào hộp thoại
+        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType("Hủy", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+
+        // Chờ đợi phản hồi từ người dùng
+        Optional<ButtonType> result = dialog.showAndWait();
+
+        // Xử lý khi người dùng nhấn nút "OK"
+        if (result.isPresent() && result.get() == okButton) {
+            try {
+                int quantity = Integer.parseInt(quantityField.getText().trim());
+
+                // Kiểm tra số lượng hợp lệ
+                if (quantity <= 0) {
+                    showAlert("Số lượng không hợp lệ", "Vui lòng nhập một số lượng hợp lệ.");
+                    return;
+                }
+
+                // Tiến hành thêm sách với số lượng đã nhập
+                try (Connection connection = DatabaseHelper.getConnection()) {
+                    // Kiểm tra danh mục và thêm vào cơ sở dữ liệu như trước...
+                    String categoryQuery = "SELECT categoryID FROM categories WHERE categoryName = ?";
+                    PreparedStatement checkCategoryStmt = connection.prepareStatement(categoryQuery);
+                    checkCategoryStmt.setString(1, book.getCategory());
+                    ResultSet categoryResult = checkCategoryStmt.executeQuery();
+
+                    int categoryID;
+                    if (categoryResult.next()) {
+                        categoryID = categoryResult.getInt("categoryID");
+                    } else {
+                        // Thêm danh mục mới nếu chưa tồn tại
+                        String insertCategoryQuery = "INSERT INTO categories (categoryName) VALUES (?)";
+                        try (PreparedStatement insertCategoryStmt = connection.prepareStatement(insertCategoryQuery, Statement.RETURN_GENERATED_KEYS)) {
+                            insertCategoryStmt.setString(1, book.getCategory());
+                            insertCategoryStmt.executeUpdate();
+
+                            ResultSet generatedKeys = insertCategoryStmt.getGeneratedKeys();
+                            if (generatedKeys.next()) {
+                                categoryID = generatedKeys.getInt(1);
+                            } else {
+                                throw new SQLException("Không thể thêm danh mục mới.");
+                            }
+                        }
+                    }
+
+                    // Thêm sách vào bảng documents
+                    String insertDocumentQuery = "INSERT INTO documents (documentName, categoryID, authors, quantity) VALUES (?, ?, ?, ?)";
+                    try (PreparedStatement insertDocumentStmt = connection.prepareStatement(insertDocumentQuery)) {
+                        insertDocumentStmt.setString(1, book.getDocumentName());
+                        insertDocumentStmt.setInt(2, categoryID);
+                        insertDocumentStmt.setString(3, book.getAuthors());
+                        insertDocumentStmt.setInt(4, quantity);
+
+                        insertDocumentStmt.executeUpdate();
+                        //showAlert("Thành công", "Sách đã được thêm vào cơ sở dữ liệu.");
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    showAlert("Lỗi cơ sở dữ liệu", "Có lỗi khi thêm sách vào cơ sở dữ liệu.");
+                }
+
+            } catch (NumberFormatException e) {
+                showAlert("Lỗi nhập liệu", "Vui lòng nhập một số hợp lệ cho số lượng.");
+            }
+        }
+    }
+
+
+
 
     public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
