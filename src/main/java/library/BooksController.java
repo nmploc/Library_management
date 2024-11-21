@@ -75,20 +75,50 @@ public class BooksController extends Controller {
     }
 
     @FXML
-    private void openBookDetail(Books book) {
-        if (book == null) {
-            showAlert("No Selection", "Please select a book.");
+    private void openBookDetail(Books selectedBook) {
+        if (selectedBook == null) {
+            showAlert("No Selection", "Please select a book to view details.");
             return;
         }
 
-        // Load the book detail scene into the content pane
-        loadFXMLtoAnchorPane("showBookDetail", contentPane, book);
+        // Create a dialog for showing book details
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Book Details");
+        dialog.setHeaderText("Details of the selected book");
+
+        // Create a content layout with book details
+        VBox vbox = new VBox(10);
+        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Add padding and center content
+
+        vbox.getChildren().addAll(
+                new Label("Title: " + selectedBook.getDocumentName()),
+                new Label("Author: " + selectedBook.getAuthors()),
+                new Label("Category: " + selectedBook.getCategory()),
+                new Label("Quantity: " + selectedBook.getQuantity())
+        );
+
+        // If a cover image URL is available, display the image
+        if (selectedBook.getCoverImageUrl() != null && !selectedBook.getCoverImageUrl().isEmpty()) {
+            ImageView coverImageView = new ImageView(new Image(selectedBook.getCoverImageUrl()));
+            coverImageView.setFitHeight(300); // Set preferred image size
+            coverImageView.setFitWidth(200);
+            coverImageView.setPreserveRatio(true);
+            vbox.getChildren().add(coverImageView);
+        }
+
+        // Add the VBox to the dialog
+        dialog.getDialogPane().setContent(vbox);
+
+        // Set dialog size and allow resizing
+        dialog.setResizable(true);
+        dialog.getDialogPane().setPrefSize(500, 600); // Set initial size
+
+        // Add a close button to the dialog
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        // Show the dialog
+        dialog.showAndWait();
     }
-
-    private void loadFXMLtoAnchorPane(String fxmlFile, AnchorPane contentPane, Books book) {
-    }
-
-
 
     private void loadBooksData() {
         booksList = FXCollections.observableArrayList();
@@ -354,8 +384,9 @@ public class BooksController extends Controller {
     }
 
     private void showBooksFromAPI(ObservableList<Books> apiBooksList) {
-        {TableView<Books> apiBooksTable = new TableView<>(apiBooksList);
+        TableView<Books> apiBooksTable = new TableView<>(apiBooksList);
 
+        // Define table columns
         TableColumn<Books, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("documentName"));
 
@@ -387,16 +418,38 @@ public class BooksController extends Controller {
             }
         });
 
+        // Add columns to the table
         apiBooksTable.getColumns().addAll(coverColumn, titleColumn, authorColumn, categoryColumn);
         apiBooksTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
+        // Add event handlers for double-click and Enter key
+        apiBooksTable.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                openBookDetail(apiBooksTable.getSelectionModel().getSelectedItem());
+            }
+        });
+
+        apiBooksTable.setOnKeyPressed(event -> {
+            if (event.getCode().toString().equals("ENTER")) {
+                openBookDetail(apiBooksTable.getSelectionModel().getSelectedItem());
+            }
+        });
+
+        // Create and show the dialog
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Results from API");
+
+        // Add the table to the dialog content
         dialog.getDialogPane().setContent(apiBooksTable);
+
+        // Set dialog size and allow resizing
         dialog.setResizable(true);
+        dialog.getDialogPane().setPrefSize(800, 600); // Set larger initial size for the dialog
+
+        // Add a close button to the dialog
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
         dialog.showAndWait();
-        }
     }
 
     public void showAlert(String title, String message) {
