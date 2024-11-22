@@ -107,6 +107,24 @@ public class BooksController extends Controller {
             vbox.getChildren().add(coverImageView);
         }
 
+        // Generate QR code for the book details
+        try {
+            String tempQRCodePath = "temp_qr_code.png"; // Temporary path for the QR code image
+            QRCodeGenerator.generateQRCode(selectedBook, tempQRCodePath); // Generate QR code using the class
+
+            // Load the QR code image
+            ImageView qrCodeView = new ImageView(new Image("file:" + tempQRCodePath));
+            qrCodeView.setFitHeight(200); // Set QR code image size
+            qrCodeView.setFitWidth(200);
+            qrCodeView.setPreserveRatio(true);
+
+            // Add the QR code image to the dialog content
+            vbox.getChildren().add(new Label("QR Code:"));
+            vbox.getChildren().add(qrCodeView);
+        } catch (Exception e) {
+            showAlert("QR Code Error", "Failed to generate QR code: " + e.getMessage());
+        }
+
         // Add the VBox to the dialog
         dialog.getDialogPane().setContent(vbox);
 
