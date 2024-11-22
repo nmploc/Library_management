@@ -17,7 +17,6 @@ import java.sql.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.Scanner;
 
 public class BooksController extends Controller {
     @FXML
@@ -558,8 +557,6 @@ public class BooksController extends Controller {
             }
         }
     }
-
-
 
 
     public void showAlert(String title, String message) {
