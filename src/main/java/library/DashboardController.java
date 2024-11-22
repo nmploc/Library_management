@@ -1,6 +1,10 @@
 package library;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.chart.PieChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -15,6 +19,7 @@ import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 public class DashboardController extends Controller {
+
     @FXML
     private VBox VBoxTotalBooks;
 
@@ -36,6 +41,15 @@ public class DashboardController extends Controller {
     @FXML
     private TableColumn<CategoryBookCount, Integer> totalBooksColumn;
 
+    @FXML
+    private VBox pieChartVBox;
+
+    @FXML
+    private PieChart booksPieChart;
+
+    @FXML
+    private Button btnViewDetailsBooks;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         DatabaseHelper.connectToDatabase();
@@ -44,8 +58,17 @@ public class DashboardController extends Controller {
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
         totalBooksColumn.setCellValueFactory(new PropertyValueFactory<>("totalBooks"));
 
+        // Load total books and users
         loadTotalBooksAndUsers();
+
+        // Load category book counts
         loadCategoryBookCounts();
+
+        // Initially hide the pie chart and its title
+        pieChartVBox.setVisible(false);
+
+        // Add event handler for the "View Details" button
+        btnViewDetailsBooks.setOnAction(event -> showBooksPieChart());
     }
 
     private void loadTotalBooksAndUsers() {
@@ -87,14 +110,33 @@ public class DashboardController extends Controller {
              PreparedStatement statement = connection.prepareStatement(categoryBookCountQuery);
              ResultSet resultSet = statement.executeQuery()) {
 
+            ObservableList<CategoryBookCount> categoryBookCounts = FXCollections.observableArrayList();
+
             while (resultSet.next()) {
                 String categoryName = resultSet.getString("categoryName");
                 int totalBooks = resultSet.getInt("totalBooks");
-                categoryTable.getItems().add(new CategoryBookCount(categoryName, totalBooks));
+                categoryBookCounts.add(new CategoryBookCount(categoryName, totalBooks));
             }
+
+            categoryTable.setItems(categoryBookCounts);
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private void showBooksPieChart() {
+        // Make the pie chart and its title visible
+        pieChartVBox.setVisible(true);
+
+        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+
+        // Add the data for the pie chart
+        for (CategoryBookCount categoryBookCount : categoryTable.getItems()) {
+            pieChartData.add(new PieChart.Data(categoryBookCount.getCategoryName(), categoryBookCount.getTotalBooks()));
+        }
+
+        // Set the data for the pie chart
+        booksPieChart.setData(pieChartData);
     }
 }
