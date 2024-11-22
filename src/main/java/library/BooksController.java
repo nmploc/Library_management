@@ -471,6 +471,7 @@ public class BooksController extends Controller {
 
         dialog.showAndWait();
     }
+    
 
     public void addBookFromAPI(Books book) {
         // Tạo một hộp thoại tùy chỉnh để yêu cầu người dùng nhập số lượng sách
