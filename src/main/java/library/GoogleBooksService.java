@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -39,12 +41,14 @@ public class GoogleBooksService {
         return allBooksList;
     }
 
-    // Method to fetch books using a single query (unchanged)
+    // Method to fetch books using a single query (updated with URL encoding fix)
     public static ObservableList<Books> searchBooks(String query) {
         ObservableList<Books> apiBooksList = FXCollections.observableArrayList();
-        String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=" + query;
-
         try {
+            // Encode the query
+            String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
+            String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=" + encodedQuery;
+
             HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
             connection.setRequestMethod("GET");
 

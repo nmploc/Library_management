@@ -12,14 +12,14 @@ import java.nio.file.Path;
 
 public class QRCodeGenerator {
 
-    // Method to generate a QR code for book data without ID
     public static void generateQRCode(Books book, String filePath) {
-        // Concatenate book details into a single string (excluding ID)
-        String qrCodeData = "Book Details:\n" +
-                "Name: " + book.getDocumentName() + "\n" +
-                "Authors: " + book.getAuthors() + "\n" +
-                "Category: " + book.getCategory() + "\n" +
-                "Quantity: " + book.getQuantity();
+        // Concatenate book details into a single formatted string
+        String qrCodeData = "====== Book Details ======\n" + "|" +
+                "Name      : " + book.getDocumentName() + "\n" + " |" +
+                "Authors   : " + book.getAuthors() + "\n" + " |" +
+                "Category  : " + book.getCategory() + "\n" + " |" +
+                "Quantity  : " + book.getQuantity() + "\n" + " |" +
+                "==========================";
 
         int width = 300;  // Width of the QR code
         int height = 300; // Height of the QR code

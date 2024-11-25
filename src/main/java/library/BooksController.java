@@ -4,6 +4,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
@@ -401,6 +403,7 @@ public class BooksController extends Controller {
     }
 
     private void showBooksFromAPI(ObservableList<Books> apiBooksList) {
+        // Create a new TableView
         TableView<Books> apiBooksTable = new TableView<>(apiBooksList);
 
         // Define table columns
@@ -455,10 +458,11 @@ public class BooksController extends Controller {
             }
         });
 
-        // Create dialog
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Results from API");
+        // Create a new Stage (window)
+        Stage newWindow = new Stage();
+        newWindow.setTitle("Results from API");
 
+        // Create a VBox layout to hold the TableView and Button
         VBox vbox = new VBox(10);
         vbox.getChildren().add(apiBooksTable);
 
@@ -480,15 +484,11 @@ public class BooksController extends Controller {
             }
         });
 
-        // Set dialog content and properties
-        dialog.getDialogPane().setContent(vbox);
-        dialog.setResizable(true);
-        dialog.getDialogPane().setPrefSize(800, 600);
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-
-        dialog.showAndWait();
+        // Set up the scene and show the new window
+        Scene scene = new Scene(vbox, 800, 600);
+        newWindow.setScene(scene);
+        newWindow.show();
     }
-    
 
     public void addBookFromAPI(Books book) {
         // Tạo một hộp thoại tùy chỉnh để yêu cầu người dùng nhập số lượng sách
@@ -575,7 +575,6 @@ public class BooksController extends Controller {
             }
         }
     }
-
 
     public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
