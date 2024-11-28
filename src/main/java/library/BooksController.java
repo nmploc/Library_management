@@ -1,9 +1,12 @@
 package library;
 
 import javafx.collections.FXCollections;
-import javafx.collections.transformation.FilteredList;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
+import javafx.stage.Stage;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
@@ -82,15 +85,15 @@ public class BooksController extends Controller {
             return;
         }
 
-        // Create a dialog for showing book details
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Book Details");
-        dialog.setHeaderText("Details of the selected book");
+        // Create a new Stage (window) for showing book details
+        Stage detailWindow = new Stage();
+        detailWindow.setTitle("Book Details");
 
-        // Create a content layout with book details
+        // Create a VBox layout for the book details
         VBox vbox = new VBox(10);
         vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Add padding and center content
 
+        // Add book details to the VBox
         vbox.getChildren().addAll(
                 new Label("Title: " + selectedBook.getDocumentName()),
                 new Label("Author: " + selectedBook.getAuthors()),
@@ -118,25 +121,19 @@ public class BooksController extends Controller {
             qrCodeView.setFitWidth(200);
             qrCodeView.setPreserveRatio(true);
 
-            // Add the QR code image to the dialog content
+            // Add the QR code image to the layout
             vbox.getChildren().add(new Label("QR Code:"));
             vbox.getChildren().add(qrCodeView);
         } catch (Exception e) {
             showAlert("QR Code Error", "Failed to generate QR code: " + e.getMessage());
         }
 
-        // Add the VBox to the dialog
-        dialog.getDialogPane().setContent(vbox);
+        // Create a scene with the VBox as the root node
+        Scene detailScene = new Scene(vbox, 500, 700);
+        detailWindow.setScene(detailScene);
 
-        // Set dialog size and allow resizing
-        dialog.setResizable(true);
-        dialog.getDialogPane().setPrefSize(500, 600); // Set initial size
-
-        // Add a close button to the dialog
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-
-        // Show the dialog
-        dialog.showAndWait();
+        // Show the window
+        detailWindow.show();
     }
 
     private void loadBooksData() {
@@ -165,14 +162,14 @@ public class BooksController extends Controller {
 
     @FXML
     private void handleAddBook() {
-        Dialog<Books> dialog = new Dialog<>();
-        dialog.setTitle("Add Book");
+        // Create a new Stage (window) for the "Add Book" form
+        Stage addBookWindow = new Stage();
+        addBookWindow.setTitle("Add Book");
 
-        ButtonType addButtonType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
-
+        // Create TextField fields for book details
         TextField titleField = new TextField();
         titleField.setPromptText("Title");
+
         TextField authorField = new TextField();
         authorField.setPromptText("Author");
 
@@ -182,34 +179,54 @@ public class BooksController extends Controller {
         TextField quantityField = new TextField();
         quantityField.setPromptText("Quantity");
 
-        VBox vbox = new VBox(10);
-        vbox.getChildren().addAll(
-                new Label("Title:"), titleField,
-                new Label("Author:"), authorField,
-                new Label("Category:"), categoryField,
-                new Label("Quantity:"), quantityField
-        );
-        dialog.getDialogPane().setContent(vbox);
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == addButtonType) {
-                if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
-                        categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
-                    showAlert("Input Error", "Please fill in all fields.");
-                    return null;
-                }
+        // Create a "Submit" button
+        Button addButton = new Button("Add");
+        addButton.setOnAction(event -> {
+            // Handle the form submission
+            if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
+                    categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
+                showAlert("Input Error", "Please fill in all fields.");
+            } else {
                 String title = titleField.getText();
                 String authors = authorField.getText();
                 String category = categoryField.getText();
                 int quantity = Integer.parseInt(quantityField.getText());
 
-                return new Books(0, title, authors, category, quantity);
+                // Create a new book object
+                Books newBook = new Books(0, title, authors, category, quantity);
+                addBookToDatabase(newBook);  // Add book to database
+
+                // Close the window after submission
+                addBookWindow.close();
             }
-            return null;
         });
 
-        Optional<Books> result = dialog.showAndWait();
-        result.ifPresent(this::addBookToDatabase);
+        // Create a "Cancel" button to close the window
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setOnAction(event -> addBookWindow.close());
+
+        // Create an HBox for the buttons to appear in the same row
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(addButton, cancelButton);
+
+        // Create a VBox layout to hold the form fields and buttons
+        VBox vbox = new VBox(10);
+        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Padding and centering
+        vbox.getChildren().addAll(
+                titleField,
+                authorField,
+                categoryField,
+                quantityField,
+                buttonBox // Add the buttons in the same row
+        );
+
+        // Create a scene with the VBox and set it on the new window
+        Scene scene = new Scene(vbox, 260, 320);
+        addBookWindow.setScene(scene);
+
+        // Show the window
+        addBookWindow.show();
     }
 
     private void addBookToDatabase(Books newBook) {
@@ -236,37 +253,59 @@ public class BooksController extends Controller {
             return;
         }
 
-        Dialog<Books> dialog = new Dialog<>();
-        dialog.setTitle("Edit Book");
+        // Create a new Stage (window) for editing the book
+        Stage editBookWindow = new Stage();
+        editBookWindow.setTitle("Edit Book");
 
-        ButtonType editButtonType = new ButtonType("Edit", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(editButtonType, ButtonType.CANCEL);
-
+        // Create TextFields pre-filled with the selected book's details
         TextField titleField = new TextField(selectedBook.getDocumentName());
         TextField authorField = new TextField(selectedBook.getAuthors());
         TextField categoryField = new TextField(selectedBook.getCategory());
         TextField quantityField = new TextField(String.valueOf(selectedBook.getQuantity()));
 
-        VBox vbox = new VBox(10);
-        vbox.getChildren().addAll(new Label("Title:"), titleField, new Label("Author:"), authorField,
-                new Label("Category:"), categoryField, new Label("Quantity:"), quantityField);
-        dialog.getDialogPane().setContent(vbox);
+        // Create the "Save" button to apply changes
+        Button saveButton = new Button("Save");
+        saveButton.setOnAction(event -> {
+            // Validate input fields
+            if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
+                    categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
+                showAlert("Input Error", "Please fill in all fields.");
+            } else {
+                // Create a new Books object with updated information
+                String title = titleField.getText();
+                String authors = authorField.getText();
+                String category = categoryField.getText();
+                int quantity = Integer.parseInt(quantityField.getText());
 
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == editButtonType) {
-                if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
-                        categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
-                    showAlert("Input Error", "Please fill in all fields.");
-                    return null;
-                }
-                return new Books(selectedBook.getDocumentID(), titleField.getText(), authorField.getText(),
-                        categoryField.getText(), Integer.parseInt(quantityField.getText()));
+                Books updatedBook = new Books(selectedBook.getDocumentID(), title, authors, category, quantity);
+                updateBookInDatabase(updatedBook);  // Update book in the database
+
+                // Close the window after saving
+                editBookWindow.close();
             }
-            return null;
         });
 
-        Optional<Books> result = dialog.showAndWait();
-        result.ifPresent(this::updateBookInDatabase);
+        // Create a "Cancel" button to close the window without saving
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setOnAction(event -> editBookWindow.close());
+
+        // Create a VBox layout to hold the form and buttons
+        VBox vbox = new VBox(10);
+        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Padding and centering
+        vbox.getChildren().addAll(
+                new Label("Title:"), titleField,
+                new Label("Author:"), authorField,
+                new Label("Category:"), categoryField,
+                new Label("Quantity:"), quantityField,
+                saveButton, cancelButton
+        );
+
+        // Create a scene with the VBox and set it on the new window
+        Scene scene = new Scene(vbox, 400, 300);
+        editBookWindow.setScene(scene);
+
+        // Show the window
+        editBookWindow.show();
     }
 
     private void updateBookInDatabase(Books updatedBook) {
@@ -294,15 +333,35 @@ public class BooksController extends Controller {
             return;
         }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Delete Confirmation");
-        alert.setHeaderText("Are you sure you want to delete this book?");
-        alert.setContentText(selectedBook.getDocumentName());
+        // Create a new Stage for the delete confirmation
+        Stage deleteConfirmationWindow = new Stage();
+        deleteConfirmationWindow.setTitle("Delete Confirmation");
 
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            deleteBookFromDatabase(selectedBook.getDocumentID());
-        }
+        // Create a label with the book's name
+        Label confirmationLabel = new Label("Are you sure you want to delete the following book?");
+        Label bookNameLabel = new Label(selectedBook.getDocumentName());
+
+        // Create "Delete" and "Cancel" buttons
+        Button deleteButton = new Button("Delete");
+        deleteButton.setOnAction(event -> {
+            deleteBookFromDatabase(selectedBook.getDocumentID());  // Delete the book
+            deleteConfirmationWindow.close();  // Close the confirmation window
+        });
+
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setOnAction(event -> deleteConfirmationWindow.close());  // Close the window without deleting
+
+        // Create a VBox layout to arrange the labels and buttons
+        VBox vbox = new VBox(10);
+        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Padding and centering
+        vbox.getChildren().addAll(confirmationLabel, bookNameLabel, deleteButton, cancelButton);
+
+        // Create a Scene and set it on the window
+        Scene scene = new Scene(vbox, 300, 200);
+        deleteConfirmationWindow.setScene(scene);
+
+        // Show the delete confirmation window
+        deleteConfirmationWindow.show();
     }
 
     private void deleteBookFromDatabase(int documentID) {
@@ -401,6 +460,7 @@ public class BooksController extends Controller {
     }
 
     private void showBooksFromAPI(ObservableList<Books> apiBooksList) {
+        // Create a new TableView
         TableView<Books> apiBooksTable = new TableView<>(apiBooksList);
 
         // Define table columns
@@ -455,10 +515,11 @@ public class BooksController extends Controller {
             }
         });
 
-        // Create dialog
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Results from API");
+        // Create a new Stage (window)
+        Stage newWindow = new Stage();
+        newWindow.setTitle("Results from API");
 
+        // Create a VBox layout to hold the TableView and Button
         VBox vbox = new VBox(10);
         vbox.getChildren().add(apiBooksTable);
 
@@ -480,15 +541,11 @@ public class BooksController extends Controller {
             }
         });
 
-        // Set dialog content and properties
-        dialog.getDialogPane().setContent(vbox);
-        dialog.setResizable(true);
-        dialog.getDialogPane().setPrefSize(800, 600);
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-
-        dialog.showAndWait();
+        // Set up the scene and show the new window
+        Scene scene = new Scene(vbox, 800, 600);
+        newWindow.setScene(scene);
+        newWindow.show();
     }
-    
 
     public void addBookFromAPI(Books book) {
         // Tạo một hộp thoại tùy chỉnh để yêu cầu người dùng nhập số lượng sách
@@ -575,7 +632,6 @@ public class BooksController extends Controller {
             }
         }
     }
-
 
     public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
