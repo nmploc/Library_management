@@ -52,9 +52,12 @@
                </children>
             </VBox>
 
-            <!-- VBox for Pie Chart (initially hidden) -->
-            <VBox fx:id="pieChartVBox" alignment="CENTER" spacing="20" prefWidth="500" prefHeight="400" visible="false">
-               <PieChart fx:id="booksPieChart" prefWidth="400" prefHeight="400"/>
+            <!-- VBox for Pie Chart -->
+            <VBox fx:id="pieChartVBox" alignment="CENTER" spacing="20" prefWidth="500" prefHeight="400">
+               <children>
+                  <PieChart fx:id="booksPieChart" prefWidth="400" prefHeight="400"/>
+                  <Label text="Books Distribution By Category" style="-fx-font-size: 16px;"/>
+               </children>
             </VBox>
          </children>
       </HBox>
