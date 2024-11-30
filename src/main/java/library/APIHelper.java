@@ -339,8 +339,4 @@ public class APIHelper {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    // Shutdown the executor when it's no longer needed
-    public static void shutdownExecutor() {
-        executor.shutdown();
-    }
 }
