@@ -25,7 +25,7 @@ import java.sql.*;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-public class APIHelper {
+public class APIHelper  {
 
     private static final ExecutorService executor = Executors.newFixedThreadPool(5); // Create a thread pool with 5 threads
 
@@ -292,14 +292,13 @@ public class APIHelper {
         detailWindow.setTitle("Book Details");
 
         // Create an HBox layout for the entire scene
-        HBox hbox = new HBox(20); // Set spacing between the left and right sections
+        HBox hbox = new HBox(20); // Set spacing between sections
         hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Add padding and center content
 
-        // Create the left side (VBox for book information and QR code)
+        // Left section: Book details and QR code
         VBox leftVBox = new VBox(10);
         leftVBox.setStyle("-fx-alignment: top-left;");
 
-        // Add book details to the left VBox
         leftVBox.getChildren().addAll(
                 new Label("Title: " + selectedBook.getDocumentName()),
                 new Label("Author: " + selectedBook.getAuthors()),
@@ -308,59 +307,59 @@ public class APIHelper {
                 new Label("ISBN: " + selectedBook.getIsbn()) // Display ISBN
         );
 
-        // Create a VBox for QR code (positioned below the book info)
+        // QR code section
         VBox qrVBox = new VBox(10);
         try {
             String tempQRCodePath = "temp_qr_code.png"; // Temporary path for the QR code image
             QRCodeGenerator.generateQRCode(selectedBook, tempQRCodePath); // Generate QR code using the class
 
-            // Load the QR code image
             ImageView qrCodeView = new ImageView(new Image("file:" + tempQRCodePath));
-            qrCodeView.setFitHeight(160); // Set QR code size smaller
+            qrCodeView.setFitHeight(160);
             qrCodeView.setFitWidth(160);
             qrCodeView.setPreserveRatio(true);
 
-            // Add the QR code image to the QR VBox
             qrVBox.getChildren().add(new Label("QR Code:"));
             qrVBox.getChildren().add(qrCodeView);
         } catch (Exception e) {
+            qrVBox.getChildren().add(new Label("QR Code unavailable."));
             showAlert("QR Code Error", "Failed to generate QR code: " + e.getMessage());
         }
-
-        // Add the QR VBox below the information in the left VBox
         leftVBox.getChildren().add(qrVBox);
 
-        // Create the middle section (for the description)
+        // Middle section: Description
         TextArea descriptionArea = new TextArea();
         descriptionArea.setText(selectedBook.getDescription() != null ? selectedBook.getDescription() : "No description available");
-        descriptionArea.setWrapText(true); // Enable text wrapping
-        descriptionArea.setEditable(false); // Make the TextArea non-editable
-        descriptionArea.setPrefHeight(250); // Set a preferred height for the TextArea
-        descriptionArea.setPrefWidth(200); // Make description thinner
+        descriptionArea.setWrapText(true);
+        descriptionArea.setEditable(false);
+        descriptionArea.setPrefHeight(250);
+        descriptionArea.setPrefWidth(200);
 
         VBox descriptionVBox = new VBox(10);
         descriptionVBox.getChildren().addAll(new Label("Description:"), descriptionArea);
 
-        // Create the right side (for the cover image)
+        // Right section: Cover image
         VBox rightVBox = new VBox(10);
-        rightVBox.setStyle("-fx-alignment: top-right;");
+        rightVBox.setStyle("-fx-padding: 28px;-fx-alignment: top-right;");
 
-        // If a cover image URL is available, display the image
         if (selectedBook.getCoverImageUrl() != null && !selectedBook.getCoverImageUrl().isEmpty()) {
-            ImageView coverImageView = new ImageView(new Image(selectedBook.getCoverImageUrl()));
-            coverImageView.setFitHeight(260); // Set preferred image size
-            coverImageView.setFitWidth(260);
-            coverImageView.setPreserveRatio(true);
-
-            // Add cover image to the right VBox
-            rightVBox.getChildren().add(coverImageView);
+            try {
+                ImageView coverImageView = new ImageView(new Image(selectedBook.getCoverImageUrl()));
+                coverImageView.setFitHeight(260);
+                coverImageView.setFitWidth(260);
+                coverImageView.setPreserveRatio(true);
+                rightVBox.getChildren().add(coverImageView);
+            } catch (Exception e) {
+                rightVBox.getChildren().add(new Label("Cover image unavailable."));
+            }
+        } else {
+            rightVBox.getChildren().add(new Label("No cover image available."));
         }
 
-        // Add all the sections to the HBox
+        // Add all sections to the HBox
         hbox.getChildren().addAll(leftVBox, descriptionVBox, rightVBox);
 
         // Create a scene with the HBox as the root node
-        Scene detailScene = new Scene(hbox, 700, 400); // Adjust size as needed
+        Scene detailScene = new Scene(hbox, 700, 400);
         detailWindow.setScene(detailScene);
 
         // Show the window

@@ -25,7 +25,7 @@ public class BooksController extends Controller {
     private TableView<Books> booksTable;
 
     @FXML
-    private Button addBookButton, editBookButton, deleteBookButton, findBookButton;
+    private Button addBookButton, editBookButton, deleteBookButton, findBookButton, findByAPiButton;
 
     @FXML
     private TextField searchField;
@@ -64,6 +64,7 @@ public class BooksController extends Controller {
 
         // Button actions
         findBookButton.setOnAction(event -> handleFindBook());
+        findByAPiButton.setOnAction(event -> handleFindByApi());
         addBookButton.setOnAction(event -> handleAddBook());
         editBookButton.setOnAction(event -> handleEditBook());
         deleteBookButton.setOnAction(event -> handleDeleteBook());
@@ -148,7 +149,7 @@ public class BooksController extends Controller {
         descriptionArea.setText(apiBookDetails.getDescription() != null ? apiBookDetails.getDescription() : "No description available");
         descriptionArea.setWrapText(true); // Enable text wrapping
         descriptionArea.setEditable(false); // Make the TextArea non-editable
-        descriptionArea.setPrefHeight(250); // Set a preferred height for the TextArea
+        descriptionArea.setPrefHeight(300); // Set a preferred height for the TextArea
         descriptionArea.setPrefWidth(200); // Make description thinner
 
         VBox descriptionVBox = new VBox(10);
@@ -156,13 +157,13 @@ public class BooksController extends Controller {
 
         // Create the right side (for the cover image)
         VBox rightVBox = new VBox(10);
-        rightVBox.setStyle("-fx-alignment: top-right;");
+        rightVBox.setStyle("-fx-padding: 28px;-fx-alignment: top-right;");
 
         // If a cover image URL is available, display the image
         if (apiBookDetails.getCoverImageUrl() != null && !apiBookDetails.getCoverImageUrl().isEmpty()) {
             ImageView coverImageView = new ImageView(new Image(apiBookDetails.getCoverImageUrl()));
-            coverImageView.setFitHeight(260); // Set preferred image size
-            coverImageView.setFitWidth(260);
+            coverImageView.setFitHeight(300); // Set preferred image size
+            coverImageView.setFitWidth(300);
             coverImageView.setPreserveRatio(true);
 
             // Add cover image to the right VBox
@@ -412,6 +413,24 @@ public class BooksController extends Controller {
             booksTable.setItems(localSearchResults);
         }
     }
+
+    @FXML
+    private void handleFindByApi() {
+        String searchQuery = searchField.getText().trim();
+        if (searchQuery.isEmpty()) {
+            showAlert("Input Error", "Please enter a search term.");
+            return;
+        }
+
+        // Call the API to search for books
+        ObservableList<Books> apiBooks = APIHelper.searchBooks(searchQuery);
+        if (apiBooks.isEmpty()) {
+            showAlert("No Results", "No books found via the API.");
+        } else {
+            APIHelper.showBooksFromAPI(apiBooks);
+        }
+    }
+
 
     public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
