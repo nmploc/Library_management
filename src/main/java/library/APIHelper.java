@@ -118,7 +118,7 @@ public class APIHelper {
 
         // Thêm nút "OK" và "Cancel" vào hộp thoại
         ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Hủy", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
 
         // Chờ đợi phản hồi từ người dùng
@@ -131,7 +131,7 @@ public class APIHelper {
 
                 // Kiểm tra số lượng hợp lệ
                 if (quantity <= 0) {
-                    showAlert("Số lượng không hợp lệ", "Vui lòng nhập một số lượng hợp lệ.");
+                    showAlert("Input Error", "Please enter a valid number for the quantity.");
                     return;
                 }
 
@@ -157,7 +157,7 @@ public class APIHelper {
                             if (generatedKeys.next()) {
                                 categoryID = generatedKeys.getInt(1);
                             } else {
-                                throw new SQLException("Không thể thêm danh mục mới.");
+                                throw new SQLException("Unable to add a new category.");
                             }
                         }
                     }
@@ -176,11 +176,11 @@ public class APIHelper {
 
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    showAlert("Lỗi cơ sở dữ liệu", "Có lỗi khi thêm sách vào cơ sở dữ liệu.");
+                    showAlert("Database Error", "An error occurred while adding the book to the database.");
                 }
 
             } catch (NumberFormatException e) {
-                showAlert("Lỗi nhập liệu", "Vui lòng nhập một số hợp lệ cho số lượng.");
+                showAlert("Input Error", "Please enter a valid number for the quantity.");
             }
         }
     }
