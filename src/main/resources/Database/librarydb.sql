@@ -1,27 +1,36 @@
--- Drop database if it exists and create a new one
 DROP DATABASE IF EXISTS librarydb;
-
 CREATE DATABASE IF NOT EXISTS librarydb;
-
 USE librarydb;
 
--- Table to store categories
 CREATE TABLE IF NOT EXISTS categories (
-    categoryID INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    categoryID INT AUTO_INCREMENT PRIMARY KEY,
     categoryName VARCHAR(255) NOT NULL
 );
 
--- Table to store documents (books)
 CREATE TABLE IF NOT EXISTS documents (
     documentID INT AUTO_INCREMENT PRIMARY KEY,
     documentName VARCHAR(255) NOT NULL,
     categoryID INT,
     authors LONGTEXT,
     quantity INT DEFAULT 1,
+    ISBN VARCHAR(20) UNIQUE,
+    description TEXT,  -- Description field added here
     FOREIGN KEY (categoryID) REFERENCES categories(categoryID) ON UPDATE CASCADE
 );
 
--- Table to store users (for admin and regular users)
+CREATE TABLE IF NOT EXISTS readers (
+    readerID INT AUTO_INCREMENT PRIMARY KEY,
+    readerName VARCHAR(255) NOT NULL,
+    fullName VARCHAR(255),
+    email VARCHAR(100),
+    phoneNumber VARCHAR(15),
+    dateOfBirth DATE,
+    avatar VARCHAR(255) DEFAULT 'readerAvatar.png',
+    status VARCHAR(50) DEFAULT 'Active',
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS users (
     userID INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
@@ -34,7 +43,6 @@ CREATE TABLE IF NOT EXISTS users (
     avatar VARCHAR(255) DEFAULT 'userAvatar.png'
 );
 
--- Table to store document owners (association between documents and users)
 CREATE TABLE IF NOT EXISTS documentOwner (
     documentID INT,
     ownerID INT,
@@ -43,7 +51,6 @@ CREATE TABLE IF NOT EXISTS documentOwner (
     FOREIGN KEY (ownerID) REFERENCES users(userID) ON UPDATE CASCADE
 );
 
---Create the updated borrowings table
 CREATE TABLE IF NOT EXISTS borrowings (
     borrowingID INT AUTO_INCREMENT PRIMARY KEY,
     readerID INT,
@@ -51,12 +58,11 @@ CREATE TABLE IF NOT EXISTS borrowings (
     borrowDate DATETIME,
     dueDate DATE,
     returnDate DATETIME,
-    borrowingStatus VARCHAR(20),
+    borrowingStatus ENUM('borrowing', 'returned', 'late') NOT NULL,
     FOREIGN KEY (documentID) REFERENCES documents(documentID) ON UPDATE CASCADE,
     FOREIGN KEY (readerID) REFERENCES readers(readerID) ON UPDATE CASCADE
 );
 
--- Table to store reports (for user complaints or issues)
 CREATE TABLE IF NOT EXISTS reports (
     reportID INT AUTO_INCREMENT PRIMARY KEY,
     userID INT,
@@ -66,17 +72,16 @@ CREATE TABLE IF NOT EXISTS reports (
     FOREIGN KEY (userID) REFERENCES users(userID) ON UPDATE CASCADE
 );
 
--- Table to store readers (for managing reader profiles)
-CREATE TABLE IF NOT EXISTS readers (
-    readerID INT AUTO_INCREMENT PRIMARY KEY,           -- ID người đọc
-    readerName VARCHAR(255) NOT NULL UNIQUE,              -- Tên người dùng
-    fullName VARCHAR(255),                     -- Tên đầy đủ người đọc
-    email VARCHAR(100),                                 -- Email của người đọc
-    phoneNumber VARCHAR(15),                            -- Số điện thoại của người đọc
-    dateOfBirth DATE,                                   -- Ngày sinh người đọc
-    avatar VARCHAR(255) DEFAULT 'readerAvatar.png',     -- Avatar của người đọc (mặc định là ảnh placeholder)
-status VARCHAR(50) DEFAULT 'Active',                -- Trạng thái tài khoản (ví dụ: Active, Inactive)
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,      -- Thời gian tạo tài khoản
-    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Thời gian cập nhật tài khoản
+INSERT INTO users (username, hashedPassword, userFullName, role, gmail, phoneNumber, dateOfBirth, avatar)
+VALUES (
+    'admin',
+    'b894204754191dc4a528c9c98d85c5cdd630c1911afb69bccff40c92f5163973',
+    'Administrator',
+    'Admin',
+    'nmploc@gmail.com',
+    '1234567890',
+    '2000-01-01',
+    'adminAvatar.png'
 );
-
+--acc : admin --
+--password : lib22022 --

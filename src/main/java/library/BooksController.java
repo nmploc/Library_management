@@ -55,7 +55,14 @@ public class BooksController extends Controller {
         TableColumn<Books, Integer> quantityColumn = new TableColumn<>("Quantity");
         quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
 
-        booksTable.getColumns().addAll(idColumn, titleColumn, authorColumn, categoryColumn, quantityColumn);
+        // Add ISBN column
+        TableColumn<Books, String> isbnColumn = new TableColumn<>("ISBN");
+        isbnColumn.setCellValueFactory(new PropertyValueFactory<>("isbn"));
+
+        // Add all columns to the table
+        booksTable.getColumns().addAll(idColumn, titleColumn, authorColumn, categoryColumn, quantityColumn, isbnColumn);
+
+        // Button actions
         findBookButton.setOnAction(event -> handleFindBook());
         addBookButton.setOnAction(event -> handleAddBook());
         editBookButton.setOnAction(event -> handleEditBook());
@@ -63,18 +70,19 @@ public class BooksController extends Controller {
 
         booksTable.setFocusTraversable(true);  // Ensures the table can receive key events
 
+        // Double-click event to open book detail
         booksTable.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 openBookDetail(booksTable.getSelectionModel().getSelectedItem());
             }
         });
 
+        // Enter key event to open book detail
         booksTable.setOnKeyPressed(event -> {
             if (event.getCode().toString().equals("ENTER")) {
                 openBookDetail(booksTable.getSelectionModel().getSelectedItem());
             }
         });
-
     }
 
     @FXML
@@ -84,51 +92,88 @@ public class BooksController extends Controller {
             return;
         }
 
+        // Fetch additional book details from the API using ISBN
+        Books apiBookDetails = APIHelper.fetchBookDetailsByISBN(selectedBook.getIsbn());
+
+        if (apiBookDetails == null) {
+            showAlert("API Error", "Failed to fetch book details from the API.");
+            return;
+        }
+
         // Create a new Stage (window) for showing book details
         Stage detailWindow = new Stage();
         detailWindow.setTitle("Book Details");
 
-        // Create a VBox layout for the book details
-        VBox vbox = new VBox(10);
-        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Add padding and center content
+        // Create a HBox layout for the entire scene
+        HBox hbox = new HBox(20); // Set spacing between the left and right sections
+        hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Add padding and center content
 
-        // Add book details to the VBox
-        vbox.getChildren().addAll(
-                new Label("Title: " + selectedBook.getDocumentName()),
-                new Label("Author: " + selectedBook.getAuthors()),
-                new Label("Category: " + selectedBook.getCategory()),
-                new Label("Quantity: " + selectedBook.getQuantity())
+        // Create the left side (VBox for book information and QR code)
+        VBox leftVBox = new VBox(10);
+        leftVBox.setStyle("-fx-alignment: top-left;");
+
+        // Add book details to the left VBox
+        leftVBox.getChildren().addAll(
+                new Label("Title: " + apiBookDetails.getDocumentName()),
+                new Label("Author: " + apiBookDetails.getAuthors()),
+                new Label("Category: " + apiBookDetails.getCategory()),
+                new Label("Quantity: " + selectedBook.getQuantity()), // Keep the original quantity from the database
+                new Label("ISBN: " + apiBookDetails.getIsbn())
         );
 
-        // If a cover image URL is available, display the image
-        if (selectedBook.getCoverImageUrl() != null && !selectedBook.getCoverImageUrl().isEmpty()) {
-            ImageView coverImageView = new ImageView(new Image(selectedBook.getCoverImageUrl()));
-            coverImageView.setFitHeight(300); // Set preferred image size
-            coverImageView.setFitWidth(200);
-            coverImageView.setPreserveRatio(true);
-            vbox.getChildren().add(coverImageView);
-        }
-
-        // Generate QR code for the book details
+        // Create a VBox for QR code (positioned below the book info)
+        VBox qrVBox = new VBox(10);
         try {
             String tempQRCodePath = "temp_qr_code.png"; // Temporary path for the QR code image
-            QRCodeGenerator.generateQRCode(selectedBook, tempQRCodePath); // Generate QR code using the class
+            QRCodeGenerator.generateQRCode(apiBookDetails, tempQRCodePath); // Generate QR code using the class
 
             // Load the QR code image
             ImageView qrCodeView = new ImageView(new Image("file:" + tempQRCodePath));
-            qrCodeView.setFitHeight(200); // Set QR code image size
-            qrCodeView.setFitWidth(200);
+            qrCodeView.setFitHeight(160); // Set QR code size smaller
+            qrCodeView.setFitWidth(160);
             qrCodeView.setPreserveRatio(true);
 
-            // Add the QR code image to the layout
-            vbox.getChildren().add(new Label("QR Code:"));
-            vbox.getChildren().add(qrCodeView);
+            // Add the QR code image to the QR VBox
+            qrVBox.getChildren().add(new Label("QR Code:"));
+            qrVBox.getChildren().add(qrCodeView);
         } catch (Exception e) {
             showAlert("QR Code Error", "Failed to generate QR code: " + e.getMessage());
         }
 
-        // Create a scene with the VBox as the root node
-        Scene detailScene = new Scene(vbox, 500, 700);
+        // Add the QR VBox below the information in the left VBox
+        leftVBox.getChildren().add(qrVBox);
+
+        // Create a VBox for description (placed between book info and cover)
+        TextArea descriptionArea = new TextArea();
+        descriptionArea.setText(apiBookDetails.getDescription() != null ? apiBookDetails.getDescription() : "No description available");
+        descriptionArea.setWrapText(true); // Enable text wrapping
+        descriptionArea.setEditable(false); // Make the TextArea non-editable
+        descriptionArea.setPrefHeight(250); // Set a preferred height for the TextArea
+        descriptionArea.setPrefWidth(200); // Make description thinner
+
+        VBox descriptionVBox = new VBox(10);
+        descriptionVBox.getChildren().addAll(new Label("Description:"), descriptionArea);
+
+        // Create the right side (for the cover image)
+        VBox rightVBox = new VBox(10);
+        rightVBox.setStyle("-fx-alignment: top-right;");
+
+        // If a cover image URL is available, display the image
+        if (apiBookDetails.getCoverImageUrl() != null && !apiBookDetails.getCoverImageUrl().isEmpty()) {
+            ImageView coverImageView = new ImageView(new Image(apiBookDetails.getCoverImageUrl()));
+            coverImageView.setFitHeight(260); // Set preferred image size
+            coverImageView.setFitWidth(260);
+            coverImageView.setPreserveRatio(true);
+
+            // Add cover image to the right VBox
+            rightVBox.getChildren().add(coverImageView);
+        }
+
+        // Add all the sections to the HBox
+        hbox.getChildren().addAll(leftVBox, descriptionVBox, rightVBox);
+
+        // Create a scene with the HBox as the root node
+        Scene detailScene = new Scene(hbox, 700, 400); // Adjust size as needed
         detailWindow.setScene(detailScene);
 
         // Show the window
@@ -137,7 +182,7 @@ public class BooksController extends Controller {
 
     private void loadBooksData() {
         booksList = FXCollections.observableArrayList();
-        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity " +
+        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity, d.isbn " +
                 "FROM documents d LEFT JOIN categories c ON d.categoryID = c.categoryID";
 
         try (Connection conn = DatabaseHelper.getConnection();
@@ -150,8 +195,9 @@ public class BooksController extends Controller {
                 String authors = rs.getString("authors");
                 String category = rs.getString("categoryName");
                 int quantity = rs.getInt("quantity");
+                String isbn = rs.getString("isbn"); // Get the ISBN from the result set
 
-                booksList.add(new Books(id, name, authors, category, quantity));
+                booksList.add(new Books(id, name, authors, category, quantity, isbn)); // Pass ISBN to the Books constructor
             }
         } catch (SQLException e) {
             e.printStackTrace();

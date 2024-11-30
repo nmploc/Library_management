@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import javafx.scene.layout.HBox;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -26,10 +27,8 @@ import java.util.concurrent.*;
 
 public class APIHelper {
 
-    // Changed the thread pool size to 5
     private static final ExecutorService executor = Executors.newFixedThreadPool(5); // Create a thread pool with 5 threads
 
-    // Method to fetch books using a single query (updated with URL encoding fix)
     public static ObservableList<Books> searchBooks(String query) {
         ObservableList<Books> apiBooksList = FXCollections.observableArrayList();
         try {
@@ -60,7 +59,6 @@ public class APIHelper {
         return apiBooksList;
     }
 
-    // Method to parse the API response and create Books objects (unchanged)
     public static ObservableList<Books> parseAPIResponse(String jsonResponse) {
         ObservableList<Books> apiBooksList = FXCollections.observableArrayList();
 
@@ -80,16 +78,36 @@ public class APIHelper {
                             volumeInfo.getJSONArray("categories").join(", ").replace("\"", "") : "Unknown";
 
                     String coverImageUrl = null;
+                    String highResCoverImageUrl = null;
                     if (volumeInfo.has("imageLinks")) {
                         JSONObject imageLinks = volumeInfo.getJSONObject("imageLinks");
-                        // Prefer high-quality images if available
-                        coverImageUrl = imageLinks.optString("medium", null); // Medium-resolution
+                        coverImageUrl = imageLinks.optString("medium", null); // Medium resolution
                         if (coverImageUrl == null) {
                             coverImageUrl = imageLinks.optString("thumbnail", null); // Default resolution
                         }
+                        highResCoverImageUrl = imageLinks.optString("large", null); // High resolution
                     }
 
-                    apiBooksList.add(new Books(0, title, authors, category, 0, coverImageUrl));
+                    String isbn = "Unknown";
+                    if (volumeInfo.has("industryIdentifiers")) {
+                        JSONArray identifiers = volumeInfo.getJSONArray("industryIdentifiers");
+                        for (int j = 0; j < identifiers.length(); j++) {
+                            JSONObject identifier = identifiers.getJSONObject(j);
+                            if (identifier.optString("type").equals("ISBN_13")) {
+                                isbn = identifier.optString("identifier", "Unknown");
+                                break;
+                            }
+                        }
+                    }
+
+                    String description = volumeInfo.optString("description", "No description available");
+
+                    // Use the constructor with all fields if available, otherwise the constructor with fewer fields
+                    if (highResCoverImageUrl != null) {
+                        apiBooksList.add(new Books(0, title, authors, category, 0, coverImageUrl, highResCoverImageUrl, isbn, description));
+                    } else {
+                        apiBooksList.add(new Books(0, title, authors, category, 0, coverImageUrl, isbn, description));
+                    }
                 }
             }
         } catch (JSONException e) {
@@ -99,45 +117,120 @@ public class APIHelper {
         return apiBooksList;
     }
 
+    public static Books fetchBookDetailsByISBN(String isbn) {
+        try {
+            String encodedIsbn = URLEncoder.encode(isbn, StandardCharsets.UTF_8.toString());
+            String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + encodedIsbn;
+
+            HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
+            connection.setRequestMethod("GET");
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                StringBuilder response = new StringBuilder();
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
+                return parseBookDetailsFromAPIResponse(response.toString());
+            } else {
+                throw new RuntimeException("API Error: Response code " + responseCode);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static Books parseBookDetailsFromAPIResponse(String responseJson) {
+        try {
+            JSONObject jsonObject = new JSONObject(responseJson);
+            JSONArray items = jsonObject.optJSONArray("items");
+
+            if (items != null && items.length() > 0) {
+                JSONObject item = items.getJSONObject(0);
+                JSONObject volumeInfo = item.optJSONObject("volumeInfo");
+
+                String title = volumeInfo.optString("title", "Unknown");
+                String authors = volumeInfo.has("authors") ?
+                        volumeInfo.getJSONArray("authors").join(", ").replace("\"", "") : "Unknown";
+                String category = volumeInfo.has("categories") ?
+                        volumeInfo.getJSONArray("categories").join(", ").replace("\"", "") : "Unknown";
+
+                // Handle cover image
+                String coverImageUrl = null;
+                if (volumeInfo.has("imageLinks")) {
+                    JSONObject imageLinks = volumeInfo.getJSONObject("imageLinks");
+                    coverImageUrl = imageLinks.optString("medium", null); // Medium resolution
+                    if (coverImageUrl == null) {
+                        coverImageUrl = imageLinks.optString("thumbnail", null); // Use thumbnail if medium is missing
+                    }
+                }
+
+                String isbn = "Unknown";
+                if (volumeInfo.has("industryIdentifiers")) {
+                    JSONArray identifiers = volumeInfo.getJSONArray("industryIdentifiers");
+                    for (int j = 0; j < identifiers.length(); j++) {
+                        JSONObject identifier = identifiers.getJSONObject(j);
+                        if (identifier.optString("type").equals("ISBN_13")) {
+                            isbn = identifier.optString("identifier", "Unknown");
+                            break;
+                        }
+                    }
+                }
+
+                String description = volumeInfo.optString("description", "No description available");
+
+                // Return a new Books object
+                return new Books(0, title, authors, category, 0, coverImageUrl, isbn, description);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static void addBookFromAPI(Books book) {
-        // Tạo một hộp thoại tùy chỉnh để yêu cầu người dùng nhập số lượng sách
+        // Create a custom dialog to ask the user for the quantity of books
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Nhập số lượng");
-        dialog.setHeaderText("Nhập số lượng sách bạn muốn thêm:");
+        dialog.setTitle("Enter Quantity");
+        dialog.setHeaderText("Please enter the quantity of books you want to add:");
 
-        // Tạo một TextField để người dùng nhập số lượng
+        // Create a TextField for the user to enter the quantity
         TextField quantityField = new TextField();
-        quantityField.setPromptText("Số lượng");
+        quantityField.setPromptText("Quantity");
 
-        // Tạo một layout để chứa TextField
+        // Create a layout to hold the TextField
         VBox vbox = new VBox(10);
         vbox.getChildren().add(quantityField);
 
-        // Thiết lập nội dung cho hộp thoại
+        // Set the content for the dialog
         dialog.getDialogPane().setContent(vbox);
 
-        // Thêm nút "OK" và "Cancel" vào hộp thoại
+        // Add "OK" and "Cancel" buttons to the dialog
         ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
 
-        // Chờ đợi phản hồi từ người dùng
+        // Wait for the user's response
         Optional<ButtonType> result = dialog.showAndWait();
 
-        // Xử lý khi người dùng nhấn nút "OK"
+        // Process when the user clicks "OK"
         if (result.isPresent() && result.get() == okButton) {
             try {
                 int quantity = Integer.parseInt(quantityField.getText().trim());
 
-                // Kiểm tra số lượng hợp lệ
+                // Validate the quantity
                 if (quantity <= 0) {
                     showAlert("Input Error", "Please enter a valid number for the quantity.");
                     return;
                 }
 
-                // Tiến hành thêm sách với số lượng đã nhập
+                // Proceed to add the book with the entered quantity
                 try (Connection connection = DatabaseHelper.getConnection()) {
-                    // Kiểm tra danh mục và thêm vào cơ sở dữ liệu như trước...
+                    // Check the category and add it to the database if necessary
                     String categoryQuery = "SELECT categoryID FROM categories WHERE categoryName = ?";
                     PreparedStatement checkCategoryStmt = connection.prepareStatement(categoryQuery);
                     checkCategoryStmt.setString(1, book.getCategory());
@@ -147,7 +240,7 @@ public class APIHelper {
                     if (categoryResult.next()) {
                         categoryID = categoryResult.getInt("categoryID");
                     } else {
-                        // Thêm danh mục mới nếu chưa tồn tại
+                        // Add a new category if it doesn't exist
                         String insertCategoryQuery = "INSERT INTO categories (categoryName) VALUES (?)";
                         try (PreparedStatement insertCategoryStmt = connection.prepareStatement(insertCategoryQuery, Statement.RETURN_GENERATED_KEYS)) {
                             insertCategoryStmt.setString(1, book.getCategory());
@@ -162,13 +255,15 @@ public class APIHelper {
                         }
                     }
 
-                    // Thêm sách vào bảng documents
-                    String insertDocumentQuery = "INSERT INTO documents (documentName, categoryID, authors, quantity) VALUES (?, ?, ?, ?)";
+                    // Insert the book into the documents table
+                    String insertDocumentQuery = "INSERT INTO documents (documentName, categoryID, authors, quantity, isbn, description) VALUES (?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement insertDocumentStmt = connection.prepareStatement(insertDocumentQuery)) {
                         insertDocumentStmt.setString(1, book.getDocumentName());
                         insertDocumentStmt.setInt(2, categoryID);
                         insertDocumentStmt.setString(3, book.getAuthors());
                         insertDocumentStmt.setInt(4, quantity);
+                        insertDocumentStmt.setString(5, book.getIsbn()); // Add ISBN
+                        insertDocumentStmt.setString(6, book.getDescription()); // Add description
 
                         insertDocumentStmt.executeUpdate();
                         showAlert("Success", "Book added to the database successfully.");
@@ -196,47 +291,76 @@ public class APIHelper {
         Stage detailWindow = new Stage();
         detailWindow.setTitle("Book Details");
 
-        // Create a VBox layout for the book details
-        VBox vbox = new VBox(10);
-        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Add padding and center content
+        // Create an HBox layout for the entire scene
+        HBox hbox = new HBox(20); // Set spacing between the left and right sections
+        hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Add padding and center content
 
-        // Add book details to the VBox
-        vbox.getChildren().addAll(
+        // Create the left side (VBox for book information and QR code)
+        VBox leftVBox = new VBox(10);
+        leftVBox.setStyle("-fx-alignment: top-left;");
+
+        // Add book details to the left VBox
+        leftVBox.getChildren().addAll(
                 new Label("Title: " + selectedBook.getDocumentName()),
                 new Label("Author: " + selectedBook.getAuthors()),
                 new Label("Category: " + selectedBook.getCategory()),
-                new Label("Quantity: " + selectedBook.getQuantity())
+                new Label("Quantity: " + selectedBook.getQuantity()),
+                new Label("ISBN: " + selectedBook.getIsbn()) // Display ISBN
         );
 
-        // If a cover image URL is available, display the image
-        if (selectedBook.getCoverImageUrl() != null && !selectedBook.getCoverImageUrl().isEmpty()) {
-            ImageView coverImageView = new ImageView(new Image(selectedBook.getCoverImageUrl()));
-            coverImageView.setFitHeight(300); // Set preferred image size
-            coverImageView.setFitWidth(200);
-            coverImageView.setPreserveRatio(true);
-            vbox.getChildren().add(coverImageView);
-        }
-
-        // Generate QR code for the book details
+        // Create a VBox for QR code (positioned below the book info)
+        VBox qrVBox = new VBox(10);
         try {
             String tempQRCodePath = "temp_qr_code.png"; // Temporary path for the QR code image
             QRCodeGenerator.generateQRCode(selectedBook, tempQRCodePath); // Generate QR code using the class
 
             // Load the QR code image
             ImageView qrCodeView = new ImageView(new Image("file:" + tempQRCodePath));
-            qrCodeView.setFitHeight(200); // Set QR code image size
-            qrCodeView.setFitWidth(200);
+            qrCodeView.setFitHeight(160); // Set QR code size smaller
+            qrCodeView.setFitWidth(160);
             qrCodeView.setPreserveRatio(true);
 
-            // Add the QR code image to the layout
-            vbox.getChildren().add(new Label("QR Code:"));
-            vbox.getChildren().add(qrCodeView);
+            // Add the QR code image to the QR VBox
+            qrVBox.getChildren().add(new Label("QR Code:"));
+            qrVBox.getChildren().add(qrCodeView);
         } catch (Exception e) {
             showAlert("QR Code Error", "Failed to generate QR code: " + e.getMessage());
         }
 
-        // Create a scene with the VBox as the root node
-        Scene detailScene = new Scene(vbox, 500, 700);
+        // Add the QR VBox below the information in the left VBox
+        leftVBox.getChildren().add(qrVBox);
+
+        // Create the middle section (for the description)
+        TextArea descriptionArea = new TextArea();
+        descriptionArea.setText(selectedBook.getDescription() != null ? selectedBook.getDescription() : "No description available");
+        descriptionArea.setWrapText(true); // Enable text wrapping
+        descriptionArea.setEditable(false); // Make the TextArea non-editable
+        descriptionArea.setPrefHeight(250); // Set a preferred height for the TextArea
+        descriptionArea.setPrefWidth(200); // Make description thinner
+
+        VBox descriptionVBox = new VBox(10);
+        descriptionVBox.getChildren().addAll(new Label("Description:"), descriptionArea);
+
+        // Create the right side (for the cover image)
+        VBox rightVBox = new VBox(10);
+        rightVBox.setStyle("-fx-alignment: top-right;");
+
+        // If a cover image URL is available, display the image
+        if (selectedBook.getCoverImageUrl() != null && !selectedBook.getCoverImageUrl().isEmpty()) {
+            ImageView coverImageView = new ImageView(new Image(selectedBook.getCoverImageUrl()));
+            coverImageView.setFitHeight(260); // Set preferred image size
+            coverImageView.setFitWidth(260);
+            coverImageView.setPreserveRatio(true);
+
+            // Add cover image to the right VBox
+            rightVBox.getChildren().add(coverImageView);
+        }
+
+        // Add all the sections to the HBox
+        hbox.getChildren().addAll(leftVBox, descriptionVBox, rightVBox);
+
+        // Create a scene with the HBox as the root node
+        Scene detailScene = new Scene(hbox, 700, 400); // Adjust size as needed
         detailWindow.setScene(detailScene);
 
         // Show the window
@@ -256,6 +380,9 @@ public class APIHelper {
 
         TableColumn<Books, String> categoryColumn = new TableColumn<>("Category");
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
+
+        TableColumn<Books, String> isbnColumn = new TableColumn<>("ISBN");  // Column for ISBN
+        isbnColumn.setCellValueFactory(new PropertyValueFactory<>("isbn"));
 
         TableColumn<Books, String> coverColumn = new TableColumn<>("Cover");
         coverColumn.setCellValueFactory(new PropertyValueFactory<>("coverImageUrl"));
@@ -282,8 +409,8 @@ public class APIHelper {
             }
         });
 
-        // Add columns to the table
-        apiBooksTable.getColumns().addAll(coverColumn, titleColumn, authorColumn, categoryColumn);
+        // Add columns to the table (no description column)
+        apiBooksTable.getColumns().addAll(coverColumn, titleColumn, authorColumn, categoryColumn, isbnColumn);
         apiBooksTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         // Add event handlers for double-click and Enter key
@@ -330,7 +457,6 @@ public class APIHelper {
         newWindow.setScene(scene);
         newWindow.show();
     }
-
 
     public static void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
