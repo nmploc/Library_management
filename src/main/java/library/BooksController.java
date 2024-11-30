@@ -17,7 +17,6 @@ import javafx.scene.control.Button;
 
 import java.net.URL;
 import java.sql.*;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -194,7 +193,8 @@ public class BooksController extends Controller {
 
                 // Create a new book object
                 Books newBook = new Books(0, title, authors, category, quantity);
-                addBookToDatabase(newBook);  // Add book to database
+                DatabaseHelper.addBookToDatabase(newBook);  // Add book to database
+                loadBooksData();
 
                 // Close the window after submission
                 addBookWindow.close();
@@ -227,22 +227,6 @@ public class BooksController extends Controller {
 
         // Show the window
         addBookWindow.show();
-    }
-
-    private void addBookToDatabase(Books newBook) {
-        String insertQuery = "INSERT INTO documents (documentName, authors, categoryID, quantity) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
-
-            pstmt.setString(1, newBook.getDocumentName());
-            pstmt.setString(2, newBook.getAuthors());
-            pstmt.setInt(3, getCategoryIdByName(newBook.getCategory()));
-            pstmt.setInt(4, newBook.getQuantity());
-            pstmt.executeUpdate();
-            loadBooksData();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @FXML
@@ -278,7 +262,8 @@ public class BooksController extends Controller {
                 int quantity = Integer.parseInt(quantityField.getText());
 
                 Books updatedBook = new Books(selectedBook.getDocumentID(), title, authors, category, quantity);
-                updateBookInDatabase(updatedBook);  // Update book in the database
+                DatabaseHelper.updateBookInDatabase(updatedBook);  // Update book in the database
+                loadBooksData();
 
                 // Close the window after saving
                 editBookWindow.close();
@@ -308,23 +293,6 @@ public class BooksController extends Controller {
         editBookWindow.show();
     }
 
-    private void updateBookInDatabase(Books updatedBook) {
-        String updateQuery = "UPDATE documents SET documentName = ?, authors = ?, categoryID = ?, quantity = ? WHERE documentID = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-
-            pstmt.setString(1, updatedBook.getDocumentName());
-            pstmt.setString(2, updatedBook.getAuthors());
-            pstmt.setInt(3, getCategoryIdByName(updatedBook.getCategory()));
-            pstmt.setInt(4, updatedBook.getQuantity());
-            pstmt.setInt(5, updatedBook.getDocumentID());
-            pstmt.executeUpdate();
-            loadBooksData();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     @FXML
     private void handleDeleteBook() {
         Books selectedBook = booksTable.getSelectionModel().getSelectedItem();
@@ -344,7 +312,8 @@ public class BooksController extends Controller {
         // Create "Delete" and "Cancel" buttons
         Button deleteButton = new Button("Delete");
         deleteButton.setOnAction(event -> {
-            deleteBookFromDatabase(selectedBook.getDocumentID());  // Delete the book
+            DatabaseHelper.deleteBookFromDatabase(selectedBook.getDocumentID());  // Delete the book
+            loadBooksData();
             deleteConfirmationWindow.close();  // Close the confirmation window
         });
 
@@ -364,35 +333,6 @@ public class BooksController extends Controller {
         deleteConfirmationWindow.show();
     }
 
-    private void deleteBookFromDatabase(int documentID) {
-        String deleteQuery = "DELETE FROM documents WHERE documentID = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
-
-            pstmt.setInt(1, documentID);
-            pstmt.executeUpdate();
-            loadBooksData();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private int getCategoryIdByName(String categoryName) {
-        String query = "SELECT categoryID FROM categories WHERE categoryName = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, categoryName);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("categoryID");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return -1; // Return -1 if category is not found
-    }
-
     @FXML
     private void handleFindBook() {
         String searchQuery = searchField.getText().trim();
@@ -402,7 +342,7 @@ public class BooksController extends Controller {
         }
 
         // Search in the local database first
-        ObservableList<Books> localSearchResults = searchBooksInDatabase(searchQuery);
+        ObservableList<Books> localSearchResults = DatabaseHelper.searchBooksInDatabase(searchQuery);
 
         if (localSearchResults.isEmpty()) {
             // If no results are found locally, prompt for API search
@@ -414,222 +354,16 @@ public class BooksController extends Controller {
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 // Call the API to search for books
-                ObservableList<Books> apiBooks = GoogleBooksService.searchBooks(searchQuery);
+                ObservableList<Books> apiBooks = APIHelper.searchBooks(searchQuery);
                 if (apiBooks.isEmpty()) {
                     showAlert("No Results", "No books found via the API.");
                 } else {
-                    showBooksFromAPI(apiBooks);
+                    APIHelper.showBooksFromAPI(apiBooks);
                 }
             }
         } else {
             // If local database has results, show them
             booksTable.setItems(localSearchResults);
-        }
-    }
-
-    private ObservableList<Books> searchBooksInDatabase(String searchQuery) {
-        ObservableList<Books> searchResults = FXCollections.observableArrayList();
-        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity " +
-                "FROM documents d " +
-                "LEFT JOIN categories c ON d.categoryID = c.categoryID " +
-                "WHERE d.documentName LIKE ? OR d.authors LIKE ? OR c.categoryName LIKE ?";
-
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            // Use wildcard search to find partial matches
-            pstmt.setString(1, "%" + searchQuery + "%");
-            pstmt.setString(2, "%" + searchQuery + "%");
-            pstmt.setString(3, "%" + searchQuery + "%");
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                Books book = new Books(
-                        rs.getInt("documentID"),
-                        rs.getString("documentName"),
-                        rs.getString("authors"),
-                        rs.getString("categoryName"),
-                        rs.getInt("quantity")
-                );
-                searchResults.add(book);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return searchResults;
-    }
-
-    private void showBooksFromAPI(ObservableList<Books> apiBooksList) {
-        // Create a new TableView
-        TableView<Books> apiBooksTable = new TableView<>(apiBooksList);
-
-        // Define table columns
-        TableColumn<Books, String> titleColumn = new TableColumn<>("Title");
-        titleColumn.setCellValueFactory(new PropertyValueFactory<>("documentName"));
-
-        TableColumn<Books, String> authorColumn = new TableColumn<>("Author");
-        authorColumn.setCellValueFactory(new PropertyValueFactory<>("authors"));
-
-        TableColumn<Books, String> categoryColumn = new TableColumn<>("Category");
-        categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
-
-        TableColumn<Books, String> coverColumn = new TableColumn<>("Cover");
-        coverColumn.setCellValueFactory(new PropertyValueFactory<>("coverImageUrl"));
-        coverColumn.setCellFactory(col -> new TableCell<>() {
-            private final ImageView imageView = new ImageView();
-
-            {
-                imageView.setFitWidth(50);
-                imageView.setFitHeight(70);
-            }
-
-            @Override
-            protected void updateItem(String coverImageUrl, boolean empty) {
-                super.updateItem(coverImageUrl, empty);
-                if (empty || coverImageUrl == null) {
-                    setGraphic(null);
-                } else {
-                    // Prioritize high-resolution cover image
-                    String highResCoverImageUrl = getTableView().getItems().get(getIndex()).getHighResCoverImageUrl();
-                    String displayUrl = (highResCoverImageUrl != null) ? highResCoverImageUrl : coverImageUrl;
-                    imageView.setImage(new Image(displayUrl, true));
-                    setGraphic(imageView);
-                }
-            }
-        });
-
-        // Add columns to the table
-        apiBooksTable.getColumns().addAll(coverColumn, titleColumn, authorColumn, categoryColumn);
-        apiBooksTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
-        // Add event handlers for double-click and Enter key
-        apiBooksTable.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                openBookDetail(apiBooksTable.getSelectionModel().getSelectedItem());
-            }
-        });
-
-        apiBooksTable.setOnKeyPressed(event -> {
-            if (event.getCode().toString().equals("ENTER")) {
-                openBookDetail(apiBooksTable.getSelectionModel().getSelectedItem());
-            }
-        });
-
-        // Create a new Stage (window)
-        Stage newWindow = new Stage();
-        newWindow.setTitle("Results from API");
-
-        // Create a VBox layout to hold the TableView and Button
-        VBox vbox = new VBox(10);
-        vbox.getChildren().add(apiBooksTable);
-
-        // Add "Add to Database" button
-        Button addButton = new Button("Add to Database");
-        addButton.setDisable(true); // Disable initially
-        vbox.getChildren().add(addButton);
-
-        // Enable the button only when a book is selected
-        apiBooksTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            addButton.setDisable(newSelection == null);
-        });
-
-        // Handle "Add to Database" button action
-        addButton.setOnAction(event -> {
-            Books selectedBook = apiBooksTable.getSelectionModel().getSelectedItem();
-            if (selectedBook != null) {
-                addBookFromAPI(selectedBook);
-            }
-        });
-
-        // Set up the scene and show the new window
-        Scene scene = new Scene(vbox, 800, 600);
-        newWindow.setScene(scene);
-        newWindow.show();
-    }
-
-    public void addBookFromAPI(Books book) {
-        // Tạo một hộp thoại tùy chỉnh để yêu cầu người dùng nhập số lượng sách
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Nhập số lượng");
-        dialog.setHeaderText("Nhập số lượng sách bạn muốn thêm:");
-
-        // Tạo một TextField để người dùng nhập số lượng
-        TextField quantityField = new TextField();
-        quantityField.setPromptText("Số lượng");
-
-        // Tạo một layout để chứa TextField
-        VBox vbox = new VBox(10);
-        vbox.getChildren().add(quantityField);
-
-        // Thiết lập nội dung cho hộp thoại
-        dialog.getDialogPane().setContent(vbox);
-
-        // Thêm nút "OK" và "Cancel" vào hộp thoại
-        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Hủy", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
-
-        // Chờ đợi phản hồi từ người dùng
-        Optional<ButtonType> result = dialog.showAndWait();
-
-        // Xử lý khi người dùng nhấn nút "OK"
-        if (result.isPresent() && result.get() == okButton) {
-            try {
-                int quantity = Integer.parseInt(quantityField.getText().trim());
-
-                // Kiểm tra số lượng hợp lệ
-                if (quantity <= 0) {
-                    showAlert("Số lượng không hợp lệ", "Vui lòng nhập một số lượng hợp lệ.");
-                    return;
-                }
-
-                // Tiến hành thêm sách với số lượng đã nhập
-                try (Connection connection = DatabaseHelper.getConnection()) {
-                    // Kiểm tra danh mục và thêm vào cơ sở dữ liệu như trước...
-                    String categoryQuery = "SELECT categoryID FROM categories WHERE categoryName = ?";
-                    PreparedStatement checkCategoryStmt = connection.prepareStatement(categoryQuery);
-                    checkCategoryStmt.setString(1, book.getCategory());
-                    ResultSet categoryResult = checkCategoryStmt.executeQuery();
-
-                    int categoryID;
-                    if (categoryResult.next()) {
-                        categoryID = categoryResult.getInt("categoryID");
-                    } else {
-                        // Thêm danh mục mới nếu chưa tồn tại
-                        String insertCategoryQuery = "INSERT INTO categories (categoryName) VALUES (?)";
-                        try (PreparedStatement insertCategoryStmt = connection.prepareStatement(insertCategoryQuery, Statement.RETURN_GENERATED_KEYS)) {
-                            insertCategoryStmt.setString(1, book.getCategory());
-                            insertCategoryStmt.executeUpdate();
-
-                            ResultSet generatedKeys = insertCategoryStmt.getGeneratedKeys();
-                            if (generatedKeys.next()) {
-                                categoryID = generatedKeys.getInt(1);
-                            } else {
-                                throw new SQLException("Không thể thêm danh mục mới.");
-                            }
-                        }
-                    }
-
-                    // Thêm sách vào bảng documents
-                    String insertDocumentQuery = "INSERT INTO documents (documentName, categoryID, authors, quantity) VALUES (?, ?, ?, ?)";
-                    try (PreparedStatement insertDocumentStmt = connection.prepareStatement(insertDocumentQuery)) {
-                        insertDocumentStmt.setString(1, book.getDocumentName());
-                        insertDocumentStmt.setInt(2, categoryID);
-                        insertDocumentStmt.setString(3, book.getAuthors());
-                        insertDocumentStmt.setInt(4, quantity);
-
-                        insertDocumentStmt.executeUpdate();
-                        showAlert("Success", "Book added to the database successfully.");
-                    }
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    showAlert("Lỗi cơ sở dữ liệu", "Có lỗi khi thêm sách vào cơ sở dữ liệu.");
-                }
-
-            } catch (NumberFormatException e) {
-                showAlert("Lỗi nhập liệu", "Vui lòng nhập một số hợp lệ cho số lượng.");
-            }
         }
     }
 
