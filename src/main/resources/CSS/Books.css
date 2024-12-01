@@ -50,3 +50,20 @@
     -fx-background-color: rgb(255, 255, 255); /* White background for content area */
     -fx-padding: 20px;
 }
+
+/* Shadow effect for pictures */
+.image-view {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.7, 0, 4); /* Shadow with semi-transparent black */
+    -fx-padding: 10px; /* Add some padding around the image */
+}
+
+/* Bordered and styled TextArea */
+.text-area {
+    -fx-border-color: #cccccc; /* Light gray border */
+    -fx-border-width: 2px; /* Border thickness */
+    -fx-border-radius: 5px; /* Rounded border corners */
+    -fx-background-radius: 5px; /* Match background corner radius */
+    -fx-background-color: rgb(248, 248, 248); /* Light gray background */
+    -fx-padding: 5px; /* Padding inside the text area */
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.1), 6, 0.3, 2, 2); /* Subtle inner shadow for a depth effect */
+}

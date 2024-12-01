@@ -299,13 +299,22 @@ public class APIHelper  {
         VBox leftVBox = new VBox(10);
         leftVBox.setStyle("-fx-alignment: top-left;");
 
-        leftVBox.getChildren().addAll(
-                new Label("Title: " + selectedBook.getDocumentName()),
-                new Label("Author: " + selectedBook.getAuthors()),
-                new Label("Category: " + selectedBook.getCategory()),
-                new Label("Quantity: " + selectedBook.getQuantity()),
-                new Label("ISBN: " + selectedBook.getIsbn()) // Display ISBN
-        );
+        // Consolidate book details into one TextArea
+        TextArea bookDetailsArea = new TextArea();
+        bookDetailsArea.setText(String.format(
+                "Title: %s\nAuthor: %s\nCategory: %s\nISBN: %s",
+                selectedBook.getDocumentName(),
+                selectedBook.getAuthors(),
+                selectedBook.getCategory(),
+
+                selectedBook.getIsbn()
+        ));
+        bookDetailsArea.setWrapText(true);
+        bookDetailsArea.setEditable(false);
+        bookDetailsArea.setPrefHeight(120);
+        bookDetailsArea.setPrefWidth(250);
+
+        leftVBox.getChildren().add(bookDetailsArea);
 
         // QR code section
         VBox qrVBox = new VBox(10);

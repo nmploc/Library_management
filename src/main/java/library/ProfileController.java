@@ -154,7 +154,7 @@ public class ProfileController extends Controller {
     }
 
 
-    
+
     // Method to handle setting the avatar
     @FXML
     public void handleSetAvatar(ActionEvent event) {

@@ -105,79 +105,86 @@ public class BooksController extends Controller {
         Stage detailWindow = new Stage();
         detailWindow.setTitle("Book Details");
 
-        // Create a HBox layout for the entire scene
-        HBox hbox = new HBox(20); // Set spacing between the left and right sections
-        hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Add padding and center content
+        // Main container layout
+        HBox hbox = new HBox(20); // Set spacing between sections
+        hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;");
 
-        // Create the left side (VBox for book information and QR code)
+        // Left side: Book details and QR code
         VBox leftVBox = new VBox(10);
         leftVBox.setStyle("-fx-alignment: top-left;");
 
-        // Add book details to the left VBox
-        leftVBox.getChildren().addAll(
-                new Label("Title: " + apiBookDetails.getDocumentName()),
-                new Label("Author: " + apiBookDetails.getAuthors()),
-                new Label("Category: " + apiBookDetails.getCategory()),
-                new Label("Quantity: " + selectedBook.getQuantity()), // Keep the original quantity from the database
-                new Label("ISBN: " + apiBookDetails.getIsbn())
-        );
+        // Consolidate book details into a single TextArea
+        TextArea bookDetailsArea = new TextArea();
+        bookDetailsArea.setText(String.format(
+                "Title: %s\nAuthor: %s\nCategory: %s\nQuantity: %d\nISBN: %s",
+                apiBookDetails.getDocumentName(),
+                apiBookDetails.getAuthors(),
+                apiBookDetails.getCategory(),
+                selectedBook.getQuantity(),
+                apiBookDetails.getIsbn()
+        ));
+        bookDetailsArea.setWrapText(true);
+        bookDetailsArea.setEditable(false);
+        bookDetailsArea.setPrefHeight(150);
+        bookDetailsArea.setPrefWidth(250);
+        bookDetailsArea.getStyleClass().add("content-area"); // Apply CSS styling
+        leftVBox.getChildren().add(bookDetailsArea);
 
-        // Create a VBox for QR code (positioned below the book info)
+        // Add QR code section
         VBox qrVBox = new VBox(10);
         try {
-            String tempQRCodePath = "temp_qr_code.png"; // Temporary path for the QR code image
-            QRCodeGenerator.generateQRCode(apiBookDetails, tempQRCodePath); // Generate QR code using the class
+            String tempQRCodePath = "temp_qr_code.png";
+            QRCodeGenerator.generateQRCode(apiBookDetails, tempQRCodePath);
 
-            // Load the QR code image
             ImageView qrCodeView = new ImageView(new Image("file:" + tempQRCodePath));
-            qrCodeView.setFitHeight(160); // Set QR code size smaller
+            qrCodeView.setFitHeight(160);
             qrCodeView.setFitWidth(160);
             qrCodeView.setPreserveRatio(true);
 
-            // Add the QR code image to the QR VBox
             qrVBox.getChildren().add(new Label("QR Code:"));
             qrVBox.getChildren().add(qrCodeView);
         } catch (Exception e) {
+            qrVBox.getChildren().add(new Label("QR Code unavailable."));
             showAlert("QR Code Error", "Failed to generate QR code: " + e.getMessage());
         }
-
-        // Add the QR VBox below the information in the left VBox
         leftVBox.getChildren().add(qrVBox);
 
-        // Create a VBox for description (placed between book info and cover)
+        // Center: Description
+        VBox descriptionVBox = new VBox(10);
         TextArea descriptionArea = new TextArea();
         descriptionArea.setText(apiBookDetails.getDescription() != null ? apiBookDetails.getDescription() : "No description available");
-        descriptionArea.setWrapText(true); // Enable text wrapping
-        descriptionArea.setEditable(false); // Make the TextArea non-editable
-        descriptionArea.setPrefHeight(300); // Set a preferred height for the TextArea
-        descriptionArea.setPrefWidth(200); // Make description thinner
-
-        VBox descriptionVBox = new VBox(10);
+        descriptionArea.setWrapText(true);
+        descriptionArea.setEditable(false);
+        descriptionArea.setPrefHeight(250);
+        descriptionArea.setPrefWidth(200);
+        descriptionArea.getStyleClass().add("content-area"); // Apply CSS styling
         descriptionVBox.getChildren().addAll(new Label("Description:"), descriptionArea);
 
-        // Create the right side (for the cover image)
+        // Right side: Cover image
         VBox rightVBox = new VBox(10);
-        rightVBox.setStyle("-fx-padding: 28px;-fx-alignment: top-right;");
+        rightVBox.setStyle("-fx-padding: 28px; -fx-alignment: top-right;");
 
-        // If a cover image URL is available, display the image
         if (apiBookDetails.getCoverImageUrl() != null && !apiBookDetails.getCoverImageUrl().isEmpty()) {
-            ImageView coverImageView = new ImageView(new Image(apiBookDetails.getCoverImageUrl()));
-            coverImageView.setFitHeight(300); // Set preferred image size
-            coverImageView.setFitWidth(300);
-            coverImageView.setPreserveRatio(true);
-
-            // Add cover image to the right VBox
-            rightVBox.getChildren().add(coverImageView);
+            try {
+                ImageView coverImageView = new ImageView(new Image(apiBookDetails.getCoverImageUrl()));
+                coverImageView.setFitHeight(300);
+                coverImageView.setFitWidth(300);
+                coverImageView.setPreserveRatio(true);
+                rightVBox.getChildren().add(coverImageView);
+            } catch (Exception e) {
+                rightVBox.getChildren().add(new Label("Cover image unavailable."));
+            }
+        } else {
+            rightVBox.getChildren().add(new Label("No cover image available."));
         }
 
-        // Add all the sections to the HBox
+        // Combine all sections
         hbox.getChildren().addAll(leftVBox, descriptionVBox, rightVBox);
 
-        // Create a scene with the HBox as the root node
-        Scene detailScene = new Scene(hbox, 700, 400); // Adjust size as needed
+        // Scene and window setup
+        Scene detailScene = new Scene(hbox, 800, 400);
+        detailScene.getStylesheets().add(getClass().getResource("/CSS/Books.css").toExternalForm()); // Add CSS stylesheet
         detailWindow.setScene(detailScene);
-
-        // Show the window
         detailWindow.show();
     }
 
