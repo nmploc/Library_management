@@ -186,7 +186,7 @@ public class BorrowingController extends Controller {  // Extend Controller
                 comboBox.getItems().add(rs.getString("documentName"));
             }
         } catch (SQLException e) {
-            e.printStackTracabcde();
+            e.printStackTrace();
         }
     }
 

@@ -205,7 +205,6 @@ public class BooksController extends Controller {
         }
         booksTable.setItems(booksList);
     }
-
     @FXML
     private void handleAddBook() {
         // Create a new Stage (window) for the "Add Book" form
@@ -242,13 +241,22 @@ public class BooksController extends Controller {
                         String authors = authorField.getText();
                         String category = categoryField.getText();
 
-                        // Create a new book object
-                        Books newBook = new Books(0, title, authors, category, quantity);
-                        DatabaseHelper.addBookToDatabase(newBook);  // Add book to database
-                        loadBooksData();
+                        if (!DatabaseHelper.isCategoryExists(category)) {
+                            showAddCategoryDialog(category, () -> {
+                                // Add the new category to the database
+                                DatabaseHelper.addCategoryToDatabase(category);
+                                // Retry adding the book after adding the new category
+                                handleAddBookRetry(title, authors, category, quantity, addBookWindow);
+                            });
+                        } else {
+                            // Create a new book object
+                            Books newBook = new Books(0, title, authors, category, quantity);
+                            DatabaseHelper.addBookToDatabase(newBook);  // Add book to database
+                            loadBooksData();
 
-                        // Close the window after submission
-                        addBookWindow.close();
+                            // Close the window after submission
+                            addBookWindow.close();
+                        }
                     }
                 } catch (NumberFormatException e) {
                     showAlert("Input Error", "Quantity must be a number.");
@@ -283,7 +291,35 @@ public class BooksController extends Controller {
         // Show the window
         addBookWindow.show();
     }
-    
+
+    private void showAddCategoryDialog(String category, Runnable onAddCategory) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Category Not Found");
+        alert.setHeaderText(null);
+        alert.setContentText("The category \"" + category + "\" does not exist. Would you like to add it?");
+
+        ButtonType addNewCategoryButton = new ButtonType("Add New Category");
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(addNewCategoryButton, cancelButton);
+
+        alert.showAndWait().ifPresent(type -> {
+            if (type == addNewCategoryButton) {
+                onAddCategory.run();
+            }
+        });
+    }
+
+    private void handleAddBookRetry(String title, String authors, String category, int quantity, Stage addBookWindow) {
+        // Create a new book object
+        Books newBook = new Books(0, title, authors, category, quantity);
+        DatabaseHelper.addBookToDatabase(newBook);  // Add book to database
+        loadBooksData();
+
+        // Close the window after submission
+        addBookWindow.close();
+    }
+
     @FXML
     private void handleEditBook() {
         Books selectedBook = booksTable.getSelectionModel().getSelectedItem();

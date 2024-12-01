@@ -2,8 +2,6 @@ package library;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
-import javafx.scene.control.TableView;
 
 import java.sql.*;
 
@@ -117,5 +115,33 @@ public class DatabaseHelper {
         }
         return -1; // Return -1 if category is not found
     }
-}
 
+    public static boolean isCategoryExists(String categoryName) {
+        String query = "SELECT COUNT(*) FROM categories WHERE categoryName = ?";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, categoryName);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static void addCategoryToDatabase(String categoryName) {
+        String insertQuery = "INSERT INTO categories (categoryName) VALUES (?)";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
+
+            pstmt.setString(1, categoryName);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+}
