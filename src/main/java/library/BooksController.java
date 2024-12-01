@@ -233,18 +233,26 @@ public class BooksController extends Controller {
                     categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
                 showAlert("Input Error", "Please fill in all fields.");
             } else {
-                String title = titleField.getText();
-                String authors = authorField.getText();
-                String category = categoryField.getText();
-                int quantity = Integer.parseInt(quantityField.getText());
+                try {
+                    int quantity = Integer.parseInt(quantityField.getText());
+                    if (quantity <= 0) {
+                        showAlert("Input Error", "Quantity must be a positive number.");
+                    } else {
+                        String title = titleField.getText();
+                        String authors = authorField.getText();
+                        String category = categoryField.getText();
 
-                // Create a new book object
-                Books newBook = new Books(0, title, authors, category, quantity);
-                DatabaseHelper.addBookToDatabase(newBook);  // Add book to database
-                loadBooksData();
+                        // Create a new book object
+                        Books newBook = new Books(0, title, authors, category, quantity);
+                        DatabaseHelper.addBookToDatabase(newBook);  // Add book to database
+                        loadBooksData();
 
-                // Close the window after submission
-                addBookWindow.close();
+                        // Close the window after submission
+                        addBookWindow.close();
+                    }
+                } catch (NumberFormatException e) {
+                    showAlert("Input Error", "Quantity must be a number.");
+                }
             }
         });
 
@@ -275,7 +283,7 @@ public class BooksController extends Controller {
         // Show the window
         addBookWindow.show();
     }
-
+    
     @FXML
     private void handleEditBook() {
         Books selectedBook = booksTable.getSelectionModel().getSelectedItem();
