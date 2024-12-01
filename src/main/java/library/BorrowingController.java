@@ -178,19 +178,47 @@ public class BorrowingController extends Controller {  // Extend Controller
     }
 
     private void addBorrowingToDatabase(Borrowing newBorrowing) {
-        String query = "INSERT INTO borrowings (readerID, documentID, borrowDate, dueDate, borrowingStatus) " +
+        String checkQuantityQuery = "SELECT quantity FROM documents WHERE documentName = ?";
+        String insertQuery = "INSERT INTO borrowings (readerID, documentID, borrowDate, dueDate, borrowingStatus) " +
                 "VALUES ((SELECT readerID FROM readers WHERE readerName = ?), " +
                 "(SELECT documentID FROM documents WHERE documentName = ?), ?, ?, ?)";
+        String updateQuery = "UPDATE documents SET quantity = quantity - 1 WHERE documentID = " +
+                "(SELECT documentID FROM documents WHERE documentName = ?)";
 
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+             PreparedStatement checkStmt = conn.prepareStatement(checkQuantityQuery);
+             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
+             PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
 
-            pstmt.setString(1, newBorrowing.getReaderName());
-            pstmt.setString(2, newBorrowing.getDocumentName());
-            pstmt.setString(3, newBorrowing.getBorrowDate() + " 00:00:00"); // Format for DATETIME
-            pstmt.setString(4, newBorrowing.getDueDate());
-            pstmt.setString(5, newBorrowing.getBorrowingStatus());
-            pstmt.executeUpdate();
+            // Check the quantity of the document
+            checkStmt.setString(1, newBorrowing.getDocumentName());
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next()) {
+                int quantity = rs.getInt("quantity");
+                if (quantity == 0) {
+                    showAlert("Out of Stock", "Cuốn sách đã được mượn hết");
+                    return;
+                }
+            } else {
+                showAlert("Error", "Document not found.");
+                return;
+            }
+
+            // Set values for the insert statement
+            insertStmt.setString(1, newBorrowing.getReaderName());
+            insertStmt.setString(2, newBorrowing.getDocumentName());
+            insertStmt.setString(3, newBorrowing.getBorrowDate() + " 00:00:00"); // Format for DATETIME
+            insertStmt.setString(4, newBorrowing.getDueDate());
+            insertStmt.setString(5, newBorrowing.getBorrowingStatus());
+
+            // Execute insert statement to add borrowing record
+            insertStmt.executeUpdate();
+
+            // Set value for the update statement (book name to reduce quantity)
+            updateStmt.setString(1, newBorrowing.getDocumentName());
+
+            // Execute update statement to reduce book quantity by 1
+            updateStmt.executeUpdate();
 
             loadBorrowingsData(); // Reload the TableView
         } catch (SQLException e) {
@@ -287,15 +315,29 @@ public class BorrowingController extends Controller {  // Extend Controller
             return;
         }
 
-        String query = "DELETE FROM borrowings WHERE borrowingID = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        // SQL query to increase the quantity of the book in the documents table
+        String updateQuery = "UPDATE documents SET quantity = quantity + 1 WHERE documentID = " +
+                "(SELECT documentID FROM borrowings WHERE borrowingID = ?)";
 
-            pstmt.setInt(1, selectedBorrowing.getBorrowingID());
-            pstmt.executeUpdate();
-            loadBorrowingsData();
+        // SQL query to delete the borrowing from the borrowings table
+        String deleteQuery = "DELETE FROM borrowings WHERE borrowingID = ?";
+
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
+             PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
+
+            // Update the quantity in the documents table
+            updateStmt.setInt(1, selectedBorrowing.getBorrowingID());
+            updateStmt.executeUpdate();
+
+            // Delete the borrowing record
+            deleteStmt.setInt(1, selectedBorrowing.getBorrowingID());
+            deleteStmt.executeUpdate();
+
+            loadBorrowingsData(); // Reload the TableView
         } catch (SQLException e) {
             e.printStackTrace();
+            showAlert("Database Error", "Failed to delete the borrowing.");
         }
     }
 
