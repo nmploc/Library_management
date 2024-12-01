@@ -13,6 +13,7 @@
                 <!-- Search bar for finding books -->
                 <TextField fx:id="searchField" promptText="Search by Title, Author, or Category" styleClass="search-bar" />
                 <Button fx:id="findBookButton" onAction="#handleFindBook" styleClass="button" text="Find" />
+                <Button fx:id="findByAPiButton" onAction="#handleFindByApi" styleClass="button" text="Find via API" />
                 <Button fx:id="addBookButton" onAction="#handleAddBook" styleClass="button" text="Add Book" />
             </HBox>
         </AnchorPane>

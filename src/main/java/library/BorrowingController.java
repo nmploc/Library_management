@@ -12,10 +12,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
@@ -105,8 +101,18 @@ public class BorrowingController extends Controller {  // Extend Controller
         TextField readerField = new TextField();
         readerField.setPromptText("Reader Name");
 
-        TextField documentField = new TextField();
-        documentField.setPromptText("Document Name");
+        // Add a ComboBox to select document by name or category
+        ComboBox<String> documentComboBox = new ComboBox<>();
+        documentComboBox.setPromptText("Select Document");
+
+        // Add a search field to filter books
+        TextField searchBookField = new TextField();
+        searchBookField.setPromptText("Search by Name, Author, or Category");
+
+        // Add listener to update the ComboBox based on search input
+        searchBookField.textProperty().addListener((observable, oldValue, newValue) -> {
+            updateDocumentComboBox(newValue, documentComboBox);
+        });
 
         DatePicker borrowDatePicker = new DatePicker();
         DatePicker dueDatePicker = new DatePicker();
@@ -114,7 +120,8 @@ public class BorrowingController extends Controller {  // Extend Controller
         VBox vbox = new VBox(10);
         vbox.getChildren().addAll(
                 new Label("Reader Name:"), readerField,
-                new Label("Document Name:"), documentField,
+                new Label("Search Document (by Name, Author, or Category):"), searchBookField,
+                new Label("Select Document:"), documentComboBox,
                 new Label("Borrow Date:"), borrowDatePicker,
                 new Label("Due Date:"), dueDatePicker
         );
@@ -122,7 +129,7 @@ public class BorrowingController extends Controller {  // Extend Controller
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == addButtonType) {
-                return new Borrowing(0, readerField.getText(), documentField.getText(),
+                return new Borrowing(0, readerField.getText(), documentComboBox.getValue(),
                         borrowDatePicker.getValue().toString(), dueDatePicker.getValue().toString(), "Active");
             }
             return null;
@@ -130,6 +137,29 @@ public class BorrowingController extends Controller {  // Extend Controller
 
         Optional<Borrowing> result = dialog.showAndWait();
         result.ifPresent(this::addBorrowingToDatabase);
+    }
+
+    // Update the ComboBox with filtered document results from the database
+    private void updateDocumentComboBox(String searchText, ComboBox<String> comboBox) {
+        comboBox.getItems().clear();
+        String query = "SELECT d.documentName FROM documents d " +
+                "LEFT JOIN categories c ON d.categoryID = c.categoryID " +
+                "WHERE d.documentName LIKE ? OR d.authors LIKE ? OR c.categoryName LIKE ?";
+
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, "%" + searchText + "%");
+            pstmt.setString(2, "%" + searchText + "%");
+            pstmt.setString(3, "%" + searchText + "%");
+
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                comboBox.getItems().add(rs.getString("documentName"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void addBorrowingToDatabase(Borrowing newBorrowing) {
@@ -218,23 +248,11 @@ public class BorrowingController extends Controller {  // Extend Controller
             return;
         }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Delete Confirmation");
-        alert.setHeaderText("Are you sure you want to delete this borrowing?");
-        alert.setContentText("Borrowing ID: " + selectedBorrowing.getBorrowingID());
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            deleteBorrowingFromDatabase(selectedBorrowing.getBorrowingID());
-        }
-    }
-
-    private void deleteBorrowingFromDatabase(int borrowingID) {
         String query = "DELETE FROM borrowings WHERE borrowingID = ?";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            pstmt.setInt(1, borrowingID);
+            pstmt.setInt(1, selectedBorrowing.getBorrowingID());
             pstmt.executeUpdate();
             loadBorrowingsData();
         } catch (SQLException e) {
@@ -242,25 +260,46 @@ public class BorrowingController extends Controller {  // Extend Controller
         }
     }
 
+    public void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
     @FXML
     private void handleFindBorrowing() {
         String searchText = searchField.getText().toLowerCase();
         ObservableList<Borrowing> filteredList = FXCollections.observableArrayList();
 
-        for (Borrowing borrowing : borrowingsList) {
-            if (borrowing.getReaderName().toLowerCase().contains(searchText) ||
-                    borrowing.getDocumentName().toLowerCase().contains(searchText) ||
-                    borrowing.getBorrowingStatus().toLowerCase().contains(searchText)) {
-                filteredList.add(borrowing);
-            }
-        }
-        borrowingsTable.setItems(filteredList);
-    }
+        String query = "SELECT b.borrowingID, r.readerName, d.documentName, b.borrowDate, b.dueDate, b.borrowingStatus " +
+                "FROM borrowings b " +
+                "JOIN readers r ON b.readerID = r.readerID " +
+                "JOIN documents d ON b.documentID = d.documentID " +
+                "WHERE r.readerName LIKE ? OR d.documentName LIKE ?";
 
-    public void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, "%" + searchText + "%");
+            pstmt.setString(2, "%" + searchText + "%");
+
+            ResultSet rs = pstmt.executeQuery();
+            filteredList.clear();
+            while (rs.next()) {
+                int id = rs.getInt("borrowingID");
+                String readerName = rs.getString("readerName");
+                String documentName = rs.getString("documentName");
+                String borrowDate = rs.getString("borrowDate");
+                String dueDate = rs.getString("dueDate");
+                String status = rs.getString("borrowingStatus");
+
+                filteredList.add(new Borrowing(id, readerName, documentName, borrowDate, dueDate, status));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        borrowingsTable.setItems(filteredList);
     }
 }

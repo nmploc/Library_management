@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="loadingScene" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" stylesheets="@../CSS/BaseScene.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.LoadingSceneController">
+    <children>
+        <!-- VBox for vertical centering -->
+        <VBox alignment="CENTER" spacing="20.0" AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <children>
+                <!-- Loading Spinner (can be replaced with a custom spinner) -->
+                <ProgressIndicator fx:id="loadingIndicator" prefHeight="50.0" prefWidth="50.0" />
+
+                <!-- Loading Message -->
+                <Label fx:id="loadingLabel" text="Loading, please wait..." styleClass="loading-text" />
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

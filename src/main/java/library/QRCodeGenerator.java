@@ -13,13 +13,18 @@ import java.nio.file.Path;
 public class QRCodeGenerator {
 
     public static void generateQRCode(Books book, String filePath) {
-        // Concatenate book details into a single formatted string
-        String qrCodeData = "====== Book Details ======\n" + "|" +
-                "Name      : " + book.getDocumentName() + "\n" + " |" +
-                "Authors   : " + book.getAuthors() + "\n" + " |" +
-                "Category  : " + book.getCategory() + "\n" + " |" +
-                "Quantity  : " + book.getQuantity() + "\n" + " |" +
-                "==========================";
+        // Create a URL link to the book on Google Books using the ISBN
+        String bookLink = "https://books.google.com/books?id=" + book.getIsbn();
+
+        // Concatenate other book details into a formatted string
+        String qrCodeData = "====== Book Details ======\n" +
+                "Name      : " + book.getDocumentName() + "\n" +
+                "Authors   : " + book.getAuthors() + "\n" +
+                "Category  : " + book.getCategory() + "\n" +
+                "ISBN      : " + book.getIsbn() + "\n" +
+                "Link      : " + bookLink + "\n" +
+                "==========================\n" +
+                "Scan this QR code to open the book details directly in your browser.";
 
         int width = 300;  // Width of the QR code
         int height = 300; // Height of the QR code
@@ -28,7 +33,7 @@ public class QRCodeGenerator {
             // Create a QR code writer
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
 
-            // Encode the book data into a QR code
+            // Encode the formatted book details into the QR code
             BitMatrix bitMatrix = qrCodeWriter.encode(qrCodeData, BarcodeFormat.QR_CODE, width, height);
 
             // Define the file path for the QR code image
@@ -42,5 +47,4 @@ public class QRCodeGenerator {
             System.err.println("Error generating QR code: " + e.getMessage());
         }
     }
-
 }
