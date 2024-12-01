@@ -101,36 +101,43 @@ public class BorrowingController extends Controller {  // Extend Controller
         TextField readerField = new TextField();
         readerField.setPromptText("Reader Name");
 
-        // Add a ComboBox to select document by name or category
         ComboBox<String> documentComboBox = new ComboBox<>();
         documentComboBox.setPromptText("Select Document");
 
-        // Add a search field to filter books
         TextField searchBookField = new TextField();
         searchBookField.setPromptText("Search by Name, Author, or Category");
 
-        // Add listener to update the ComboBox based on search input
         searchBookField.textProperty().addListener((observable, oldValue, newValue) -> {
             updateDocumentComboBox(newValue, documentComboBox);
         });
 
         DatePicker borrowDatePicker = new DatePicker();
+        borrowDatePicker.setPromptText("Borrow Date");
+
         DatePicker dueDatePicker = new DatePicker();
+        dueDatePicker.setPromptText("Due Date");
 
         VBox vbox = new VBox(10);
         vbox.getChildren().addAll(
                 new Label("Reader Name:"), readerField,
-                new Label("Search Document (by Name, Author, or Category):"), searchBookField,
+                new Label("Search Document:"), searchBookField,
                 new Label("Select Document:"), documentComboBox,
                 new Label("Borrow Date:"), borrowDatePicker,
                 new Label("Due Date:"), dueDatePicker
         );
+
         dialog.getDialogPane().setContent(vbox);
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == addButtonType) {
-                return new Borrowing(0, readerField.getText(), documentComboBox.getValue(),
-                        borrowDatePicker.getValue().toString(), dueDatePicker.getValue().toString(), "Active");
+                return new Borrowing(
+                        0,
+                        readerField.getText(),
+                        documentComboBox.getValue(),
+                        borrowDatePicker.getValue().toString(),
+                        dueDatePicker.getValue().toString(),
+                        "borrowing"
+                );
             }
             return null;
         });
@@ -139,7 +146,28 @@ public class BorrowingController extends Controller {  // Extend Controller
         result.ifPresent(this::addBorrowingToDatabase);
     }
 
-    // Update the ComboBox with filtered document results from the database
+    private void addBorrowingToDatabase(Borrowing newBorrowing) {
+        String query = "INSERT INTO borrowings (readerID, documentID, borrowDate, dueDate, borrowingStatus) " +
+                "VALUES ((SELECT readerID FROM readers WHERE readerName = ?), " +
+                "(SELECT documentID FROM documents WHERE documentName = ?), ?, ?, ?)";
+
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, newBorrowing.getReaderName());
+            pstmt.setString(2, newBorrowing.getDocumentName());
+            pstmt.setString(3, newBorrowing.getBorrowDate() + " 00:00:00"); // Format for DATETIME
+            pstmt.setString(4, newBorrowing.getDueDate());
+            pstmt.setString(5, newBorrowing.getBorrowingStatus());
+            pstmt.executeUpdate();
+
+            loadBorrowingsData(); // Reload the TableView
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Database Error", "Failed to add borrowing to the database.");
+        }
+    }
+
     private void updateDocumentComboBox(String searchText, ComboBox<String> comboBox) {
         comboBox.getItems().clear();
         String query = "SELECT d.documentName FROM documents d " +
@@ -158,27 +186,7 @@ public class BorrowingController extends Controller {  // Extend Controller
                 comboBox.getItems().add(rs.getString("documentName"));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void addBorrowingToDatabase(Borrowing newBorrowing) {
-        String query = "INSERT INTO borrowings (readerID, documentID, borrowDate, dueDate, borrowingStatus) " +
-                "VALUES ((SELECT readerID FROM readers WHERE readerName = ?), " +
-                "(SELECT documentID FROM documents WHERE documentName = ?), ?, ?, ?)";
-
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, newBorrowing.getReaderName());
-            pstmt.setString(2, newBorrowing.getDocumentName());
-            pstmt.setString(3, newBorrowing.getBorrowDate());
-            pstmt.setString(4, newBorrowing.getDueDate());
-            pstmt.setString(5, newBorrowing.getBorrowingStatus());
-            pstmt.executeUpdate();
-            loadBorrowingsData();
-        } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTracabcde();
         }
     }
 
