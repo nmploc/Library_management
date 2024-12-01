@@ -11,20 +11,16 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
 public class QRCodeGenerator {
-
     public static void generateQRCode(Books book, String filePath) {
-        // Create a URL link to the book on Google Books using the ISBN
-        String bookLink = "https://books.google.com/books?id=" + book.getIsbn();
+        if (book == null || book.getIsbn() == null || book.getIsbn().trim().isEmpty()) {
+            throw new IllegalArgumentException("Book or ISBN cannot be null or empty.");
+        }
 
-        // Concatenate other book details into a formatted string
-        String qrCodeData = "====== Book Details ======\n" +
-                "Name      : " + book.getDocumentName() + "\n" +
-                "Authors   : " + book.getAuthors() + "\n" +
-                "Category  : " + book.getCategory() + "\n" +
-                "ISBN      : " + book.getIsbn() + "\n" +
-                "Link      : " + bookLink + "\n" +
-                "==========================\n" +
-                "Scan this QR code to open the book details directly in your browser.";
+        // Create a URL link to the book on Google Books using the ISBN
+        String bookLink = "https://books.google.com/books?vid=ISBN" + book.getIsbn();
+
+        // Data for the QR code: Only the book link
+        String qrCodeData = bookLink;
 
         int width = 300;  // Width of the QR code
         int height = 300; // Height of the QR code
@@ -33,7 +29,7 @@ public class QRCodeGenerator {
             // Create a QR code writer
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
 
-            // Encode the formatted book details into the QR code
+            // Encode the book link into the QR code
             BitMatrix bitMatrix = qrCodeWriter.encode(qrCodeData, BarcodeFormat.QR_CODE, width, height);
 
             // Define the file path for the QR code image
@@ -43,8 +39,10 @@ public class QRCodeGenerator {
             MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
 
             System.out.println("QR Code for book generated successfully at: " + filePath);
-        } catch (WriterException | IOException e) {
+        } catch (WriterException e) {
             System.err.println("Error generating QR code: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Error writing QR code to file: " + e.getMessage());
         }
     }
 }
