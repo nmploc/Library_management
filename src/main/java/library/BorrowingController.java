@@ -178,6 +178,7 @@ public class BorrowingController extends Controller {  // Extend Controller
     }
 
     private void addBorrowingToDatabase(Borrowing newBorrowing) {
+        String checkQuantityQuery = "SELECT quantity FROM documents WHERE documentName = ?";
         String insertQuery = "INSERT INTO borrowings (readerID, documentID, borrowDate, dueDate, borrowingStatus) " +
                 "VALUES ((SELECT readerID FROM readers WHERE readerName = ?), " +
                 "(SELECT documentID FROM documents WHERE documentName = ?), ?, ?, ?)";
@@ -185,8 +186,23 @@ public class BorrowingController extends Controller {  // Extend Controller
                 "(SELECT documentID FROM documents WHERE documentName = ?)";
 
         try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement checkStmt = conn.prepareStatement(checkQuantityQuery);
              PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
              PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
+
+            // Check the quantity of the document
+            checkStmt.setString(1, newBorrowing.getDocumentName());
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next()) {
+                int quantity = rs.getInt("quantity");
+                if (quantity == 0) {
+                    showAlert("Out of Stock", "Cuốn sách đã được mượn hết");
+                    return;
+                }
+            } else {
+                showAlert("Error", "Document not found.");
+                return;
+            }
 
             // Set values for the insert statement
             insertStmt.setString(1, newBorrowing.getReaderName());
