@@ -346,18 +346,35 @@ public class BooksController extends Controller {
                     categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
                 showAlert("Input Error", "Please fill in all fields.");
             } else {
-                // Create a new Books object with updated information
-                String title = titleField.getText();
-                String authors = authorField.getText();
-                String category = categoryField.getText();
-                int quantity = Integer.parseInt(quantityField.getText());
+                try {
+                    int quantity = Integer.parseInt(quantityField.getText());
+                    if (quantity <= 0) {
+                        showAlert("Input Error", "Quantity must be a positive number.");
+                    } else {
+                        String title = titleField.getText();
+                        String authors = authorField.getText();
+                        String category = categoryField.getText();
 
-                Books updatedBook = new Books(selectedBook.getDocumentID(), title, authors, category, quantity);
-                DatabaseHelper.updateBookInDatabase(updatedBook);  // Update book in the database
-                loadBooksData();
+                        if (!DatabaseHelper.isCategoryExists(category)) {
+                            showAddCategoryDialog(category, () -> {
+                                // Add the new category to the database
+                                DatabaseHelper.addCategoryToDatabase(category);
+                                // Retry updating the book after adding the new category
+                                handleEditBookRetry(selectedBook, title, authors, category, quantity, editBookWindow);
+                            });
+                        } else {
+                            // Create a new Books object with updated information
+                            Books updatedBook = new Books(selectedBook.getDocumentID(), title, authors, category, quantity);
+                            DatabaseHelper.updateBookInDatabase(updatedBook);  // Update book in the database
+                            loadBooksData();
 
-                // Close the window after saving
-                editBookWindow.close();
+                            // Close the window after saving
+                            editBookWindow.close();
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    showAlert("Input Error", "Quantity must be a number.");
+                }
             }
         });
 
@@ -382,6 +399,16 @@ public class BooksController extends Controller {
 
         // Show the window
         editBookWindow.show();
+    }
+
+    private void handleEditBookRetry(Books selectedBook, String title, String authors, String category, int quantity, Stage editBookWindow) {
+        // Create a new Books object with updated information
+        Books updatedBook = new Books(selectedBook.getDocumentID(), title, authors, category, quantity);
+        DatabaseHelper.updateBookInDatabase(updatedBook);  // Update book in the database
+        loadBooksData();
+
+        // Close the window after saving
+        editBookWindow.close();
     }
 
     @FXML
