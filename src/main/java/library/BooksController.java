@@ -160,7 +160,7 @@ public class BooksController extends Controller {
         descriptionArea.getStyleClass().add("content-area"); // Apply CSS styling
         descriptionVBox.getChildren().addAll(new Label("Description:"), descriptionArea);
 
-        // Right side: Cover image
+        // Right side: Cover image with padding
         VBox rightVBox = new VBox(10);
         rightVBox.setStyle("-fx-padding: 28px; -fx-alignment: top-right;");
 
