@@ -3,7 +3,11 @@ package library;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
@@ -92,18 +96,19 @@ public class BorrowingController extends Controller {  // Extend Controller
 
     @FXML
     private void handleAddBorrowing() {
-        Dialog<Borrowing> dialog = new Dialog<>();
-        dialog.setTitle("Add Borrowing");
+        // Create a new Stage (window) for the "Add Borrowing" form
+        Stage addBorrowingWindow = new Stage();
+        addBorrowingWindow.setTitle("Add Borrowing");
 
-        ButtonType addButtonType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
-
+        // Create TextField for reader name
         TextField readerField = new TextField();
         readerField.setPromptText("Reader Name");
 
+        // Create ComboBox for document selection
         ComboBox<String> documentComboBox = new ComboBox<>();
         documentComboBox.setPromptText("Select Document");
 
+        // Create search field to search for documents by name, author, or category
         TextField searchBookField = new TextField();
         searchBookField.setPromptText("Search by Name, Author, or Category");
 
@@ -111,39 +116,65 @@ public class BorrowingController extends Controller {  // Extend Controller
             updateDocumentComboBox(newValue, documentComboBox);
         });
 
+        // Create DatePickers for borrow date and due date
         DatePicker borrowDatePicker = new DatePicker();
         borrowDatePicker.setPromptText("Borrow Date");
 
         DatePicker dueDatePicker = new DatePicker();
         dueDatePicker.setPromptText("Due Date");
 
+        // Create "Submit" button
+        Button addButton = new Button("Add");
+        addButton.setOnAction(event -> {
+            // Handle form submission
+            if (readerField.getText().isEmpty() || documentComboBox.getValue() == null ||
+                    borrowDatePicker.getValue() == null || dueDatePicker.getValue() == null) {
+                // Handle invalid input: show an error or simply return
+                return;
+            }
+
+            String readerName = readerField.getText();
+            String documentName = documentComboBox.getValue();
+            String borrowDate = borrowDatePicker.getValue().toString(); // format is YYYY-MM-DD
+            String dueDate = dueDatePicker.getValue().toString(); // format is YYYY-MM-DD
+
+            // Create a new Borrowing object
+            Borrowing newBorrowing = new Borrowing(0, readerName, documentName, borrowDate, dueDate, "borrowing");
+
+            // Add borrowing to database
+            addBorrowingToDatabase(newBorrowing);
+
+            // Close the window after submission
+            addBorrowingWindow.close();
+        });
+
+        // Create "Cancel" button to close the window
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setOnAction(event -> addBorrowingWindow.close());
+
+        // Create an HBox for the buttons to appear in the same row
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(addButton, cancelButton);
+
+        // Create a VBox layout to hold the form fields and buttons
         VBox vbox = new VBox(10);
+        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;");
         vbox.getChildren().addAll(
                 new Label("Reader Name:"), readerField,
                 new Label("Search Document:"), searchBookField,
                 new Label("Select Document:"), documentComboBox,
                 new Label("Borrow Date:"), borrowDatePicker,
-                new Label("Due Date:"), dueDatePicker
+                new Label("Due Date:"), dueDatePicker,
+                buttonBox // Add buttons below the fields
         );
 
-        dialog.getDialogPane().setContent(vbox);
+        // Create a scene with the VBox and set it on the new window
+        Scene scene = new Scene(vbox, 300, 350);
+        addBorrowingWindow.setScene(scene);
 
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == addButtonType) {
-                return new Borrowing(
-                        0,
-                        readerField.getText(),
-                        documentComboBox.getValue(),
-                        borrowDatePicker.getValue().toString(),
-                        dueDatePicker.getValue().toString(),
-                        "borrowing"
-                );
-            }
-            return null;
-        });
-
-        Optional<Borrowing> result = dialog.showAndWait();
-        result.ifPresent(this::addBorrowingToDatabase);
+        // Show the window
+        addBorrowingWindow.show();
     }
 
     private void addBorrowingToDatabase(Borrowing newBorrowing) {
