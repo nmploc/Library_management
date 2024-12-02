@@ -23,7 +23,7 @@ public class DatabaseHelper {
             System.out.println("Starting MySQL server...");
 
             // Wait for a few seconds to ensure services are up
-            Thread.sleep(5000); // Adjust the delay as necessary
+            Thread.sleep(200); // Adjust the delay as necessary
         } catch (IOException | InterruptedException e) {
             System.err.println("Error starting XAMPP services: " + e.getMessage());
             e.printStackTrace();
@@ -34,11 +34,9 @@ public class DatabaseHelper {
     public static void stopXamppServices() {
         String xamppPath = "D:\\xampp\\"; // Path to your XAMPP installation
         try {
-            // Stop Apache and MySQL services
-            new ProcessBuilder(xamppPath + "apache_stop.bat").start();
-            System.out.println("Stopping Apache server...");
-            new ProcessBuilder(xamppPath + "mysql_stop.bat").start();
-            System.out.println("Stopping MySQL server...");
+            // Run the xampp_stop.exe file
+            new ProcessBuilder(xamppPath + "xampp_stop.exe").start();
+            System.out.println("Stopping XAMPP services...");
         } catch (IOException e) {
             System.err.println("Error stopping XAMPP services: " + e.getMessage());
             e.printStackTrace();
