@@ -55,9 +55,9 @@ CREATE TABLE IF NOT EXISTS borrowings (
     borrowingID INT AUTO_INCREMENT PRIMARY KEY,
     readerID INT,
     documentID INT,
-    borrowDate DATETIME,
+    borrowDate DATE,
     dueDate DATE,
-    returnDate DATETIME,
+    returnDate DATE,
     borrowingStatus ENUM('borrowing', 'returned', 'late') NOT NULL,
     FOREIGN KEY (documentID) REFERENCES documents(documentID) ON UPDATE CASCADE,
     FOREIGN KEY (readerID) REFERENCES readers(readerID) ON UPDATE CASCADE

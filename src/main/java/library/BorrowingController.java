@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -96,86 +97,168 @@ public class BorrowingController extends Controller {  // Extend Controller
 
     @FXML
     private void handleAddBorrowing() {
-        // Create a new Stage (window) for the "Add Borrowing" form
         Stage addBorrowingWindow = new Stage();
         addBorrowingWindow.setTitle("Add Borrowing");
 
-        // Create TextField for reader name
+        // Reader Name
         TextField readerField = new TextField();
         readerField.setPromptText("Reader Name");
+        readerField.setPrefWidth(300);
 
-        // Create ComboBox for document selection
-        ComboBox<String> documentComboBox = new ComboBox<>();
-        documentComboBox.setPromptText("Select Document");
+        // Document Search
+        TextField documentSearchField = new TextField();
+        documentSearchField.setPromptText("Search Document");
+        documentSearchField.setPrefWidth(300);
 
-        // Create search field to search for documents by name, author, or category
-        TextField searchBookField = new TextField();
-        searchBookField.setPromptText("Search by Name, Author, or Category");
+        ListView<String> documentListView = new ListView<>();
+        documentListView.setPrefWidth(300);
+        documentListView.setVisible(false); // Ban đầu ẩn danh sách
+        documentListView.setMaxHeight(150);
 
-        searchBookField.textProperty().addListener((observable, oldValue, newValue) -> {
-            updateDocumentComboBox(newValue, documentComboBox);
+        // Add listener to search and update ListView
+        documentSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty()) {
+                updateDocumentListView(newValue, documentListView);
+                documentListView.setVisible(true); // Hiển thị danh sách khi có kết quả
+            } else {
+                documentListView.setVisible(false); // Ẩn danh sách nếu không có từ khóa
+            }
         });
 
-        // Create DatePickers for borrow date and due date
+        // Handle selection in ListView
+        documentListView.setOnMouseClicked(event -> {
+            String selectedDocument = documentListView.getSelectionModel().getSelectedItem();
+            if (selectedDocument != null) {
+                documentSearchField.setText(selectedDocument);
+                documentListView.setVisible(false); // Ẩn danh sách sau khi chọn
+            }
+        });
+
+        // Borrow Date
         DatePicker borrowDatePicker = new DatePicker();
         borrowDatePicker.setPromptText("Borrow Date");
+        borrowDatePicker.setPrefWidth(300);
 
+        // Due Date
         DatePicker dueDatePicker = new DatePicker();
         dueDatePicker.setPromptText("Due Date");
+        dueDatePicker.setPrefWidth(300);
 
-        // Create "Submit" button
+        // Buttons
         Button addButton = new Button("Add");
+        Button cancelButton = new Button("Cancel");
+
+        addButton.setPrefWidth(100);
+        cancelButton.setPrefWidth(100);
+
         addButton.setOnAction(event -> {
-            // Handle form submission
-            if (readerField.getText().isEmpty() || documentComboBox.getValue() == null ||
-                    borrowDatePicker.getValue() == null || dueDatePicker.getValue() == null) {
-                // Handle invalid input: show an error or simply return
+            // Kiểm tra xem tên người mượn có trong database không
+            String readerName = readerField.getText();
+            if (readerName.isEmpty() || !isReaderExists(readerName)) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Reader Not Found");
+                alert.setHeaderText(null);
+                alert.setContentText("The reader name is not found in the database. Please check again.");
+                alert.showAndWait();
                 return;
             }
 
-            String readerName = readerField.getText();
-            String documentName = documentComboBox.getValue();
-            String borrowDate = borrowDatePicker.getValue().toString(); // format is YYYY-MM-DD
-            String dueDate = dueDatePicker.getValue().toString(); // format is YYYY-MM-DD
+            if (readerField.getText().isEmpty() || documentSearchField.getText().isEmpty() ||
+                    borrowDatePicker.getValue() == null || dueDatePicker.getValue() == null) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Input Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Please fill in all required fields!");
+                alert.showAndWait();
+                return;
+            }
 
-            // Create a new Borrowing object
+            if (borrowDatePicker.getValue().isAfter(dueDatePicker.getValue())) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Date Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Borrow date cannot be after the due date!");
+                alert.showAndWait();
+                return;
+            }
+            
+            String documentName = documentSearchField.getText();
+            String borrowDate = borrowDatePicker.getValue().toString();
+            String dueDate = dueDatePicker.getValue().toString();
+
             Borrowing newBorrowing = new Borrowing(0, readerName, documentName, borrowDate, dueDate, "borrowing");
 
-            // Add borrowing to database
             addBorrowingToDatabase(newBorrowing);
-
-            // Close the window after submission
             addBorrowingWindow.close();
         });
 
-        // Create "Cancel" button to close the window
-        Button cancelButton = new Button("Cancel");
         cancelButton.setOnAction(event -> addBorrowingWindow.close());
 
-        // Create an HBox for the buttons to appear in the same row
-        HBox buttonBox = new HBox(10);
+        // Button Layout
+        HBox buttonBox = new HBox(10, addButton, cancelButton);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(addButton, cancelButton);
 
-        // Create a VBox layout to hold the form fields and buttons
-        VBox vbox = new VBox(10);
-        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;");
+        // StackPane Layout để chồng ListView lên các phần tử khác
+        StackPane stackPane = new StackPane();
+        stackPane.setStyle("-fx-padding: 20px; -fx-alignment: center;");
+
+        // Tạo VBox cho phần còn lại của form
+        VBox vbox = new VBox(10); // Khoảng cách giữa các phần tử
         vbox.getChildren().addAll(
                 new Label("Reader Name:"), readerField,
-                new Label("Search Document:"), searchBookField,
-                new Label("Select Document:"), documentComboBox,
+                new Label("Search Document:"), documentSearchField,
                 new Label("Borrow Date:"), borrowDatePicker,
                 new Label("Due Date:"), dueDatePicker,
-                buttonBox // Add buttons below the fields
+                buttonBox
         );
 
-        // Create a scene with the VBox and set it on the new window
-        Scene scene = new Scene(vbox, 300, 350);
-        addBorrowingWindow.setScene(scene);
+        stackPane.getChildren().addAll(vbox, documentListView); // Đặt vbox và ListView chồng lên nhau
 
-        // Show the window
+        // Scene
+        Scene scene = new Scene(stackPane, 400, 500);
+        addBorrowingWindow.setScene(scene);
         addBorrowingWindow.show();
     }
+
+    private boolean isReaderExists(String readerName) {
+        String query = "SELECT COUNT(*) FROM readers WHERE readerName = ?";
+
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, readerName);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0; // Nếu có ít nhất 1 người mượn với tên này
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private void updateDocumentListView(String searchText, ListView<String> listView) {
+        listView.getItems().clear();
+        String query = "SELECT d.documentName FROM documents d " +
+                "LEFT JOIN categories c ON d.categoryID = c.categoryID " +
+                "WHERE d.documentName LIKE ? OR d.authors LIKE ? OR c.categoryName LIKE ?";
+
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, "%" + searchText + "%");
+            pstmt.setString(2, "%" + searchText + "%");
+            pstmt.setString(3, "%" + searchText + "%");
+
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                listView.getItems().add(rs.getString("documentName"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void addBorrowingToDatabase(Borrowing newBorrowing) {
         String checkQuantityQuery = "SELECT quantity FROM documents WHERE documentName = ?";
@@ -207,7 +290,7 @@ public class BorrowingController extends Controller {  // Extend Controller
             // Set values for the insert statement
             insertStmt.setString(1, newBorrowing.getReaderName());
             insertStmt.setString(2, newBorrowing.getDocumentName());
-            insertStmt.setString(3, newBorrowing.getBorrowDate() + " 00:00:00"); // Format for DATETIME
+            insertStmt.setString(3, newBorrowing.getBorrowDate());
             insertStmt.setString(4, newBorrowing.getDueDate());
             insertStmt.setString(5, newBorrowing.getBorrowingStatus());
 
@@ -224,28 +307,6 @@ public class BorrowingController extends Controller {  // Extend Controller
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert("Database Error", "Failed to add borrowing to the database.");
-        }
-    }
-
-    private void updateDocumentComboBox(String searchText, ComboBox<String> comboBox) {
-        comboBox.getItems().clear();
-        String query = "SELECT d.documentName FROM documents d " +
-                "LEFT JOIN categories c ON d.categoryID = c.categoryID " +
-                "WHERE d.documentName LIKE ? OR d.authors LIKE ? OR c.categoryName LIKE ?";
-
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, "%" + searchText + "%");
-            pstmt.setString(2, "%" + searchText + "%");
-            pstmt.setString(3, "%" + searchText + "%");
-
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                comboBox.getItems().add(rs.getString("documentName"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
