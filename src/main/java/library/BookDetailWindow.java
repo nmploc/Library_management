@@ -73,7 +73,7 @@ public class BookDetailWindow extends Controller{
         descriptionArea.setWrapText(true);
         descriptionArea.setEditable(false);
         descriptionArea.setPrefHeight(260);
-        descriptionArea.setPrefWidth(200);
+        descriptionArea.setPrefWidth(260);
         descriptionArea.getStyleClass().add("content-area"); // Apply CSS styling for shadow and border
 
         VBox descriptionVBox = new VBox(10);
@@ -174,7 +174,7 @@ public class BookDetailWindow extends Controller{
         descriptionArea.setWrapText(true);
         descriptionArea.setEditable(false);
         descriptionArea.setPrefHeight(260);
-        descriptionArea.setPrefWidth(200);
+        descriptionArea.setPrefWidth(260);
         descriptionArea.getStyleClass().add("content-area"); // Apply CSS styling for shadow and border
 
         VBox descriptionVBox = new VBox(10);
