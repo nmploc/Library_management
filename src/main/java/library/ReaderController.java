@@ -244,13 +244,6 @@ public class ReaderController extends Controller {
         }
     }
 
-    public void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
     @FXML
     private void handleFindReader() {
         String searchQuery = searchField.getText().trim();

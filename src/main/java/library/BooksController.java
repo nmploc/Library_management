@@ -11,8 +11,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
 
 import java.net.URL;
@@ -88,131 +86,55 @@ public class BooksController extends Controller {
 
     @FXML
     private void openBookDetail(Books selectedBook) {
-        if (selectedBook == null) {
-            showAlert("No Selection", "Please select a book to view details.");
-            return;
-        }
+        Books bookDetails = APIHelper.fetchBookDetailsByISBN(selectedBook.getIsbn());
+        if (bookDetails != null) {
+            // Update the selectedBook object with the details from the API if available
+            selectedBook.setDocumentName(bookDetails.getDocumentName());
+            selectedBook.setAuthors(bookDetails.getAuthors());
+            selectedBook.setCategory(bookDetails.getCategory());
+            selectedBook.setCoverImageUrl(bookDetails.getCoverImageUrl());
+            selectedBook.setDescription(bookDetails.getDescription());
 
-        // Fetch additional book details from the API using ISBN
-        Books apiBookDetails = APIHelper.fetchBookDetailsByISBN(selectedBook.getIsbn());
-
-        if (apiBookDetails == null) {
-            showAlert("API Error", "Failed to fetch book details from the API.");
-            return;
-        }
-
-        // Create a new Stage (window) for showing book details
-        Stage detailWindow = new Stage();
-        detailWindow.setTitle("Book Details");
-
-        // Main container layout
-        HBox hbox = new HBox(30); // Set spacing between sections
-        hbox.setStyle("-fx-padding: 20px; " +
-                "-fx-alignment: center;");
-
-        // Left side: Book details and QR code
-        VBox leftVBox = new VBox(10);
-        leftVBox.setStyle("-fx-alignment: top-left;");
-
-        // Consolidate book details into a single TextArea with shadow and border styling
-        TextArea bookDetailsArea = new TextArea();
-        bookDetailsArea.setText(String.format(
-                "Title: %s\nAuthor: %s\nCategory: %s\nQuantity: %d\nISBN: %s",
-                apiBookDetails.getDocumentName(),
-                apiBookDetails.getAuthors(),
-                apiBookDetails.getCategory(),
-                selectedBook.getQuantity(),
-                apiBookDetails.getIsbn()
-        ));
-        bookDetailsArea.setWrapText(true);
-        bookDetailsArea.setEditable(false);
-        bookDetailsArea.setPrefHeight(120); // Adjusted size
-        bookDetailsArea.setPrefWidth(250); // Adjusted size
-        bookDetailsArea.getStyleClass().add("content-area"); // Apply CSS styling
-        leftVBox.getChildren().add(bookDetailsArea);
-
-        // Add QR code section
-        VBox qrVBox = new VBox(10);
-        try {
-            String tempQRCodePath = "temp_qr_code.png";
-            QRCodeGenerator.generateQRCode(apiBookDetails, tempQRCodePath);
-
-            ImageView qrCodeView = new ImageView(new Image("file:" + tempQRCodePath));
-            qrCodeView.setFitHeight(160); // Adjusted size
-            qrCodeView.setFitWidth(160);  // Adjusted size
-            qrCodeView.setPreserveRatio(true);
-
-            qrVBox.getChildren().add(new Label("QR Code:"));
-            qrVBox.getChildren().add(qrCodeView);
-        } catch (Exception e) {
-            qrVBox.getChildren().add(new Label("QR Code unavailable."));
-            showAlert("QR Code Error", "Failed to generate QR code: " + e.getMessage());
-        }
-        leftVBox.getChildren().add(qrVBox);
-
-        // Center: Description
-        VBox descriptionVBox = new VBox(10);
-        TextArea descriptionArea = new TextArea();
-        descriptionArea.setText(apiBookDetails.getDescription() != null ? apiBookDetails.getDescription() : "No description available");
-        descriptionArea.setWrapText(true);
-        descriptionArea.setEditable(false);
-        descriptionArea.setPrefHeight(260); // Adjusted size
-        descriptionArea.setPrefWidth(200); // Adjusted size
-        descriptionArea.getStyleClass().add("content-area"); // Apply CSS styling
-        descriptionVBox.getChildren().addAll(new Label("Description:"), descriptionArea);
-
-        // Right side: Cover image with padding
-        VBox rightVBox = new VBox(10);
-        rightVBox.setStyle("-fx-padding: 28px; -fx-alignment: top-right;");
-
-        if (apiBookDetails.getCoverImageUrl() != null && !apiBookDetails.getCoverImageUrl().isEmpty()) {
-            try {
-                ImageView coverImageView = new ImageView(new Image(apiBookDetails.getCoverImageUrl()));
-                coverImageView.setFitHeight(260); // Adjusted size
-                coverImageView.setFitWidth(260);  // Adjusted size
-                coverImageView.setPreserveRatio(true);
-                rightVBox.getChildren().add(coverImageView);
-            } catch (Exception e) {
-                rightVBox.getChildren().add(new Label("Cover image unavailable."));
-            }
+            // Now open the BookDetailWindow with the updated selectedBook object
+            BookDetailWindow.openBookDetail(selectedBook);
         } else {
-            rightVBox.getChildren().add(new Label("No cover image available."));
+            BookDetailWindow.openBookDetailWithoutCover(selectedBook);;
         }
-
-        // Combine all sections
-        hbox.getChildren().addAll(leftVBox, descriptionVBox, rightVBox);
-
-        // Scene and window setup
-        Scene detailScene = new Scene(hbox, 700, 400); // Adjusted size to match openBookDetailAPI
-        detailScene.getStylesheets().add(getClass().getResource("/CSS/Books.css").toExternalForm()); // Add CSS stylesheet
-        detailWindow.setScene(detailScene);
-        detailWindow.show();
     }
 
     private void loadBooksData() {
+        // Create an observable list to hold the book data
         booksList = FXCollections.observableArrayList();
-        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity, d.isbn " +
+
+        // SQL query to select book data, including description
+        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity, d.isbn, d.description " +
                 "FROM documents d LEFT JOIN categories c ON d.categoryID = c.categoryID";
 
         try (Connection conn = DatabaseHelper.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
+            // Loop through the result set and add the data to booksList
             while (rs.next()) {
                 int id = rs.getInt("documentID");
                 String name = rs.getString("documentName");
                 String authors = rs.getString("authors");
                 String category = rs.getString("categoryName");
                 int quantity = rs.getInt("quantity");
-                String isbn = rs.getString("isbn"); // Get the ISBN from the result set
+                String isbn = rs.getString("isbn");
+                String description = rs.getString("description");  // Retrieve description field
 
-                booksList.add(new Books(id, name, authors, category, quantity, isbn)); // Pass ISBN to the Books constructor
+                // Create a new Books object and add it to the booksList
+                booksList.add(new Books(id, name, authors, category, quantity, isbn, description));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        // Set the booksList to the TableView
         booksTable.setItems(booksList);
     }
+
     @FXML
     private void handleAddBook() {
         // Create a new Stage (window) for the "Add Book" form
@@ -511,11 +433,4 @@ public class BooksController extends Controller {
     }
 
 
-    public void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 }

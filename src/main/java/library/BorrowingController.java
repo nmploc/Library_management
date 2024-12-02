@@ -341,12 +341,6 @@ public class BorrowingController extends Controller {  // Extend Controller
         }
     }
 
-    public void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
 
     @FXML
     private void handleFindBorrowing() {

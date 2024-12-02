@@ -29,6 +29,16 @@ public class Books {
         this.isbn = isbn;
     }
 
+    public Books(int documentID, String documentName, String authors, String category, int quantity, String isbn,  String description) {
+        this.documentID = documentID;
+        this.documentName = documentName;
+        this.authors = authors;
+        this.category = category;
+        this.quantity = quantity;
+        this.isbn = isbn;
+        this.description = description;
+    }
+
     // Constructor with cover image, ISBN, and description
     public Books(int documentID, String documentName, String authors, String category, int quantity, String coverImageUrl, String isbn, String description) {
         this.documentID = documentID;

@@ -66,7 +66,7 @@ public class Controller implements Initializable {
     }
 
     // Show cảnh báo (e.g., wrong password)
-    public void showAlert(String title, String message) {
+    public static void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
