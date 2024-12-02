@@ -144,4 +144,21 @@ public class DatabaseHelper {
         }
     }
 
+    // New method to check if a book is currently on loan
+    public static boolean isBookOnLoan(int documentID) {
+        String query = "SELECT COUNT(*) FROM borrowings WHERE documentID = ? AND borrowingStatus = 'borrowing'";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, documentID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error in isBookOnLoan: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

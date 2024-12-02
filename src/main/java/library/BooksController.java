@@ -427,6 +427,11 @@ public class BooksController extends Controller {
             return;
         }
 
+        if (DatabaseHelper.isBookOnLoan(selectedBook.getDocumentID())) {
+            showAlert("Cannot Delete", "This book is currently on loan and cannot be deleted.");
+            return;
+        }
+
         // Create a new Stage for the delete confirmation
         Stage deleteConfirmationWindow = new Stage();
         deleteConfirmationWindow.setTitle("Delete Confirmation");
