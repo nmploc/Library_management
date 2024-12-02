@@ -106,14 +106,15 @@ public class BooksController extends Controller {
         detailWindow.setTitle("Book Details");
 
         // Main container layout
-        HBox hbox = new HBox(20); // Set spacing between sections
-        hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;");
+        HBox hbox = new HBox(30); // Set spacing between sections
+        hbox.setStyle("-fx-padding: 20px; " +
+                "-fx-alignment: center;");
 
         // Left side: Book details and QR code
         VBox leftVBox = new VBox(10);
         leftVBox.setStyle("-fx-alignment: top-left;");
 
-        // Consolidate book details into a single TextArea
+        // Consolidate book details into a single TextArea with shadow and border styling
         TextArea bookDetailsArea = new TextArea();
         bookDetailsArea.setText(String.format(
                 "Title: %s\nAuthor: %s\nCategory: %s\nQuantity: %d\nISBN: %s",
@@ -125,8 +126,8 @@ public class BooksController extends Controller {
         ));
         bookDetailsArea.setWrapText(true);
         bookDetailsArea.setEditable(false);
-        bookDetailsArea.setPrefHeight(150);
-        bookDetailsArea.setPrefWidth(250);
+        bookDetailsArea.setPrefHeight(120); // Adjusted size
+        bookDetailsArea.setPrefWidth(250); // Adjusted size
         bookDetailsArea.getStyleClass().add("content-area"); // Apply CSS styling
         leftVBox.getChildren().add(bookDetailsArea);
 
@@ -137,8 +138,8 @@ public class BooksController extends Controller {
             QRCodeGenerator.generateQRCode(apiBookDetails, tempQRCodePath);
 
             ImageView qrCodeView = new ImageView(new Image("file:" + tempQRCodePath));
-            qrCodeView.setFitHeight(160);
-            qrCodeView.setFitWidth(160);
+            qrCodeView.setFitHeight(160); // Adjusted size
+            qrCodeView.setFitWidth(160);  // Adjusted size
             qrCodeView.setPreserveRatio(true);
 
             qrVBox.getChildren().add(new Label("QR Code:"));
@@ -155,20 +156,20 @@ public class BooksController extends Controller {
         descriptionArea.setText(apiBookDetails.getDescription() != null ? apiBookDetails.getDescription() : "No description available");
         descriptionArea.setWrapText(true);
         descriptionArea.setEditable(false);
-        descriptionArea.setPrefHeight(250);
-        descriptionArea.setPrefWidth(200);
+        descriptionArea.setPrefHeight(260); // Adjusted size
+        descriptionArea.setPrefWidth(200); // Adjusted size
         descriptionArea.getStyleClass().add("content-area"); // Apply CSS styling
         descriptionVBox.getChildren().addAll(new Label("Description:"), descriptionArea);
 
-        // Right side: Cover image
+        // Right side: Cover image with padding
         VBox rightVBox = new VBox(10);
         rightVBox.setStyle("-fx-padding: 28px; -fx-alignment: top-right;");
 
         if (apiBookDetails.getCoverImageUrl() != null && !apiBookDetails.getCoverImageUrl().isEmpty()) {
             try {
                 ImageView coverImageView = new ImageView(new Image(apiBookDetails.getCoverImageUrl()));
-                coverImageView.setFitHeight(300);
-                coverImageView.setFitWidth(300);
+                coverImageView.setFitHeight(260); // Adjusted size
+                coverImageView.setFitWidth(260);  // Adjusted size
                 coverImageView.setPreserveRatio(true);
                 rightVBox.getChildren().add(coverImageView);
             } catch (Exception e) {
@@ -182,7 +183,7 @@ public class BooksController extends Controller {
         hbox.getChildren().addAll(leftVBox, descriptionVBox, rightVBox);
 
         // Scene and window setup
-        Scene detailScene = new Scene(hbox, 800, 400);
+        Scene detailScene = new Scene(hbox, 700, 400); // Adjusted size to match openBookDetailAPI
         detailScene.getStylesheets().add(getClass().getResource("/CSS/Books.css").toExternalForm()); // Add CSS stylesheet
         detailWindow.setScene(detailScene);
         detailWindow.show();
