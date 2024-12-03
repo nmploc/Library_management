@@ -144,18 +144,23 @@ public class BooksController extends Controller {
         // Create TextField fields for book details
         TextField titleField = new TextField();
         titleField.setPromptText("Title");
+        titleField.setPrefWidth(300);
 
         TextField authorField = new TextField();
         authorField.setPromptText("Author");
+        authorField.setPrefWidth(300);
 
         TextField categoryField = new TextField();
         categoryField.setPromptText("Category");
+        categoryField.setPrefWidth(300);
 
         TextField quantityField = new TextField();
         quantityField.setPromptText("Quantity");
+        quantityField.setPrefWidth(300);
 
         // Create a "Submit" button
         Button addButton = new Button("Add");
+        addButton.setPrefWidth(100);
         addButton.setOnAction(event -> {
             // Handle the form submission
             if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
@@ -196,26 +201,28 @@ public class BooksController extends Controller {
 
         // Create a "Cancel" button to close the window
         Button cancelButton = new Button("Cancel");
+        cancelButton.setPrefWidth(100);
         cancelButton.setOnAction(event -> addBookWindow.close());
 
         // Create an HBox for the buttons to appear in the same row
-        HBox buttonBox = new HBox(10);
+        HBox buttonBox = new HBox(10, addButton, cancelButton);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(addButton, cancelButton);
 
         // Create a VBox layout to hold the form fields and buttons
         VBox vbox = new VBox(10);
-        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Padding and centering
+        vbox.setStyle("-fx-padding: 20px;"); // Padding and centering
+
+        // Add labels with left alignment and form fields
         vbox.getChildren().addAll(
-                titleField,
-                authorField,
-                categoryField,
-                quantityField,
+                new Label("Title:"), titleField,
+                new Label("Author:"), authorField,
+                new Label("Category:"), categoryField,
+                new Label("Quantity:"), quantityField,
                 buttonBox // Add the buttons in the same row
         );
 
         // Create a scene with the VBox and set it on the new window
-        Scene scene = new Scene(vbox, 260, 320);
+        Scene scene = new Scene(vbox, 400, 320);
         addBookWindow.setScene(scene);
 
         // Show the window
@@ -258,19 +265,27 @@ public class BooksController extends Controller {
             return;
         }
 
-        // Create a new Stage (window) for editing the book
+        // Create a new Stage for editing the book
         Stage editBookWindow = new Stage();
         Main.registerStage(editBookWindow);
         editBookWindow.setTitle("Edit Book");
 
         // Create TextFields pre-filled with the selected book's details
         TextField titleField = new TextField(selectedBook.getDocumentName());
-        TextField authorField = new TextField(selectedBook.getAuthors());
-        TextField categoryField = new TextField(selectedBook.getCategory());
-        TextField quantityField = new TextField(String.valueOf(selectedBook.getQuantity()));
+        titleField.setPrefWidth(300);
 
-        // Create the "Save" button to apply changes
+        TextField authorField = new TextField(selectedBook.getAuthors());
+        authorField.setPrefWidth(300);
+
+        TextField categoryField = new TextField(selectedBook.getCategory());
+        categoryField.setPrefWidth(300);
+
+        TextField quantityField = new TextField(String.valueOf(selectedBook.getQuantity()));
+        quantityField.setPrefWidth(300);
+
+        // Create the "Save" button
         Button saveButton = new Button("Save");
+        saveButton.setPrefWidth(100);
         saveButton.setOnAction(event -> {
             // Validate input fields
             if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
@@ -309,23 +324,30 @@ public class BooksController extends Controller {
             }
         });
 
-        // Create a "Cancel" button to close the window without saving
+        // Create the "Cancel" button
         Button cancelButton = new Button("Cancel");
+        cancelButton.setPrefWidth(100);
         cancelButton.setOnAction(event -> editBookWindow.close());
+
+        // Button Layout
+        HBox buttonBox = new HBox(10, saveButton, cancelButton);
+        buttonBox.setAlignment(Pos.CENTER);
 
         // Create a VBox layout to hold the form and buttons
         VBox vbox = new VBox(10);
-        vbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Padding and centering
+        vbox.setStyle("-fx-padding: 20px;"); // Padding and centering
+
+        // Add labels with left alignment and form fields
         vbox.getChildren().addAll(
                 new Label("Title:"), titleField,
                 new Label("Author:"), authorField,
                 new Label("Category:"), categoryField,
                 new Label("Quantity:"), quantityField,
-                saveButton, cancelButton
+                buttonBox // Add the buttons in the same row
         );
 
         // Create a scene with the VBox and set it on the new window
-        Scene scene = new Scene(vbox, 400, 300);
+        Scene scene = new Scene(vbox, 400, 320);
         editBookWindow.setScene(scene);
 
         // Show the window
