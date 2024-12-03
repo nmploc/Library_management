@@ -1,22 +1,21 @@
 package library;
 
-import javafx.scene.control.*;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.util.Callback;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
+
 import java.awt.*;
-import javafx.scene.control.TextField;
 import java.io.File;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.*;
+import java.sql.*;
 import java.util.List;
+import java.util.ResourceBundle;
 
 public class ReportController extends Controller {
 
@@ -24,13 +23,27 @@ public class ReportController extends Controller {
     private ComboBox<String> choice;
 
     @FXML
-    private TextField textField;
+    private javafx.scene.control.TextField textField;
 
     @FXML
-    private TextArea textArea;
+    private javafx.scene.control.TextArea textArea;
 
     @FXML
     private ListView<String> selectedFile;
+
+    @FXML
+    private TableView<Report> submittedReportsTable;
+
+    @FXML
+    private TableColumn<Report, String> reportTypeColumn;
+
+    @FXML
+    private TableColumn<Report, String> titleColumn;
+
+    @FXML
+    private TableColumn<Report, String> contentColumn;
+
+    private ObservableList<Report> reportList;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -52,7 +65,7 @@ public class ReportController extends Controller {
                             String name = new File(item).getName();
                             hyperlink.setText(name);
                             String finalItem = item;
-                            hyperlink.setOnAction(event -> openFile(finalItem)); 
+                            hyperlink.setOnAction(event -> openFile(finalItem));
                             setGraphic(hyperlink);
                         }
                     }
@@ -60,6 +73,15 @@ public class ReportController extends Controller {
             }
         });
         selectedFile.setOnKeyPressed(this::removeSelectedFile);
+
+        reportTypeColumn.setCellValueFactory(new PropertyValueFactory<>("reportType"));
+        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+        contentColumn.setCellValueFactory(new PropertyValueFactory<>("content"));
+
+        reportList = FXCollections.observableArrayList();
+        submittedReportsTable.setItems(reportList);
+
+        fetchReportsFromDatabase();
     }
 
     private void initializeComboBox() {
@@ -92,13 +114,13 @@ public class ReportController extends Controller {
             choice.setValue(null);
             selectedFile.getItems().clear();
             selectedFile.setVisible(false);
+            fetchReportsFromDatabase();
         }
     }
 
     @FXML
     public void setFileChooser() {
         FileChooser fc = new FileChooser();
-       // fc.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
         List<File> selectedFiles = fc.showOpenMultipleDialog(null);
         if (selectedFiles != null) {
             for (File file : selectedFiles) {
@@ -118,7 +140,6 @@ public class ReportController extends Controller {
             String selectedFileName = selectionModel.getSelectedItem();
             if (selectedFileName != null) {
                 this.selectedFile.getItems().remove(selectedFileName);
-
             }
             selectedFile.setVisible(!selectedFile.getItems().isEmpty());
         }
@@ -133,6 +154,27 @@ public class ReportController extends Controller {
                 System.out.println("File not found");
             }
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void fetchReportsFromDatabase() {
+        String query = "SELECT reportType, title, content FROM reports";
+        DatabaseHelper.connectToDatabase();
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            reportList.clear();
+
+            while (rs.next()) {
+                String reportType = rs.getString("reportType");
+                String title = rs.getString("title");
+                String content = rs.getString("content");
+                reportList.add(new Report(reportType, title, content));
+            }
+
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
