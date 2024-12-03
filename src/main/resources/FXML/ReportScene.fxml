@@ -7,13 +7,16 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="container" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="588" prefWidth="985.3333740234375" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.ReportController">
+<AnchorPane fx:id="container" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="985.3333740234375" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.ReportController">
    <children>
       <VBox prefHeight="317.0" prefWidth="600.0" spacing="20.0">
          <children>
@@ -43,10 +46,28 @@
          </padding>
       </HBox>
       <ListView fx:id="selectedFile" layoutX="14.0" layoutY="324.0" onKeyTyped="#removeSelectedFile" prefHeight="100.0" prefWidth="306.0" style="-fx-faint-focus-color: transparent; -fx-focus-color: transparent;" />
-      <VBox layoutX="14.0" layoutY="430.0" spacing="10.0" prefHeight="140.0" prefWidth="306.0">
+      <VBox layoutX="14.0" layoutY="430.0" spacing="10.0" prefHeight="240.0" prefWidth="957.0">
          <children>
-            <Label text="Feedback List" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-            <ListView fx:id="feedbackList" prefHeight="130.0" prefWidth="306.0" style="-fx-faint-focus-color: transparent; -fx-focus-color: transparent;" />
+            <Label text="Submitted Reports" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+            <TableView fx:id="submittedReportsTable" prefHeight="230.0" prefWidth="950.0" style="-fx-faint-focus-color: transparent; -fx-focus-color: transparent;">
+               <columns>
+                  <TableColumn fx:id="reportTypeColumn" prefWidth="150.0" text="Report Type">
+                     <cellValueFactory>
+                        <PropertyValueFactory property="reportType" />
+                     </cellValueFactory>
+                  </TableColumn>
+                  <TableColumn fx:id="titleColumn" prefWidth="300.0" text="Title">
+                     <cellValueFactory>
+                        <PropertyValueFactory property="title" />
+                     </cellValueFactory>
+                  </TableColumn>
+                  <TableColumn fx:id="contentColumn" prefWidth="500.0" text="Content">
+                     <cellValueFactory>
+                        <PropertyValueFactory property="content" />
+                     </cellValueFactory>
+                  </TableColumn>
+               </columns>
+            </TableView>
          </children>
       </VBox>
    </children>
