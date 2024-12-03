@@ -102,10 +102,10 @@ public class DatabaseHelper {
 
     public static ObservableList<Books> searchBooksInDatabase(String searchQuery) {
         ObservableList<Books> searchResults = FXCollections.observableArrayList();
-        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity " +
+        String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity, d.isbn " +
                 "FROM documents d " +
                 "LEFT JOIN categories c ON d.categoryID = c.categoryID " +
-                "WHERE d.documentName LIKE ? OR d.authors LIKE ? OR c.categoryName LIKE ?";
+                "WHERE d.documentName LIKE ? OR d.authors LIKE ? OR c.categoryName LIKE ? OR d.isbn LIKE ?";
 
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -114,6 +114,7 @@ public class DatabaseHelper {
             pstmt.setString(1, "%" + searchQuery + "%");
             pstmt.setString(2, "%" + searchQuery + "%");
             pstmt.setString(3, "%" + searchQuery + "%");
+            pstmt.setString(4, "%" + searchQuery + "%"); // Add for ISBN search
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 Books book = new Books(
@@ -121,7 +122,8 @@ public class DatabaseHelper {
                         rs.getString("documentName"),
                         rs.getString("authors"),
                         rs.getString("categoryName"),
-                        rs.getInt("quantity")
+                        rs.getInt("quantity"),
+                        rs.getString("isbn")
                 );
                 searchResults.add(book);
             }

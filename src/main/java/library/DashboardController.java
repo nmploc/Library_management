@@ -74,7 +74,7 @@ public class DashboardController extends Controller {
     private void loadTotalBooksAndUsers() {
         try (Connection connection = DatabaseHelper.getConnection()) {
             String bookQuery = "SELECT COUNT(*) FROM documents";
-            String userQuery = "SELECT COUNT(*) FROM users";
+            String userQuery = "SELECT COUNT(*) FROM readers";
 
             // Query total books
             try (PreparedStatement bookStatement = connection.prepareStatement(bookQuery);
@@ -90,7 +90,7 @@ public class DashboardController extends Controller {
                  ResultSet userResult = userStatement.executeQuery()) {
                 if (userResult.next()) {
                     int numOfUsers = userResult.getInt(1);
-                    labelTotalUsers.setText("Total users: " + numOfUsers);
+                    labelTotalUsers.setText("Total readers: " + numOfUsers);
                 }
             }
 

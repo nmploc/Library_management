@@ -87,18 +87,17 @@ public class BooksController extends Controller {
     @FXML
     private void openBookDetail(Books selectedBook) {
         Books bookDetails = APIHelper.fetchBookDetailsByISBN(selectedBook.getIsbn());
-        if (bookDetails != null) {
+        if (bookDetails == null) {
+            BookDetailWindow.openBookDetailWithoutCover(selectedBook);
+        } else {
             // Update the selectedBook object with the details from the API if available
             selectedBook.setDocumentName(bookDetails.getDocumentName());
             selectedBook.setAuthors(bookDetails.getAuthors());
             selectedBook.setCategory(bookDetails.getCategory());
             selectedBook.setCoverImageUrl(bookDetails.getCoverImageUrl());
             selectedBook.setDescription(bookDetails.getDescription());
-
             // Now open the BookDetailWindow with the updated selectedBook object
             BookDetailWindow.openBookDetail(selectedBook);
-        } else {
-            BookDetailWindow.openBookDetailWithoutCover(selectedBook);;
         }
     }
 

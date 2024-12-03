@@ -105,7 +105,7 @@ public class BookDetailWindow extends Controller{
         mainLayout.getChildren().add(hbox); // Only add the HBox content without the bottom border
 
         // Create a scene with the VBox as the root node
-        Scene detailScene = new Scene(mainLayout, 750, 400);
+        Scene detailScene = new Scene(mainLayout, 820, 400);
         detailScene.getStylesheets().add(APIHelper.class.getResource("/CSS/Books.css").toExternalForm()); // Add CSS stylesheet
         detailWindow.setScene(detailScene);
 
@@ -193,7 +193,7 @@ public class BookDetailWindow extends Controller{
         mainLayout.getChildren().add(hbox); // Only add the HBox content without the bottom border
 
         // Create a scene with the VBox as the root node
-        Scene detailScene = new Scene(mainLayout, 750, 400);
+        Scene detailScene = new Scene(mainLayout, 820, 400);
         detailScene.getStylesheets().add(APIHelper.class.getResource("/CSS/Books.css").toExternalForm()); // Add CSS stylesheet
         detailWindow.setScene(detailScene);
 
