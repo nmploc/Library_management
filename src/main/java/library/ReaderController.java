@@ -126,7 +126,8 @@ public class ReaderController extends Controller {
                     emailField.getText(), phoneField.getText());
 
             // Add the new reader to the database
-            addReaderToDatabase(newReader);
+            DatabaseHelper.addReaderToDatabase(newReader);
+            loadReaderData();
 
             // Close the add reader window
             addReaderStage.close();
@@ -154,22 +155,6 @@ public class ReaderController extends Controller {
         Scene scene = new Scene(vbox, 400, 320);
         addReaderStage.setScene(scene);
         addReaderStage.show();
-    }
-
-    private void addReaderToDatabase(Reader newReader) {
-        String insertQuery = "INSERT INTO readers (readerName, fullName, email, phoneNumber) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
-
-            pstmt.setString(1, newReader.getReaderName());
-            pstmt.setString(2, newReader.getFullName());
-            pstmt.setString(3, newReader.getEmail());
-            pstmt.setString(4, newReader.getPhoneNumber());
-            pstmt.executeUpdate();
-            loadReaderData();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     @FXML
@@ -217,7 +202,8 @@ public class ReaderController extends Controller {
             selectedReader.setPhoneNumber(phoneField.getText());
 
             // Update database
-            updateReaderInDatabase(selectedReader);
+            DatabaseHelper.updateReaderInDatabase(selectedReader);
+            loadReaderData();
 
             // Close the window after saving
             editReaderStage.close();
@@ -249,23 +235,6 @@ public class ReaderController extends Controller {
         editReaderStage.show();
     }
 
-    private void updateReaderInDatabase(Reader updatedReader) {
-        String updateQuery = "UPDATE readers SET readerName = ?, fullName = ?, email = ?, phoneNumber = ? WHERE readerID = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-
-            pstmt.setString(1, updatedReader.getReaderName());
-            pstmt.setString(2, updatedReader.getFullName());
-            pstmt.setString(3, updatedReader.getEmail());
-            pstmt.setString(4, updatedReader.getPhoneNumber());
-            pstmt.setInt(5, updatedReader.getReaderID());
-            pstmt.executeUpdate();
-            loadReaderData();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     @FXML
     private void handleDeleteReader() {
         Reader selectedReader = readerTable.getSelectionModel().getSelectedItem();
@@ -281,20 +250,8 @@ public class ReaderController extends Controller {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            deleteReaderFromDatabase(selectedReader.getReaderID());
-        }
-    }
-
-    private void deleteReaderFromDatabase(int readerID) {
-        String deleteQuery = "DELETE FROM readers WHERE readerID = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
-
-            pstmt.setInt(1, readerID);
-            pstmt.executeUpdate();
+            DatabaseHelper.deleteReaderFromDatabase(selectedReader.getReaderID());
             loadReaderData();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 

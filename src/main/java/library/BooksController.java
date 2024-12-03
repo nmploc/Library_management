@@ -86,8 +86,15 @@ public class BooksController extends Controller {
 
     @FXML
     private void openBookDetail(Books selectedBook) {
+        if (selectedBook == null) {
+            showAlert("No Selection", "Please select a book to view details.");
+            return;
+        }
+
         Books bookDetails = APIHelper.fetchBookDetailsByISBN(selectedBook.getIsbn());
+
         if (bookDetails == null) {
+            // If API returned no details, open without cover
             StageController.openBookDetailWithoutCover(selectedBook);
         } else {
             // Update the selectedBook object with the details from the API if available
@@ -96,6 +103,7 @@ public class BooksController extends Controller {
             selectedBook.setCategory(bookDetails.getCategory());
             selectedBook.setCoverImageUrl(bookDetails.getCoverImageUrl());
             selectedBook.setDescription(bookDetails.getDescription());
+
             // Now open the BookDetailWindow with the updated selectedBook object
             StageController.openBookDetail(selectedBook);
         }

@@ -20,7 +20,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import java.net.URL;
 import java.sql.*;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class BorrowingController extends Controller {  // Extend Controller

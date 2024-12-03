@@ -178,6 +178,50 @@ public class DatabaseHelper {
         }
     }
 
+    public static void addReaderToDatabase(Reader newReader) {
+        String insertQuery = "INSERT INTO readers (readerName, fullName, email, phoneNumber) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
+
+            pstmt.setString(1, newReader.getReaderName());
+            pstmt.setString(2, newReader.getFullName());
+            pstmt.setString(3, newReader.getEmail());
+            pstmt.setString(4, newReader.getPhoneNumber());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void deleteReaderFromDatabase(int readerID) {
+        String deleteQuery = "DELETE FROM readers WHERE readerID = ?";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
+            pstmt.setInt(1, readerID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void updateReaderInDatabase(Reader updatedReader) {
+        String updateQuery = "UPDATE readers SET readerName = ?, fullName = ?, email = ?, phoneNumber = ? WHERE readerID = ?";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+
+            pstmt.setString(1, updatedReader.getReaderName());
+            pstmt.setString(2, updatedReader.getFullName());
+            pstmt.setString(3, updatedReader.getEmail());
+            pstmt.setString(4, updatedReader.getPhoneNumber());
+            pstmt.setInt(5, updatedReader.getReaderID());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     // New method to check if a book is currently on loan
     public static boolean isBookOnLoan(int documentID) {
         String query = "SELECT COUNT(*) FROM borrowings WHERE documentID = ? AND borrowingStatus = 'borrowing'";
