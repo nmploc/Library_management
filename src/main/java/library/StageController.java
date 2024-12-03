@@ -10,7 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class BookDetailWindow extends Controller{
+public class StageController extends Controller{
 
     @FXML
     public static void openBookDetail(Books selectedBook) {
