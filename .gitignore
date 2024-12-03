@@ -6,6 +6,7 @@ out/
 *.iml
 target/
 *.log
+temp_qr_code.png
 
 ### Eclipse ###
 .apt_generated

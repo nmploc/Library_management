@@ -16,10 +16,16 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        DatabaseHelper.startXamppServices();
         DatabaseHelper.connectToDatabase();
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Library Management System");
         loadScene("/FXML/LoginScene.fxml");
+
+        primaryStage.setOnCloseRequest(event -> {
+            DatabaseHelper.stopXamppServices();
+            System.out.println("XAMPP services stopped.");
+        });
 
         primaryStage.show();
     }
