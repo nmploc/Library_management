@@ -101,7 +101,7 @@ public class BooksController extends Controller {
         }
     }
 
-    private void loadBooksData() {
+    public void loadBooksData() {
         // Create an observable list to hold the book data
         booksList = FXCollections.observableArrayList();
 
@@ -138,6 +138,7 @@ public class BooksController extends Controller {
     private void handleAddBook() {
         // Create a new Stage (window) for the "Add Book" form
         Stage addBookWindow = new Stage();
+        Main.registerStage(addBookWindow);
         addBookWindow.setTitle("Add Book");
 
         // Create TextField fields for book details
@@ -259,6 +260,7 @@ public class BooksController extends Controller {
 
         // Create a new Stage (window) for editing the book
         Stage editBookWindow = new Stage();
+        Main.registerStage(editBookWindow);
         editBookWindow.setTitle("Edit Book");
 
         // Create TextFields pre-filled with the selected book's details
@@ -355,6 +357,7 @@ public class BooksController extends Controller {
 
         // Create a new Stage for the delete confirmation
         Stage deleteConfirmationWindow = new Stage();
+        Main.registerStage(deleteConfirmationWindow);
         deleteConfirmationWindow.setTitle("Delete Confirmation");
 
         // Create a label with the book's name

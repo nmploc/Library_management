@@ -43,14 +43,6 @@ CREATE TABLE IF NOT EXISTS users (
     avatar VARCHAR(255) DEFAULT 'userAvatar.png'
 );
 
-CREATE TABLE IF NOT EXISTS documentOwner (
-    documentID INT,
-    ownerID INT,
-    PRIMARY KEY (documentID, ownerID),
-    FOREIGN KEY (documentID) REFERENCES documents(documentID) ON UPDATE CASCADE,
-    FOREIGN KEY (ownerID) REFERENCES users(userID) ON UPDATE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS borrowings (
     borrowingID INT AUTO_INCREMENT PRIMARY KEY,
     readerID INT,

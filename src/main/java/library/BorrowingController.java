@@ -10,17 +10,16 @@ import javafx.stage.Stage;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -98,6 +97,7 @@ public class BorrowingController extends Controller {  // Extend Controller
     @FXML
     private void handleAddBorrowing() {
         Stage addBorrowingWindow = new Stage();
+        Main.registerStage(addBorrowingWindow);
         addBorrowingWindow.setTitle("Add Borrowing");
 
         // Reader Name
@@ -215,7 +215,7 @@ public class BorrowingController extends Controller {  // Extend Controller
         stackPane.getChildren().addAll(vbox, documentListView); // Đặt vbox và ListView chồng lên nhau
 
         // Scene
-        Scene scene = new Scene(stackPane, 400, 500);
+        Scene scene = new Scene(stackPane, 400, 320);
         addBorrowingWindow.setScene(scene);
         addBorrowingWindow.show();
     }
@@ -318,34 +318,88 @@ public class BorrowingController extends Controller {  // Extend Controller
             return;
         }
 
-        Dialog<Borrowing> dialog = new Dialog<>();
-        dialog.setTitle("Edit Borrowing");
+        // Create a new Stage for editing
+        Stage editBorrowingWindow = new Stage();
+        Main.registerStage(editBorrowingWindow);
+        editBorrowingWindow.setTitle("Edit Borrowing");
 
-        ButtonType editButtonType = new ButtonType("Edit", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(editButtonType, ButtonType.CANCEL);
-
+        // Reader Name
         TextField readerField = new TextField(selectedBorrowing.getReaderName());
+        readerField.setPrefWidth(300);
+
+        // Document Name
         TextField documentField = new TextField(selectedBorrowing.getDocumentName());
-        DatePicker borrowDatePicker = new DatePicker();
-        DatePicker dueDatePicker = new DatePicker();
+        documentField.setPrefWidth(300);
 
-        VBox vbox = new VBox(10);
-        vbox.getChildren().addAll(new Label("Reader Name:"), readerField, new Label("Document Name:"), documentField,
-                new Label("Borrow Date:"), borrowDatePicker, new Label("Due Date:"), dueDatePicker);
-        dialog.getDialogPane().setContent(vbox);
+        // Borrow Date
+        DatePicker borrowDatePicker = new DatePicker(LocalDate.parse(selectedBorrowing.getBorrowDate()));
+        borrowDatePicker.setPrefWidth(300);
 
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == editButtonType) {
-                return new Borrowing(selectedBorrowing.getBorrowingID(), readerField.getText(),
-                        documentField.getText(), borrowDatePicker.getValue().toString(),
-                        dueDatePicker.getValue().toString(), selectedBorrowing.getBorrowingStatus());
+        // Due Date
+        DatePicker dueDatePicker = new DatePicker(LocalDate.parse(selectedBorrowing.getDueDate()));
+        dueDatePicker.setPrefWidth(300);
+
+        // Buttons
+        Button saveButton = new Button("Save");
+        Button cancelButton = new Button("Cancel");
+
+        saveButton.setPrefWidth(100);
+        cancelButton.setPrefWidth(100);
+
+        // Save button action
+        saveButton.setOnAction(event -> {
+            if (readerField.getText().isEmpty() || documentField.getText().isEmpty() ||
+                    borrowDatePicker.getValue() == null || dueDatePicker.getValue() == null) {
+                showAlert("Input Error", "Please fill in all required fields!");
+                return;
             }
-            return null;
+
+            if (borrowDatePicker.getValue().isAfter(dueDatePicker.getValue())) {
+                showAlert("Date Error", "Borrow date cannot be after the due date!");
+                return;
+            }
+
+            // Update Borrowing object
+            Borrowing updatedBorrowing = new Borrowing(
+                    selectedBorrowing.getBorrowingID(),
+                    readerField.getText(),
+                    documentField.getText(),
+                    borrowDatePicker.getValue().toString(),
+                    dueDatePicker.getValue().toString(),
+                    selectedBorrowing.getBorrowingStatus()
+            );
+
+            // Update database
+            updateBorrowingInDatabase(updatedBorrowing);
+
+            // Close the window
+            editBorrowingWindow.close();
         });
 
-        Optional<Borrowing> result = dialog.showAndWait();
-        result.ifPresent(this::updateBorrowingInDatabase);
+        // Cancel button action
+        cancelButton.setOnAction(event -> editBorrowingWindow.close());
+
+        // Button layout
+        HBox buttonBox = new HBox(10, saveButton, cancelButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        // Layout
+        VBox vbox = new VBox(10);
+        vbox.getChildren().addAll(
+                new Label("Reader Name:"), readerField,
+                new Label("Document Name:"), documentField,
+                new Label("Borrow Date:"), borrowDatePicker,
+                new Label("Due Date:"), dueDatePicker,
+                buttonBox
+        );
+        vbox.setStyle("-fx-padding: 20px;");
+
+        // Scene
+        Scene scene = new Scene(vbox, 400, 320);
+        editBorrowingWindow.setScene(scene);
+        editBorrowingWindow.show();
     }
+
 
     private void updateBorrowingInDatabase(Borrowing updatedBorrowing) {
         String query = "UPDATE borrowings SET readerID = (SELECT readerID FROM readers WHERE readerName = ?), " +
@@ -376,7 +430,48 @@ public class BorrowingController extends Controller {  // Extend Controller
             return;
         }
 
-        // SQL query to increase the quantity of the book in the documents table
+        // Create a new Stage for the confirmation dialog
+        Stage confirmationWindow = new Stage();
+        Main.registerStage(confirmationWindow);
+        confirmationWindow.setTitle("Confirm Deletion");
+
+        // Create the confirmation message
+        Label confirmationLabel = new Label("Are you sure you want to delete this borrowing?\n" +
+                "This will also update the document's quantity.");
+
+        // Buttons for Yes and No
+        Button yesButton = new Button("Yes");
+        Button noButton = new Button("No");
+
+        yesButton.setPrefWidth(100);
+        noButton.setPrefWidth(100);
+
+        // Yes button action - Perform the deletion
+        yesButton.setOnAction(event -> {
+            deleteBorrowingInDatabase(selectedBorrowing); // Call the method to handle deletion
+            confirmationWindow.close();
+        });
+
+        // No button action - Close the confirmation window without doing anything
+        noButton.setOnAction(event -> confirmationWindow.close());
+
+        // Button Layout
+        HBox buttonBox = new HBox(10, yesButton, noButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        // Layout for the confirmation window
+        VBox vbox = new VBox(10);
+        vbox.getChildren().addAll(confirmationLabel, buttonBox);
+        vbox.setStyle("-fx-padding: 20px;");
+
+        // Scene for the confirmation window
+        Scene scene = new Scene(vbox, 300, 150);
+        confirmationWindow.setScene(scene);
+        confirmationWindow.show();
+    }
+
+    private void deleteBorrowingInDatabase(Borrowing selectedBorrowing) {
+        // SQL query to increase the quantity of the document in the documents table
         String updateQuery = "UPDATE documents SET quantity = quantity + 1 WHERE documentID = " +
                 "(SELECT documentID FROM borrowings WHERE borrowingID = ?)";
 
@@ -389,13 +484,22 @@ public class BorrowingController extends Controller {  // Extend Controller
 
             // Update the quantity in the documents table
             updateStmt.setInt(1, selectedBorrowing.getBorrowingID());
-            updateStmt.executeUpdate();
+            int updatedRows = updateStmt.executeUpdate();
 
-            // Delete the borrowing record
-            deleteStmt.setInt(1, selectedBorrowing.getBorrowingID());
-            deleteStmt.executeUpdate();
+            if (updatedRows > 0) {
+                // Delete the borrowing record
+                deleteStmt.setInt(1, selectedBorrowing.getBorrowingID());
+                int deletedRows = deleteStmt.executeUpdate();
 
-            loadBorrowingsData(); // Reload the TableView
+                if (deletedRows > 0) {
+                    showAlert("Success", "Borrowing deleted successfully.");
+                    loadBorrowingsData(); // Reload the TableView
+                } else {
+                    showAlert("Error", "Failed to delete borrowing from the database.");
+                }
+            } else {
+                showAlert("Error", "Failed to update document quantity.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert("Database Error", "Failed to delete the borrowing.");

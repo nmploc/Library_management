@@ -1,16 +1,16 @@
 package library;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class StageController extends Controller{
+public class StageController extends Controller {
 
     @FXML
     public static void openBookDetail(Books selectedBook) {
@@ -23,9 +23,12 @@ public class StageController extends Controller{
         Stage detailWindow = new Stage();
         detailWindow.setTitle("Book Details");
 
+        // Register the stage with Main to track it
+        Main.registerStage(detailWindow);
+
         // Main HBox layout for the content
-        HBox hbox = new HBox(30); // Set spacing between sections
-        hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Removed the border styling
+        HBox hbox = new HBox(30);
+        hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;");
 
         // Left section: Book details and QR code
         VBox leftVBox = new VBox(10);
@@ -44,15 +47,15 @@ public class StageController extends Controller{
         bookDetailsArea.setEditable(false);
         bookDetailsArea.setPrefHeight(120);
         bookDetailsArea.setPrefWidth(250);
-        bookDetailsArea.getStyleClass().add("content-area"); // Apply CSS styling for shadow and border
+        bookDetailsArea.getStyleClass().add("content-area");
 
         leftVBox.getChildren().add(bookDetailsArea);
 
         // QR code section
         VBox qrVBox = new VBox(10);
         try {
-            String tempQRCodePath = "temp_qr_code.png"; // Temporary path for the QR code image
-            QRCodeGenerator.generateQRCode(selectedBook, tempQRCodePath); // Generate QR code using the class
+            String tempQRCodePath = "temp_qr_code.png";
+            QRCodeGenerator.generateQRCode(selectedBook, tempQRCodePath);
 
             ImageView qrCodeView = new ImageView(new Image("file:" + tempQRCodePath));
             qrCodeView.setFitHeight(160);
@@ -74,7 +77,7 @@ public class StageController extends Controller{
         descriptionArea.setEditable(false);
         descriptionArea.setPrefHeight(260);
         descriptionArea.setPrefWidth(260);
-        descriptionArea.getStyleClass().add("content-area"); // Apply CSS styling for shadow and border
+        descriptionArea.getStyleClass().add("content-area");
 
         VBox descriptionVBox = new VBox(10);
         descriptionVBox.getChildren().addAll(new Label("Description:"), descriptionArea);
@@ -100,13 +103,13 @@ public class StageController extends Controller{
         // Add all sections to the HBox
         hbox.getChildren().addAll(leftVBox, descriptionVBox, rightVBox);
 
-        // Main layout: VBox to include only the content (no bottom border)
+        // Main layout: VBox to include only the content
         VBox mainLayout = new VBox();
-        mainLayout.getChildren().add(hbox); // Only add the HBox content without the bottom border
+        mainLayout.getChildren().add(hbox);
 
         // Create a scene with the VBox as the root node
         Scene detailScene = new Scene(mainLayout, 820, 400);
-        detailScene.getStylesheets().add(APIHelper.class.getResource("/CSS/Books.css").toExternalForm()); // Add CSS stylesheet
+        detailScene.getStylesheets().add(APIHelper.class.getResource("/CSS/Books.css").toExternalForm());
         detailWindow.setScene(detailScene);
 
         // Show the window
@@ -124,9 +127,12 @@ public class StageController extends Controller{
         Stage detailWindow = new Stage();
         detailWindow.setTitle("Book Details");
 
+        // Register the stage with Main to track it
+        Main.registerStage(detailWindow);
+
         // Main HBox layout for the content
-        HBox hbox = new HBox(30); // Set spacing between sections
-        hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;"); // Removed the border styling
+        HBox hbox = new HBox(30);
+        hbox.setStyle("-fx-padding: 20px; -fx-alignment: center;");
 
         // Left section: Book details and QR code
         VBox leftVBox = new VBox(10);
@@ -145,15 +151,15 @@ public class StageController extends Controller{
         bookDetailsArea.setEditable(false);
         bookDetailsArea.setPrefHeight(120);
         bookDetailsArea.setPrefWidth(250);
-        bookDetailsArea.getStyleClass().add("content-area"); // Apply CSS styling for shadow and border
+        bookDetailsArea.getStyleClass().add("content-area");
 
         leftVBox.getChildren().add(bookDetailsArea);
 
         // QR code section
         VBox qrVBox = new VBox(10);
         try {
-            String tempQRCodePath = "temp_qr_code.png"; // Temporary path for the QR code image
-            QRCodeGenerator.generateQRCode(selectedBook, tempQRCodePath); // Generate QR code using the class
+            String tempQRCodePath = "temp_qr_code.png";
+            QRCodeGenerator.generateQRCode(selectedBook, tempQRCodePath);
 
             ImageView qrCodeView = new ImageView(new Image("file:" + tempQRCodePath));
             qrCodeView.setFitHeight(160);
@@ -175,7 +181,7 @@ public class StageController extends Controller{
         descriptionArea.setEditable(false);
         descriptionArea.setPrefHeight(260);
         descriptionArea.setPrefWidth(260);
-        descriptionArea.getStyleClass().add("content-area"); // Apply CSS styling for shadow and border
+        descriptionArea.getStyleClass().add("content-area");
 
         VBox descriptionVBox = new VBox(10);
         descriptionVBox.getChildren().addAll(new Label("Description:"), descriptionArea);
@@ -183,18 +189,18 @@ public class StageController extends Controller{
         // Right section: Empty since there is no cover image
         VBox rightVBox = new VBox(10);
         rightVBox.setStyle("-fx-padding: 28px;-fx-alignment: top-right;");
-        rightVBox.getChildren().add(new Label("No cover image available.")); // Placeholder text for no cover image
+        rightVBox.getChildren().add(new Label("No cover image available."));
 
         // Add all sections to the HBox
         hbox.getChildren().addAll(leftVBox, descriptionVBox, rightVBox);
 
-        // Main layout: VBox to include only the content (no bottom border)
+        // Main layout: VBox to include only the content
         VBox mainLayout = new VBox();
-        mainLayout.getChildren().add(hbox); // Only add the HBox content without the bottom border
+        mainLayout.getChildren().add(hbox);
 
         // Create a scene with the VBox as the root node
         Scene detailScene = new Scene(mainLayout, 820, 400);
-        detailScene.getStylesheets().add(APIHelper.class.getResource("/CSS/Books.css").toExternalForm()); // Add CSS stylesheet
+        detailScene.getStylesheets().add(APIHelper.class.getResource("/CSS/Books.css").toExternalForm());
         detailWindow.setScene(detailScene);
 
         // Show the window

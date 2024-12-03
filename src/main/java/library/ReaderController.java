@@ -3,11 +3,14 @@ package library;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.sql.*;
@@ -78,51 +81,79 @@ public class ReaderController extends Controller {
 
     @FXML
     private void handleAddReader() {
-        Dialog<Reader> dialog = new Dialog<>();
-        dialog.setTitle("Add Reader");
+        // Create a new Stage for adding a reader
+        Stage addReaderStage = new Stage();
+        Main.registerStage(addReaderStage);
+        addReaderStage.setTitle("Add Reader");
 
-        ButtonType addButtonType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
-
+        // Name field
         TextField nameField = new TextField();
         nameField.setPromptText("Name");
+        nameField.setPrefWidth(300);
 
+        // Full Name field
         TextField fullNameField = new TextField();
         fullNameField.setPromptText("Full Name");
+        fullNameField.setPrefWidth(300);
 
+        // Email field
         TextField emailField = new TextField();
         emailField.setPromptText("Email");
+        emailField.setPrefWidth(300);
 
+        // Phone Number field
         TextField phoneField = new TextField();
         phoneField.setPromptText("Phone Number");
+        phoneField.setPrefWidth(300);
 
+        // Buttons
+        Button addButton = new Button("Add");
+        Button cancelButton = new Button("Cancel");
+
+        addButton.setPrefWidth(100);
+        cancelButton.setPrefWidth(100);
+
+        // Add button action
+        addButton.setOnAction(event -> {
+            if (nameField.getText().isEmpty() || fullNameField.getText().isEmpty() ||
+                    emailField.getText().isEmpty() || phoneField.getText().isEmpty()) {
+                showAlert("Input Error", "Please fill in all fields.");
+                return;
+            }
+
+            // Create a new Reader object
+            Reader newReader = new Reader(0, nameField.getText(), fullNameField.getText(),
+                    emailField.getText(), phoneField.getText());
+
+            // Add the new reader to the database
+            addReaderToDatabase(newReader);
+
+            // Close the add reader window
+            addReaderStage.close();
+        });
+
+        // Cancel button action
+        cancelButton.setOnAction(event -> addReaderStage.close());
+
+        // Button layout
+        HBox buttonBox = new HBox(10, addButton, cancelButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        // Layout for the input fields and labels
         VBox vbox = new VBox(10);
         vbox.getChildren().addAll(
                 new Label("Name:"), nameField,
                 new Label("Full Name:"), fullNameField,
                 new Label("Email:"), emailField,
-                new Label("Phone Number:"), phoneField
+                new Label("Phone Number:"), phoneField,
+                buttonBox
         );
-        dialog.getDialogPane().setContent(vbox);
+        vbox.setStyle("-fx-padding: 20px;");
 
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == addButtonType) {
-                if (nameField.getText().isEmpty() || fullNameField.getText().isEmpty() || emailField.getText().isEmpty() || phoneField.getText().isEmpty()) {
-                    showAlert("Input Error", "Please fill in all fields.");
-                    return null;
-                }
-                String name = nameField.getText();
-                String fullName = fullNameField.getText();
-                String email = emailField.getText();
-                String phoneNumber = phoneField.getText();
-
-                return new Reader(0, name, fullName, email, phoneNumber);
-            }
-            return null;
-        });
-
-        Optional<Reader> result = dialog.showAndWait();
-        result.ifPresent(this::addReaderToDatabase);
+        // Scene
+        Scene scene = new Scene(vbox, 400, 320);
+        addReaderStage.setScene(scene);
+        addReaderStage.show();
     }
 
     private void addReaderToDatabase(Reader newReader) {
@@ -149,50 +180,73 @@ public class ReaderController extends Controller {
             return;
         }
 
-        Dialog<Reader> dialog = new Dialog<>();
-        dialog.setTitle("Edit Reader");
+        Stage editReaderStage = new Stage();
+        Main.registerStage(editReaderStage);
+        editReaderStage.setTitle("Edit Reader");
 
-        ButtonType editButtonType = new ButtonType("Save Changes", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(editButtonType, ButtonType.CANCEL);
-
+        // Name field
         TextField nameField = new TextField(selectedReader.getReaderName());
-        nameField.setPromptText("Name");
+        nameField.setPrefWidth(300);
 
+        // Full Name field
         TextField fullNameField = new TextField(selectedReader.getFullName());
-        fullNameField.setPromptText("Full Name");
+        fullNameField.setPrefWidth(300);
 
+        // Email field
         TextField emailField = new TextField(selectedReader.getEmail());
-        emailField.setPromptText("Email");
+        emailField.setPrefWidth(300);
 
+        // Phone Number field
         TextField phoneField = new TextField(selectedReader.getPhoneNumber());
-        phoneField.setPromptText("Phone Number");
+        phoneField.setPrefWidth(300);
 
+        // Save button
+        Button saveButton = new Button("Save");
+        saveButton.setPrefWidth(100);
+        saveButton.setOnAction(event -> {
+            if (nameField.getText().isEmpty() || fullNameField.getText().isEmpty() ||
+                    emailField.getText().isEmpty() || phoneField.getText().isEmpty()) {
+                showAlert("Input Error", "Please fill in all fields.");
+                return;
+            }
+
+            // Update the selectedReader object
+            selectedReader.setReaderName(nameField.getText());
+            selectedReader.setFullName(fullNameField.getText());
+            selectedReader.setEmail(emailField.getText());
+            selectedReader.setPhoneNumber(phoneField.getText());
+
+            // Update database
+            updateReaderInDatabase(selectedReader);
+
+            // Close the window after saving
+            editReaderStage.close();
+        });
+
+        // Cancel button
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setPrefWidth(100);
+        cancelButton.setOnAction(event -> editReaderStage.close());
+
+        // Button layout
+        HBox buttonBox = new HBox(10, saveButton, cancelButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        // Form layout (VBox)
         VBox vbox = new VBox(10);
         vbox.getChildren().addAll(
                 new Label("Name:"), nameField,
                 new Label("Full Name:"), fullNameField,
                 new Label("Email:"), emailField,
-                new Label("Phone Number:"), phoneField
+                new Label("Phone Number:"), phoneField,
+                buttonBox
         );
-        dialog.getDialogPane().setContent(vbox);
+        vbox.setStyle("-fx-padding: 20px;");
 
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == editButtonType) {
-                if (nameField.getText().isEmpty() || fullNameField.getText().isEmpty() || emailField.getText().isEmpty() || phoneField.getText().isEmpty()) {
-                    showAlert("Input Error", "Please fill in all fields.");
-                    return null;
-                }
-                selectedReader.setReaderName(nameField.getText());
-                selectedReader.setFullName(fullNameField.getText());
-                selectedReader.setEmail(emailField.getText());
-                selectedReader.setPhoneNumber(phoneField.getText());
-                return selectedReader;
-            }
-            return null;
-        });
-
-        Optional<Reader> result = dialog.showAndWait();
-        result.ifPresent(this::updateReaderInDatabase);
+        // Scene setup
+        Scene scene = new Scene(vbox, 400, 320);
+        editReaderStage.setScene(scene);
+        editReaderStage.show();
     }
 
     private void updateReaderInDatabase(Reader updatedReader) {
@@ -270,5 +324,4 @@ public class ReaderController extends Controller {
             showAlert("No Results", "No readers found matching the search term.");
         }
     }
-
 }
