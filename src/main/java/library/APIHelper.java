@@ -282,7 +282,7 @@ public class APIHelper  {
 
     @FXML
     public static void openBookDetailAPI(Books selectedBook) {
-        BookDetailWindow.openBookDetail(selectedBook);
+        StageController.openBookDetail(selectedBook);
     }
 
     public static void showBooksFromAPI(ObservableList<Books> apiBooksList) {
