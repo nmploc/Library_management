@@ -346,8 +346,9 @@ public class APIHelper  {
         });
 
         // Create a new Stage (window)
-        Stage newWindow = new Stage();
-        newWindow.setTitle("Results from API");
+        Stage showFromAPI = new Stage();
+        showFromAPI.setTitle("Results from API");
+        Main.registerStage(showFromAPI);
 
         // Create a VBox layout to hold the TableView and Button
         VBox vbox = new VBox(10);
@@ -373,8 +374,8 @@ public class APIHelper  {
 
         // Set up the scene and show the new window
         Scene scene = new Scene(vbox, 800, 600);
-        newWindow.setScene(scene);
-        newWindow.show();
+        showFromAPI.setScene(scene);
+        showFromAPI.show();
     }
 
     public static void showAlert(String title, String message) {
