@@ -13,7 +13,6 @@ import javafx.stage.Stage;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import javafx.scene.layout.HBox;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -34,7 +33,8 @@ public class APIHelper  {
         try {
             // Encode the query
             String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
-            String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=" + encodedQuery;
+            String apiKey = "AIzaSyBY-xK3OC_3yHdXZYjx32tVBsUjbBR0oU8";
+            String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=" + encodedQuery + "&key=" + apiKey;
 
             HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
             connection.setRequestMethod("GET");
@@ -120,7 +120,8 @@ public class APIHelper  {
     public static Books fetchBookDetailsByISBN(String isbn) {
         try {
             String encodedIsbn = URLEncoder.encode(isbn, StandardCharsets.UTF_8.toString());
-            String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + encodedIsbn;
+            String apiKey = "AIzaSyBY-xK3OC_3yHdXZYjx32tVBsUjbBR0oU8";
+            String apiUrl = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + encodedIsbn + "&key=" + apiKey;
 
             HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
             connection.setRequestMethod("GET");
