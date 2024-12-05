@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS borrowings (
     borrowDate DATE,
     dueDate DATE,
     returnDate DATE,
-    borrowingStatus ENUM('borrowing', 'returned', 'late') NOT NULL,
+    borrowingStatus ENUM('borrowing', 'returned', 'late', 'lost') NOT NULL,
     FOREIGN KEY (documentID) REFERENCES documents(documentID) ON UPDATE CASCADE,
     FOREIGN KEY (readerID) REFERENCES readers(readerID) ON UPDATE CASCADE
 );
@@ -70,7 +70,7 @@ VALUES (
     'b894204754191dc4a528c9c98d85c5cdd630c1911afb69bccff40c92f5163973',
     'Administrator',
     'Admin',
-    'nmploc@gmail.com',
+    'trungabc498@gmail.com',
     '1234567890',
     '2000-01-01',
     'adminAvatar.png'

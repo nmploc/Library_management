@@ -14,7 +14,7 @@ public class DatabaseHelper {
 
     // Start XAMPP services
     public static void startXamppServices() {
-        String xamppPath = "D:\\App\\Xampp\\"; // Path to your XAMPP installation
+        String xamppPath = "D:\\Xampp\\"; // Path to your XAMPP installation
         try {
             // Start Apache and MySQL services
             new ProcessBuilder(xamppPath + "apache_start.bat").start();
@@ -32,7 +32,7 @@ public class DatabaseHelper {
 
     // Stop XAMPP services
     public static void stopXamppServices() {
-        String xamppPath = "D:\\App\\Xampp\\"; // Path to your XAMPP installation
+        String xamppPath = "D:\\Xampp\\"; // Path to your XAMPP installation
         try {
             // Run the xampp_stop.exe file
             new ProcessBuilder(xamppPath + "xampp_stop.exe").start();

@@ -113,6 +113,7 @@ public class BorrowingController extends Controller {  // Extend Controller
         documentListView.setPrefWidth(300);
         documentListView.setVisible(false); // Ban đầu ẩn danh sách
         documentListView.setMaxHeight(150);
+        documentListView.setTranslateY(50);
 
         // Add listener to search and update ListView
         documentSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -258,7 +259,6 @@ public class BorrowingController extends Controller {  // Extend Controller
         }
     }
 
-
     private void addBorrowingToDatabase(Borrowing newBorrowing) {
         String checkQuantityQuery = "SELECT quantity FROM documents WHERE documentName = ?";
         String insertQuery = "INSERT INTO borrowings (readerID, documentID, borrowDate, dueDate, borrowingStatus) " +
@@ -326,9 +326,36 @@ public class BorrowingController extends Controller {  // Extend Controller
         TextField readerField = new TextField(selectedBorrowing.getReaderName());
         readerField.setPrefWidth(300);
 
-        // Document Name
-        TextField documentField = new TextField(selectedBorrowing.getDocumentName());
-        documentField.setPrefWidth(300);
+        // Document Name Search Field
+        TextField documentSearchField = new TextField(selectedBorrowing.getDocumentName());
+        documentSearchField.setPromptText("Search Document");
+        documentSearchField.setPrefWidth(300);
+
+        // Document List View
+        ListView<String> documentListView = new ListView<>();
+        documentListView.setPrefWidth(300);
+        documentListView.setVisible(false); // Initially hidden
+        documentListView.setMaxHeight(100);
+        documentListView.setTranslateY(50); // Slightly shifted down
+
+        // Add listener to update ListView dynamically
+        documentSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty()) {
+                updateDocumentListView(newValue, documentListView); // Dynamic search implementation
+                documentListView.setVisible(true);
+            } else {
+                documentListView.setVisible(false);
+            }
+        });
+
+        // Handle selection from ListView
+        documentListView.setOnMouseClicked(event -> {
+            String selectedDocument = documentListView.getSelectionModel().getSelectedItem();
+            if (selectedDocument != null) {
+                documentSearchField.setText(selectedDocument);
+                documentListView.setVisible(false);
+            }
+        });
 
         // Borrow Date
         DatePicker borrowDatePicker = new DatePicker(LocalDate.parse(selectedBorrowing.getBorrowDate()));
@@ -337,6 +364,12 @@ public class BorrowingController extends Controller {  // Extend Controller
         // Due Date
         DatePicker dueDatePicker = new DatePicker(LocalDate.parse(selectedBorrowing.getDueDate()));
         dueDatePicker.setPrefWidth(300);
+
+        // Borrowing Status Dropdown
+        ComboBox<String> statusComboBox = new ComboBox<>();
+        statusComboBox.getItems().addAll("borrowing", "returned", "late", "lost");
+        statusComboBox.setValue(selectedBorrowing.getBorrowingStatus());
+        statusComboBox.setPrefWidth(300);
 
         // Buttons
         Button saveButton = new Button("Save");
@@ -347,8 +380,9 @@ public class BorrowingController extends Controller {  // Extend Controller
 
         // Save button action
         saveButton.setOnAction(event -> {
-            if (readerField.getText().isEmpty() || documentField.getText().isEmpty() ||
-                    borrowDatePicker.getValue() == null || dueDatePicker.getValue() == null) {
+            if (readerField.getText().isEmpty() || documentSearchField.getText().isEmpty() ||
+                    borrowDatePicker.getValue() == null || dueDatePicker.getValue() == null ||
+                    statusComboBox.getValue() == null) {
                 showAlert("Input Error", "Please fill in all required fields!");
                 return;
             }
@@ -362,10 +396,10 @@ public class BorrowingController extends Controller {  // Extend Controller
             Borrowing updatedBorrowing = new Borrowing(
                     selectedBorrowing.getBorrowingID(),
                     readerField.getText(),
-                    documentField.getText(),
+                    documentSearchField.getText(),
                     borrowDatePicker.getValue().toString(),
                     dueDatePicker.getValue().toString(),
-                    selectedBorrowing.getBorrowingStatus()
+                    statusComboBox.getValue()
             );
 
             // Update database
@@ -386,36 +420,65 @@ public class BorrowingController extends Controller {  // Extend Controller
         VBox vbox = new VBox(10);
         vbox.getChildren().addAll(
                 new Label("Reader Name:"), readerField,
-                new Label("Document Name:"), documentField,
+                new Label("Search Document:"), documentSearchField,
                 new Label("Borrow Date:"), borrowDatePicker,
                 new Label("Due Date:"), dueDatePicker,
+                new Label("Borrowing Status:"), statusComboBox,
                 buttonBox
         );
-        vbox.setStyle("-fx-padding: 20px;");
+
+        StackPane stackPane = new StackPane();
+        stackPane.setStyle("-fx-padding: 20px; -fx-alignment: center;");
+        stackPane.getChildren().addAll(vbox, documentListView); // Overlay ListView and VBox
 
         // Scene
-        Scene scene = new Scene(vbox, 400, 320);
+        Scene scene = new Scene(stackPane, 400, 400); // Adjust height for the new field
         editBorrowingWindow.setScene(scene);
         editBorrowingWindow.show();
     }
 
-
     private void updateBorrowingInDatabase(Borrowing updatedBorrowing) {
-        String query = "UPDATE borrowings SET readerID = (SELECT readerID FROM readers WHERE readerName = ?), " +
+        String query = "UPDATE borrowings SET " +
+                "readerID = (SELECT readerID FROM readers WHERE readerName = ?), " +
                 "documentID = (SELECT documentID FROM documents WHERE documentName = ?), " +
-                "borrowDate = ?, dueDate = ?, borrowingStatus = ? WHERE borrowingID = ?";
+                "borrowDate = ?, " +
+                "dueDate = ?, " +
+                "borrowingStatus = ? " +
+                "WHERE borrowingID = ?";
+
+        String incrementQuantityQuery = "UPDATE documents SET quantity = quantity + 1 " +
+                "WHERE documentID = (SELECT documentID FROM documents WHERE documentName = ?)";
 
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             PreparedStatement incrementStmt = conn.prepareStatement(incrementQuantityQuery)) {
 
+            // Set parameters for the update query
             pstmt.setString(1, updatedBorrowing.getReaderName());
             pstmt.setString(2, updatedBorrowing.getDocumentName());
             pstmt.setString(3, updatedBorrowing.getBorrowDate());
             pstmt.setString(4, updatedBorrowing.getDueDate());
             pstmt.setString(5, updatedBorrowing.getBorrowingStatus());
             pstmt.setInt(6, updatedBorrowing.getBorrowingID());
-            pstmt.executeUpdate();
+
+            // Execute the update statement for the borrowing
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Borrowing updated successfully.");
+            } else {
+                System.out.println("No borrowing was updated.");
+            }
+
+            // If status is 'returned', increment the document quantity
+            if (updatedBorrowing.getBorrowingStatus().equals("returned")) {
+                incrementStmt.setString(1, updatedBorrowing.getDocumentName());
+                incrementStmt.executeUpdate();
+                System.out.println("Document return success!.");
+            }
+
+            // Refresh table data
             loadBorrowingsData();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -477,15 +540,36 @@ public class BorrowingController extends Controller {  // Extend Controller
         // SQL query to delete the borrowing from the borrowings table
         String deleteQuery = "DELETE FROM borrowings WHERE borrowingID = ?";
 
+        // SQL query to get the status of the borrowing
+        String statusQuery = "SELECT borrowingStatus FROM borrowings WHERE borrowingID = ?";
+
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
-             PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
+             PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery);
+             PreparedStatement statusStmt = conn.prepareStatement(statusQuery)) {
 
-            // Update the quantity in the documents table
-            updateStmt.setInt(1, selectedBorrowing.getBorrowingID());
-            int updatedRows = updateStmt.executeUpdate();
+            // Get the borrowing status
+            statusStmt.setInt(1, selectedBorrowing.getBorrowingID());
+            ResultSet rs = statusStmt.executeQuery();
 
-            if (updatedRows > 0) {
+            if (rs.next()) {
+                String borrowingStatus = rs.getString("borrowingStatus");
+
+                // If the status is not "returned", update the document quantity
+                if (!"returned".equals(borrowingStatus)) {
+                    updateStmt.setInt(1, selectedBorrowing.getBorrowingID());
+                    int updatedRows = updateStmt.executeUpdate();
+
+                    if (updatedRows > 0) {
+                        System.out.println("Document quantity updated.");
+                    } else {
+                        showAlert("Error", "Failed to update document quantity.");
+                        return;
+                    }
+                } else {
+                    System.out.println("Document quantity not updated as status is 'returned'.");
+                }
+
                 // Delete the borrowing record
                 deleteStmt.setInt(1, selectedBorrowing.getBorrowingID());
                 int deletedRows = deleteStmt.executeUpdate();
@@ -496,15 +580,13 @@ public class BorrowingController extends Controller {  // Extend Controller
                 } else {
                     showAlert("Error", "Failed to delete borrowing from the database.");
                 }
-            } else {
-                showAlert("Error", "Failed to update document quantity.");
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert("Database Error", "Failed to delete the borrowing.");
         }
     }
-
 
     @FXML
     private void handleFindBorrowing() {
