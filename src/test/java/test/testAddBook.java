@@ -15,11 +15,7 @@ public class testAddBook {
     @BeforeEach
     void setUp() throws SQLException {
         // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
-<<<<<<< HEAD
-        DatabaseHelper.connectToDatabase(); // Gọi phương thức kết nối từ DatabaseHelper
-=======
         DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
->>>>>>> 1c978ad9e80835effd62bacddbfc1ffa9c52d7e9
         connection = DatabaseHelper.getConnection(); // Lấy kết nối từ DatabaseHelper
 
         // Tạo bảng `categories` và `documents` nếu chưa có
@@ -28,9 +24,6 @@ public class testAddBook {
             stmt.execute("CREATE TABLE IF NOT EXISTS documents (documentID INT PRIMARY KEY AUTO_INCREMENT, documentName VARCHAR(255), authors VARCHAR(255), categoryID INT, quantity INT)");
             stmt.execute("INSERT IGNORE INTO categories (categoryName) VALUES ('Fiction'), ('Non-Fiction')");
         }
-
-        // Đặt chế độ không tự động commit để rollback sau khi test
-        connection.setAutoCommit(false);
     }
 
     public void verifyBookInDatabase(String expectedName, String expectedAuthor, int expectedCategoryID, int expectedQuantity) {
@@ -55,46 +48,54 @@ public class testAddBook {
 
     @Test
     public void testAddBookToDatabase() {
-        // Khởi tạo sách để kiểm tra
-        Books testBook = new Books("Test Book", "John Doe", "Poetry", 10);
+        // Step 1: Create a test book
+        Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
 
-        // Gọi hàm thêm sách
+        // Step 2: Add the book to the database
         DatabaseHelper.addBookToDatabase(testBook);
 
-<<<<<<< HEAD
-        // Lấy documentID từ cơ sở dữ liệu sau khi thêm
+        // Step 3: Retrieve the documentID of the added book
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
+        int documentID = -1;
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, testBook.getDocumentName());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    testBook.setDocumentID(rs.getInt("documentID")); // Gán documentID cho đối tượng
+                    documentID = rs.getInt("documentID");
                 } else {
-                    fail("Document ID was not generated for the book");
+                    fail("Book was not found in the database after adding.");
                 }
             }
         } catch (SQLException e) {
-            fail("SQL Exception occurred while fetching documentID: " + e.getMessage());
+            fail("SQL error occurred while retrieving the documentID: " + e.getMessage());
         }
 
-        // Kiểm tra sách trong cơ sở dữ liệu
+        // Ensure a valid documentID is retrieved
+        assertTrue(documentID > 0, "Invalid document ID retrieved.");
+
+        // Step 4: Verify the book is correctly added
         verifyBookInDatabase(testBook.getDocumentName(), testBook.getAuthors(), 1, testBook.getQuantity());
 
-        // Xóa sách sau khi kiểm tra
-=======
-        // Kiểm tra sách trong cơ sở dữ liệu thực
-        verifyBookInDatabase(testBook.getDocumentName(), testBook.getAuthors(), 2, testBook.getQuantity());
+        // Step 5: Delete the book
+        DatabaseHelper.deleteBookFromDatabase(documentID);
 
-        // Xóa sách
->>>>>>> 1c978ad9e80835effd62bacddbfc1ffa9c52d7e9
-        DatabaseHelper.deleteBookFromDatabase(testBook.getDocumentID());
+        // Step 6: Verify the book has been deleted
+        query = "SELECT * FROM documents WHERE documentID = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, documentID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                assertFalse(rs.next(), "Book with ID " + documentID + " was not deleted from the database.");
+            }
+        } catch (SQLException e) {
+            fail("SQL error occurred while verifying book deletion: " + e.getMessage());
+        }
     }
+
 
     @AfterEach
     void tearDown() throws SQLException {
-        // Rollback mọi thay đổi trong cơ sở dữ liệu
-        if (connection != null) {
-            connection.rollback();
+        // Đóng kết nối sau mỗi bài kiểm tra
+        if (connection != null && !connection.isClosed()) {
             connection.close();
         }
     }

@@ -48,15 +48,11 @@ public class testEditBookInDatabase {
 
     @Test
     public void testEditBookInDatabase() {
-        // Thêm sách vào cơ sở dữ liệu trước khi chỉnh sửa
-<<<<<<< HEAD
+        // Step 1: Add a new book to the database
         Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
         DatabaseHelper.addBookToDatabase(testBook);
-=======
-        Books testBook = new Books("Test Book", "John Doe", "Poetry", 10);
->>>>>>> 1c978ad9e80835effd62bacddbfc1ffa9c52d7e9
 
-        // Lấy documentID của sách vừa được thêm
+        // Step 2: Retrieve the documentID of the added book
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
         int documentID = -1;
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -65,52 +61,37 @@ public class testEditBookInDatabase {
                 if (rs.next()) {
                     documentID = rs.getInt("documentID");
                 } else {
-                    fail("Không tìm thấy sách vừa thêm trong cơ sở dữ liệu");
+                    fail("Book was not found in the database after adding.");
                 }
             }
         } catch (SQLException e) {
-            fail("Lỗi SQL khi lấy documentID: " + e.getMessage());
+            fail("SQL error occurred while retrieving documentID: " + e.getMessage());
         }
 
-        // Đảm bảo documentID hợp lệ
-        assertTrue(documentID > 0, "Document ID không hợp lệ");
+        // Ensure a valid documentID is retrieved
+        assertTrue(documentID > 0, "Invalid document ID retrieved.");
 
-        // Chỉnh sửa sách
-        Books updatedBook = new Books(documentID, "Updated Book", "Jane Doe", "Poetry", 15);
+        // Step 3: Edit the book
+        Books updatedBook = new Books(documentID, "Updated Book", "Jane Doe", "Fiction", 15);
         DatabaseHelper.updateBookInDatabase(updatedBook);
 
-<<<<<<< HEAD
-        // Kiểm tra sách sau khi chỉnh sửa
-        int fictionCategoryID = -1;
-        try (PreparedStatement pstmt = connection.prepareStatement("SELECT categoryID FROM categories WHERE categoryName = ?")) {
-            pstmt.setString(1, "Fiction");
+        // Step 4: Verify the book after editing
+        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), 1, updatedBook.getQuantity());
+
+        // Step 5: Delete the book
+        DatabaseHelper.deleteBookFromDatabase(documentID);
+
+        // Step 6: Verify the book has been deleted
+        query = "SELECT * FROM documents WHERE documentID = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, documentID);
             try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    fictionCategoryID = rs.getInt("categoryID");
-                } else {
-                    fail("Không tìm thấy thể loại 'Fiction' trong cơ sở dữ liệu");
-                }
+                assertFalse(rs.next(), "Book with ID " + documentID + " was not deleted from the database.");
             }
         } catch (SQLException e) {
-            fail("Lỗi SQL khi lấy categoryID: " + e.getMessage());
+            fail("SQL error occurred while verifying book deletion: " + e.getMessage());
         }
-
-        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), fictionCategoryID, updatedBook.getQuantity());
-
-        // Xóa sách sau khi kiểm tra
-        try (PreparedStatement pstmt = connection.prepareStatement("DELETE FROM documents WHERE documentID = ?")) {
-            pstmt.setInt(1, documentID);
-            int rowsDeleted = pstmt.executeUpdate();
-            assertTrue(rowsDeleted > 0, "Không thể xóa sách sau khi kiểm tra");
-        } catch (SQLException e) {
-            fail("Lỗi SQL khi xóa sách: " + e.getMessage());
-        }
-=======
-        // Kiểm tra lại sách sau khi chỉnh sửa
-        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), 2, updatedBook.getQuantity()); // categoryID cho 'Non-Fiction' là 2
->>>>>>> 1c978ad9e80835effd62bacddbfc1ffa9c52d7e9
     }
-
 
     @AfterEach
     void tearDown() throws SQLException {
