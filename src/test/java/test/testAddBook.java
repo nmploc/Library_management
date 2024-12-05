@@ -16,7 +16,7 @@ public class testAddBook {
     void setUp() throws SQLException {
         // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
         DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
-        connection = DatabaseHelper.connection; // Lấy kết nối từ DatabaseHelper
+        connection = DatabaseHelper.getConnection(); // Lấy kết nối từ DatabaseHelper
 
         // Tạo bảng `categories` và `documents` nếu chưa có
         try (Statement stmt = connection.createStatement()) {
@@ -49,13 +49,16 @@ public class testAddBook {
     @Test
     public void testAddBookToDatabase() {
         // Khởi tạo sách để kiểm tra
-        Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
+        Books testBook = new Books("Test Book", "John Doe", "Poetry", 10);
 
         // Gọi hàm thêm sách (giả sử hàm này đã được kiểm tra hoạt động đúng)
         DatabaseHelper.addBookToDatabase(testBook);
 
         // Kiểm tra sách trong cơ sở dữ liệu thực
-        verifyBookInDatabase(testBook.getDocumentName(), testBook.getAuthors(), 1, testBook.getQuantity());
+        verifyBookInDatabase(testBook.getDocumentName(), testBook.getAuthors(), 2, testBook.getQuantity());
+
+        // Xóa sách
+        DatabaseHelper.deleteBookFromDatabase(testBook.getDocumentID());
     }
 
     @AfterEach

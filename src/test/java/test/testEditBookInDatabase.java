@@ -16,7 +16,7 @@ public class testEditBookInDatabase {
     void setUp() throws SQLException {
         // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
         DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
-        connection = DatabaseHelper.connection; // Lấy kết nối từ DatabaseHelper
+        connection = DatabaseHelper.getConnection(); // Lấy kết nối từ DatabaseHelper
 
         // Tạo bảng `categories` và `documents` nếu chưa có
         try (Statement stmt = connection.createStatement()) {
@@ -49,7 +49,7 @@ public class testEditBookInDatabase {
     @Test
     public void testEditBookInDatabase() {
         // Thêm sách vào cơ sở dữ liệu trước khi chỉnh sửa
-        Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
+        Books testBook = new Books("Test Book", "John Doe", "Poetry", 10);
 
         // Lấy documentID của sách đã thêm vào
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
@@ -65,11 +65,11 @@ public class testEditBookInDatabase {
         }
 
         // Chỉnh sửa sách
-        Books updatedBook = new Books(documentID, "Updated Book", "Jane Doe", "Fiction", 15);
+        Books updatedBook = new Books(documentID, "Updated Book", "Jane Doe", "Poetry", 15);
         DatabaseHelper.updateBookInDatabase(updatedBook);
 
         // Kiểm tra lại sách sau khi chỉnh sửa
-        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), 1, updatedBook.getQuantity()); // categoryID cho 'Non-Fiction' là 2
+        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), 2, updatedBook.getQuantity()); // categoryID cho 'Non-Fiction' là 2
     }
 
     @AfterEach
