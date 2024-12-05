@@ -16,8 +16,12 @@ public class testDeleteBookFromDatabase {
     void setUp() throws SQLException {
         // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
         DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
+<<<<<<< HEAD
         connection = DatabaseHelper.getConnection()
         ; // Lấy kết nối từ DatabaseHelper
+=======
+        connection = DatabaseHelper.getConnection(); // Lấy kết nối từ DatabaseHelper
+>>>>>>> 1c978ad9e80835effd62bacddbfc1ffa9c52d7e9
 
         // Tạo bảng `categories` và `documents` nếu chưa có
         try (Statement stmt = connection.createStatement()) {

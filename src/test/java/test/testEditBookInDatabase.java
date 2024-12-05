@@ -49,8 +49,12 @@ public class testEditBookInDatabase {
     @Test
     public void testEditBookInDatabase() {
         // Thêm sách vào cơ sở dữ liệu trước khi chỉnh sửa
+<<<<<<< HEAD
         Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
         DatabaseHelper.addBookToDatabase(testBook);
+=======
+        Books testBook = new Books("Test Book", "John Doe", "Poetry", 10);
+>>>>>>> 1c978ad9e80835effd62bacddbfc1ffa9c52d7e9
 
         // Lấy documentID của sách vừa được thêm
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
@@ -72,9 +76,10 @@ public class testEditBookInDatabase {
         assertTrue(documentID > 0, "Document ID không hợp lệ");
 
         // Chỉnh sửa sách
-        Books updatedBook = new Books(documentID, "Updated Book", "Jane Doe", "Fiction", 15);
+        Books updatedBook = new Books(documentID, "Updated Book", "Jane Doe", "Poetry", 15);
         DatabaseHelper.updateBookInDatabase(updatedBook);
 
+<<<<<<< HEAD
         // Kiểm tra sách sau khi chỉnh sửa
         int fictionCategoryID = -1;
         try (PreparedStatement pstmt = connection.prepareStatement("SELECT categoryID FROM categories WHERE categoryName = ?")) {
@@ -100,6 +105,10 @@ public class testEditBookInDatabase {
         } catch (SQLException e) {
             fail("Lỗi SQL khi xóa sách: " + e.getMessage());
         }
+=======
+        // Kiểm tra lại sách sau khi chỉnh sửa
+        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), 2, updatedBook.getQuantity()); // categoryID cho 'Non-Fiction' là 2
+>>>>>>> 1c978ad9e80835effd62bacddbfc1ffa9c52d7e9
     }
 
 

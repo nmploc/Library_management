@@ -15,7 +15,11 @@ public class testAddBook {
     @BeforeEach
     void setUp() throws SQLException {
         // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
+<<<<<<< HEAD
         DatabaseHelper.connectToDatabase(); // Gọi phương thức kết nối từ DatabaseHelper
+=======
+        DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
+>>>>>>> 1c978ad9e80835effd62bacddbfc1ffa9c52d7e9
         connection = DatabaseHelper.getConnection(); // Lấy kết nối từ DatabaseHelper
 
         // Tạo bảng `categories` và `documents` nếu chưa có
@@ -52,11 +56,12 @@ public class testAddBook {
     @Test
     public void testAddBookToDatabase() {
         // Khởi tạo sách để kiểm tra
-        Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
+        Books testBook = new Books("Test Book", "John Doe", "Poetry", 10);
 
         // Gọi hàm thêm sách
         DatabaseHelper.addBookToDatabase(testBook);
 
+<<<<<<< HEAD
         // Lấy documentID từ cơ sở dữ liệu sau khi thêm
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -76,6 +81,12 @@ public class testAddBook {
         verifyBookInDatabase(testBook.getDocumentName(), testBook.getAuthors(), 1, testBook.getQuantity());
 
         // Xóa sách sau khi kiểm tra
+=======
+        // Kiểm tra sách trong cơ sở dữ liệu thực
+        verifyBookInDatabase(testBook.getDocumentName(), testBook.getAuthors(), 2, testBook.getQuantity());
+
+        // Xóa sách
+>>>>>>> 1c978ad9e80835effd62bacddbfc1ffa9c52d7e9
         DatabaseHelper.deleteBookFromDatabase(testBook.getDocumentID());
     }
 
