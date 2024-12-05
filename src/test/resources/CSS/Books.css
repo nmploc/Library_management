@@ -1,0 +1,73 @@
+/* Title label styling */
+.title-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000; /* Black text color */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 2, 2); /* Add subtle shadow */
+}
+
+/* Search bar styling */
+.search-bar {
+    -fx-pref-width: 300px;
+    -fx-background-color: rgb(248, 248, 248); /* Soft light gray background */
+    -fx-border-color: rgb(204, 204, 204); /* Light gray border */
+    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0.5, 0, 3); /* Light shadow for depth */
+}
+
+/* General Button Style */
+.button {
+    -fx-background-color: #36C2CE; /* Button color updated */
+    -fx-text-fill: white; /* White text */
+    -fx-font-family: 'Montserrat'; /* Font style */
+    -fx-font-weight: bold; /* Bold font */
+    -fx-cursor: hand; /* Hand cursor on hover */
+    -fx-background-radius: 10; /* Rounded corners */
+    -fx-padding: 6px 12px; /* Smaller padding */
+    -fx-min-width: 100px; /* Set a smaller min width */
+    -fx-min-height: 30px; /* Set a smaller min height */
+    -fx-border-radius: 10; /* Border radius to match the button background */
+    -fx-font-size: 14px; /* Font size for button label */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0.5, 0, 3); /* Shadow around button */
+}
+
+/* Button Hover Effect */
+.button:hover {
+    -fx-background-color: #2d9fa0; /* Slightly darker shade for hover */
+    -fx-scale-x: 1.05; /* Slight scale on hover */
+    -fx-scale-y: 1.05; /* Slight scale on hover */
+    -fx-text-fill: white; /* White text on hover */
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.4), 15, 0, 0, 4); /* Drop shadow effect */
+    -fx-cursor: hand; /* Hand cursor on hover */
+}
+
+/* Focused Button Style */
+.button:focused {
+    -fx-background-color: #36C2CE; /* Slightly darker shade for focus */
+    -fx-background-radius: 10; /* Matching focus radius */
+    -fx-border-radius: 10; /* Border radius for focused button */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0.5, 0, 3); /* Shadow around button */
+}
+
+/* Content area styling */
+.content-area {
+    -fx-background-color: rgb(255, 255, 255); /* White background for content area */
+    -fx-padding: 20px;
+}
+
+/* Shadow effect for pictures */
+.image-view {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.7, 0, 4); /* Shadow with semi-transparent black */
+    -fx-padding: 10px; /* Add some padding around the image */
+}
+
+/* Bordered and styled TextArea */
+.text-area {
+    -fx-border-color: #cccccc; /* Light gray border */
+    -fx-border-width: 2px; /* Border thickness */
+    -fx-border-radius: 5px; /* Rounded border corners */
+    -fx-background-radius: 5px; /* Match background corner radius */
+    -fx-background-color: rgb(248, 248, 248); /* Light gray background */
+    -fx-padding: 5px; /* Padding inside the text area */
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.1), 6, 0.3, 2, 2); /* Subtle inner shadow for a depth effect */
+}

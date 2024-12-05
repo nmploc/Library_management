@@ -1,24 +1,81 @@
-.dashboardButton {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-text-fill: white;
+/* Base Scene Background Color */
+.root {
+    -fx-background-color: rgb(236, 240, 241); /* Soft grayish background */
 }
 
-.dashboardButton:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.2);
+/* Navigation Bar Color */
+#navigationBar {
+    -fx-background-color: rgb(53, 129, 184); /* Blue background */
 }
 
+/* Menu Button Style */
 .menu-button {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-text-fill: rgb(235, 233, 233); /* Off-white text */
+    -fx-font-size: 16px;
 }
 
+/* Menu Item Style */
 .menu-item {
-    -fx-background-color: #f2f2f2;
+    -fx-background-color: rgb(222, 226, 214); /* Light grayish background */
     -fx-text-fill: black;
 }
 
 .menu-item:hover {
-    -fx-background-color: #dcdcdc;
+    -fx-background-color: rgb(252, 176, 126); /* Orange on hover */
+}
+
+/* Scene Title Label Style */
+.scene-title {
+    -fx-text-fill: rgb(239, 233, 233); /* Light off-white */
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+/* Content Pane Background */
+#contentPane {
+    -fx-background-color: rgb(255, 255, 255); /* White background (overrides green) */
+}
+
+/* Top Bar Background (Right) */
+.top-bar-right {
+    -fx-background-color: rgb(53, 129, 184); /* Blue */
+}
+
+/* Top Bar Background (Left) */
+.top-bar-left {
+    -fx-background-color: rgb(53, 129, 184); /* Blue */
+}
+
+/* General Button Style */
+.button {
+    -fx-background-color: rgb(53, 129, 184); /* Same color as the navigation bar */
+    -fx-text-fill: white; /* White text */
+    -fx-cursor: hand; /* Hand cursor on hover */
+    -fx-font-family: 'Montserrat'; /* Font style */
+    -fx-background-radius: 5; /* Rounded corners */
+    -fx-padding: 6px 12px; /* Padding for buttons */
+}
+
+/* Button Hover Effect */
+.button:hover {
+    -fx-scale-x: 1.05; /* Slight scale on hover */
+    -fx-scale-y: 1.05; /* Slight scale on hover */
+    -fx-background-color: #4c70ba; /* Lighter blue on hover */
+    -fx-text-fill: white; /* White text on hover */
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.4), 8, 0, 0, 4); /* Subtle shadow on hover */
+}
+
+/* Button Pressed Effect */
+.button:pressed {
+    -fx-background-color: #3a5b8e; /* Even darker blue when pressed */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 6, 0, 0, 2); /* Stronger shadow for pressed state */
+    -fx-scale-x: 0.98; /* Slight shrink on press */
+    -fx-scale-y: 0.98; /* Slight shrink on press */
+}
+
+/* Focused Button Style */
+.button:focused {
+    -fx-background-color: #2d4373; /* Darker blue on focus */
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.6), 10, 0, 0, 4); /* Bright white glow for focus */
 }

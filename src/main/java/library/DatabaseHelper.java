@@ -7,14 +7,14 @@ import java.io.IOException;
 import java.sql.*;
 
 public class DatabaseHelper {
-    private static final String URL = "jdbc:mysql://localhost:3306/librarydb";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "";
-    private static Connection connection;
+    public static final String URL = "jdbc:mysql://localhost:3306/librarydb";
+    public static final String USERNAME = "root";
+    public static final String PASSWORD = "";
+    public static Connection connection;
 
     // Start XAMPP services
     public static void startXamppServices() {
-        String xamppPath = "D:\\xampp\\"; // Path to your XAMPP installation
+        String xamppPath = "D:\\App\\Xampp\\"; // Path to your XAMPP installation
         try {
             // Start Apache and MySQL services
             new ProcessBuilder(xamppPath + "apache_start.bat").start();
@@ -32,7 +32,7 @@ public class DatabaseHelper {
 
     // Stop XAMPP services
     public static void stopXamppServices() {
-        String xamppPath = "D:\\xampp\\"; // Path to your XAMPP installation
+        String xamppPath = "D:\\App\\Xampp\\"; // Path to your XAMPP installation
         try {
             // Run the xampp_stop.exe file
             new ProcessBuilder(xamppPath + "xampp_stop.exe").start();
@@ -56,6 +56,11 @@ public class DatabaseHelper {
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
+
+    public static void setConnection(Connection testConnection) {
+        connection = testConnection; // Gán kết nối kiểm tra
+    }
+
 
     public static void addBookToDatabase(Books newBook) {
         String insertQuery = "INSERT INTO documents (documentName, authors, categoryID, quantity) VALUES (?, ?, ?, ?)";
@@ -147,7 +152,7 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1; // Return -1 if category is not found
+        return -1;
     }
 
     public static boolean isCategoryExists(String categoryName) {

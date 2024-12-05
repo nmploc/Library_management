@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="ReadersPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" styleClass="base-background" stylesheets="@../CSS/Books.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.ReaderController">
+    <children>
+        <!-- Top control panel -->
+        <AnchorPane prefHeight="40.0" prefWidth="1200.0" styleClass="top-panel">
+            <HBox alignment="CENTER" spacing="10">
+                <Label text="Readers" styleClass="title-label" />
+
+                <!-- Search bar for finding readers -->
+                <TextField fx:id="searchField" promptText="Search by Name, Email, or Phone" styleClass="search-bar" />
+                <Button fx:id="findReaderButton" text="Find" onAction="#handleFindReader" styleClass="button" />
+                <Button fx:id="addReaderButton" text="Add Reader" onAction="#handleAddReader" styleClass="button" />
+            </HBox>
+        </AnchorPane>
+
+        <!-- Main working area -->
+        <VBox spacing="10" AnchorPane.topAnchor="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" styleClass="content-area">
+            <TableView fx:id="readerTable">
+                <!-- Define your columns here -->
+                <TableColumn fx:id="readerIdColumn" text="ID" />
+                <TableColumn fx:id="readerNameColumn" text="Full Name" />
+                <TableColumn fx:id="readerEmailColumn" text="Email" />
+                <TableColumn fx:id="readerPhoneColumn" text="Phone Number" />
+            </TableView>
+
+            <HBox spacing="20" alignment="CENTER">
+                <Button fx:id="editReaderButton" text="Edit" onAction="#handleEditReader" styleClass="button" />
+                <Button fx:id="deleteReaderButton" text="Delete" onAction="#handleDeleteReader" styleClass="button" />
+            </HBox>
+        </VBox>
+    </children>
+</AnchorPane>
