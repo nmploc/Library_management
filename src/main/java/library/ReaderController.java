@@ -125,9 +125,16 @@ public class ReaderController extends Controller {
             Reader newReader = new Reader(0, nameField.getText(), fullNameField.getText(),
                     emailField.getText(), phoneField.getText());
 
-            // Add the new reader to the database
+            // Kiểm tra xem reader đã tồn tại chưa
+            if (DatabaseHelper.isReaderExist(newReader)) {
+                // Nếu reader tồn tại, hiển thị thông báo lỗi
+                showAlert("Duplicate Entry", "A reader with the same name, email, or phone number already exists.");
+                return;
+            }
+
+            // Nếu không có lỗi, thêm reader vào cơ sở dữ liệu
             DatabaseHelper.addReaderToDatabase(newReader);
-            loadReaderData();
+            loadReaderData();  // Tải lại dữ liệu sau khi thêm thành công
 
             // Close the add reader window
             addReaderStage.close();
@@ -195,14 +202,23 @@ public class ReaderController extends Controller {
                 return;
             }
 
-            // Update the selectedReader object
-            selectedReader.setReaderName(nameField.getText());
-            selectedReader.setFullName(fullNameField.getText());
-            selectedReader.setEmail(emailField.getText());
-            selectedReader.setPhoneNumber(phoneField.getText());
+            // Create a new Reader object with the updated data
+            Reader updatedReader = new Reader(
+                    selectedReader.getReaderID(), // Preserve the original ID for update
+                    nameField.getText(),
+                    fullNameField.getText(),
+                    emailField.getText(),
+                    phoneField.getText()
+            );
 
-            // Update database
-            DatabaseHelper.updateReaderInDatabase(selectedReader);
+            // Kiểm tra trùng lặp thông tin trong cơ sở dữ liệu
+            if (DatabaseHelper.isReaderExist(updatedReader)) {
+                showAlert("Duplicate Entry", "A reader with the same name, email, or phone number already exists.");
+                return;
+            }
+
+            // Nếu không trùng lặp, cập nhật thông tin vào cơ sở dữ liệu
+            DatabaseHelper.updateReaderInDatabase(updatedReader);
             loadReaderData();
 
             // Close the window after saving

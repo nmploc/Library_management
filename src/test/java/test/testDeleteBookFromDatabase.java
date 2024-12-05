@@ -14,9 +14,9 @@ public class testDeleteBookFromDatabase {
 
     @BeforeEach
     void setUp() throws SQLException {
-        // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
-        DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
-        connection = DatabaseHelper.connection; // Lấy kết nối từ DatabaseHelper
+        // Kết nối đến cơ sở dữ liệu thông qua DatabaseHelper
+        DatabaseHelper.connectToDatabase();
+        connection = DatabaseHelper.getConnection();
 
         // Tạo bảng `categories` và `documents` nếu chưa có
         try (Statement stmt = connection.createStatement()) {
@@ -28,33 +28,38 @@ public class testDeleteBookFromDatabase {
 
     @Test
     public void testDeleteBookFromDatabase() {
-        // Thêm sách vào cơ sở dữ liệu trước khi xóa
-        Books testBook = new Books("Updated Book", "Jane Doe", "Fiction", 15);
+        // Step 1: Thêm sách mới
+        Books testBook = new Books("Temporary Book", "Author Name", "Fiction", 10);
+        DatabaseHelper.addBookToDatabase(testBook);
 
-        // Lấy documentID của sách đã thêm vào
+        // Step 2: Lấy `documentID` của sách vừa thêm
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
         int documentID = -1;
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, testBook.getDocumentName());
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                documentID = rs.getInt("documentID");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    documentID = rs.getInt("documentID");
+                } else {
+                    fail("Book was not added successfully to the database.");
+                }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            fail("SQL error occurred while retrieving documentID: " + e.getMessage());
         }
 
-        // Xóa sách
+        // Step 3: Xóa sách vừa thêm
         DatabaseHelper.deleteBookFromDatabase(documentID);
 
-        // Kiểm tra lại sách đã bị xóa chưa
+        // Step 4: Kiểm tra sách đã bị xóa
         query = "SELECT * FROM documents WHERE documentID = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, documentID);
-            ResultSet rs = pstmt.executeQuery();
-            assertFalse(rs.next(), "Book with ID " + documentID + " was not deleted.");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                assertFalse(rs.next(), "Book with ID " + documentID + " was not deleted from the database.");
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            fail("SQL error occurred while verifying book deletion: " + e.getMessage());
         }
     }
 

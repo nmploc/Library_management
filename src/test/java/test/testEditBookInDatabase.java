@@ -16,7 +16,7 @@ public class testEditBookInDatabase {
     void setUp() throws SQLException {
         // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
         DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
-        connection = DatabaseHelper.connection; // Lấy kết nối từ DatabaseHelper
+        connection = DatabaseHelper.getConnection(); // Lấy kết nối từ DatabaseHelper
 
         // Tạo bảng `categories` và `documents` nếu chưa có
         try (Statement stmt = connection.createStatement()) {
@@ -48,28 +48,49 @@ public class testEditBookInDatabase {
 
     @Test
     public void testEditBookInDatabase() {
-        // Thêm sách vào cơ sở dữ liệu trước khi chỉnh sửa
+        // Step 1: Add a new book to the database
         Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
+        DatabaseHelper.addBookToDatabase(testBook);
 
-        // Lấy documentID của sách đã thêm vào
+        // Step 2: Retrieve the documentID of the added book
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
         int documentID = -1;
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, testBook.getDocumentName());
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                documentID = rs.getInt("documentID");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    documentID = rs.getInt("documentID");
+                } else {
+                    fail("Book was not found in the database after adding.");
+                }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            fail("SQL error occurred while retrieving documentID: " + e.getMessage());
         }
 
-        // Chỉnh sửa sách
+        // Ensure a valid documentID is retrieved
+        assertTrue(documentID > 0, "Invalid document ID retrieved.");
+
+        // Step 3: Edit the book
         Books updatedBook = new Books(documentID, "Updated Book", "Jane Doe", "Fiction", 15);
         DatabaseHelper.updateBookInDatabase(updatedBook);
 
-        // Kiểm tra lại sách sau khi chỉnh sửa
-        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), 1, updatedBook.getQuantity()); // categoryID cho 'Non-Fiction' là 2
+        // Step 4: Verify the book after editing
+        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), 1, updatedBook.getQuantity());
+
+        // Step 5: Delete the book
+        DatabaseHelper.deleteBookFromDatabase(documentID);
+
+        // Step 6: Verify the book has been deleted
+        query = "SELECT * FROM documents WHERE documentID = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, documentID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                assertFalse(rs.next(), "Book with ID " + documentID + " was not deleted from the database.");
+            }
+        } catch (SQLException e) {
+            fail("SQL error occurred while verifying book deletion: " + e.getMessage());
+        }
     }
 
     @AfterEach

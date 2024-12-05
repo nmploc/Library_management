@@ -16,7 +16,7 @@ public class testAddBook {
     void setUp() throws SQLException {
         // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
         DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
-        connection = DatabaseHelper.connection; // Lấy kết nối từ DatabaseHelper
+        connection = DatabaseHelper.getConnection(); // Lấy kết nối từ DatabaseHelper
 
         // Tạo bảng `categories` và `documents` nếu chưa có
         try (Statement stmt = connection.createStatement()) {
@@ -48,15 +48,49 @@ public class testAddBook {
 
     @Test
     public void testAddBookToDatabase() {
-        // Khởi tạo sách để kiểm tra
+        // Step 1: Create a test book
         Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
 
-        // Gọi hàm thêm sách (giả sử hàm này đã được kiểm tra hoạt động đúng)
+        // Step 2: Add the book to the database
         DatabaseHelper.addBookToDatabase(testBook);
 
-        // Kiểm tra sách trong cơ sở dữ liệu thực
+        // Step 3: Retrieve the documentID of the added book
+        String query = "SELECT documentID FROM documents WHERE documentName = ?";
+        int documentID = -1;
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, testBook.getDocumentName());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    documentID = rs.getInt("documentID");
+                } else {
+                    fail("Book was not found in the database after adding.");
+                }
+            }
+        } catch (SQLException e) {
+            fail("SQL error occurred while retrieving the documentID: " + e.getMessage());
+        }
+
+        // Ensure a valid documentID is retrieved
+        assertTrue(documentID > 0, "Invalid document ID retrieved.");
+
+        // Step 4: Verify the book is correctly added
         verifyBookInDatabase(testBook.getDocumentName(), testBook.getAuthors(), 1, testBook.getQuantity());
+
+        // Step 5: Delete the book
+        DatabaseHelper.deleteBookFromDatabase(documentID);
+
+        // Step 6: Verify the book has been deleted
+        query = "SELECT * FROM documents WHERE documentID = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, documentID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                assertFalse(rs.next(), "Book with ID " + documentID + " was not deleted from the database.");
+            }
+        } catch (SQLException e) {
+            fail("SQL error occurred while verifying book deletion: " + e.getMessage());
+        }
     }
+
 
     @AfterEach
     void tearDown() throws SQLException {
