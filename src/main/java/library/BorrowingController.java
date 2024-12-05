@@ -317,6 +317,12 @@ public class BorrowingController extends Controller {  // Extend Controller
             return;
         }
 
+        // Check if the borrowing status is already 'returned'
+        if ("returned".equals(selectedBorrowing.getBorrowingStatus())) {
+            showAlert("Edit Not Allowed", "This borrowing has already been returned and cannot be edited.");
+            return;
+        }
+
         // Create a new Stage for editing
         Stage editBorrowingWindow = new Stage();
         Main.registerStage(editBorrowingWindow);
@@ -370,6 +376,15 @@ public class BorrowingController extends Controller {  // Extend Controller
         statusComboBox.getItems().addAll("borrowing", "returned", "late", "lost");
         statusComboBox.setValue(selectedBorrowing.getBorrowingStatus());
         statusComboBox.setPrefWidth(300);
+
+        // Disable edit fields if status is 'returned'
+        if ("returned".equals(selectedBorrowing.getBorrowingStatus())) {
+            readerField.setDisable(true);
+            documentSearchField.setDisable(true);
+            borrowDatePicker.setDisable(true);
+            dueDatePicker.setDisable(true);
+            statusComboBox.setDisable(true);
+        }
 
         // Buttons
         Button saveButton = new Button("Save");
@@ -438,7 +453,8 @@ public class BorrowingController extends Controller {  // Extend Controller
     }
 
     private void updateBorrowingInDatabase(Borrowing updatedBorrowing) {
-        String query = "UPDATE borrowings SET " +
+
+        String updateBorrowingQuery = "UPDATE borrowings SET " +
                 "readerID = (SELECT readerID FROM readers WHERE readerName = ?), " +
                 "documentID = (SELECT documentID FROM documents WHERE documentName = ?), " +
                 "borrowDate = ?, " +
@@ -446,14 +462,13 @@ public class BorrowingController extends Controller {  // Extend Controller
                 "borrowingStatus = ? " +
                 "WHERE borrowingID = ?";
 
-        String incrementQuantityQuery = "UPDATE documents SET quantity = quantity + 1 " +
-                "WHERE documentID = (SELECT documentID FROM documents WHERE documentName = ?)";
+        String updateQuantityQuery = "UPDATE documents SET quantity = quantity + 1 WHERE documentID = (SELECT documentID FROM documents WHERE documentName = ?)";
 
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query);
-             PreparedStatement incrementStmt = conn.prepareStatement(incrementQuantityQuery)) {
+             PreparedStatement pstmt = conn.prepareStatement(updateBorrowingQuery);
+             PreparedStatement quantityPstmt = conn.prepareStatement(updateQuantityQuery)) {
 
-            // Set parameters for the update query
+            // Set parameters for the borrowing update query
             pstmt.setString(1, updatedBorrowing.getReaderName());
             pstmt.setString(2, updatedBorrowing.getDocumentName());
             pstmt.setString(3, updatedBorrowing.getBorrowDate());
@@ -469,18 +484,23 @@ public class BorrowingController extends Controller {  // Extend Controller
                 System.out.println("No borrowing was updated.");
             }
 
-            // If status is 'returned', increment the document quantity
-            if (updatedBorrowing.getBorrowingStatus().equals("returned")) {
-                incrementStmt.setString(1, updatedBorrowing.getDocumentName());
-                incrementStmt.executeUpdate();
-                System.out.println("Document return success!.");
+            // If the status is 'returned', update the document quantity
+            if ("returned".equals(updatedBorrowing.getBorrowingStatus())) {
+                quantityPstmt.setString(1, updatedBorrowing.getDocumentName());
+                int quantityRowsAffected = quantityPstmt.executeUpdate();
+                if (quantityRowsAffected > 0) {
+                    System.out.println("Document quantity updated successfully.");
+                } else {
+                    System.out.println("Failed to update document quantity.");
+                }
             }
 
-            // Refresh table data
+            // Refresh the table data
             loadBorrowingsData();
 
         } catch (SQLException e) {
             e.printStackTrace();
+            showAlert("Database Error", "Failed to update the borrowing.");
         }
     }
 
@@ -498,8 +518,7 @@ public class BorrowingController extends Controller {  // Extend Controller
         confirmationWindow.setTitle("Confirm Deletion");
 
         // Create the confirmation message
-        Label confirmationLabel = new Label("Are you sure you want to delete this borrowing?\n" +
-                "This will also update the document's quantity.");
+        Label confirmationLabel = new Label("Are you sure you want to delete this borrowing?");
 
         // Buttons for Yes and No
         Button yesButton = new Button("Yes");
@@ -533,10 +552,6 @@ public class BorrowingController extends Controller {  // Extend Controller
     }
 
     private void deleteBorrowingInDatabase(Borrowing selectedBorrowing) {
-        // SQL query to increase the quantity of the document in the documents table
-        String updateQuery = "UPDATE documents SET quantity = quantity + 1 WHERE documentID = " +
-                "(SELECT documentID FROM borrowings WHERE borrowingID = ?)";
-
         // SQL query to delete the borrowing from the borrowings table
         String deleteQuery = "DELETE FROM borrowings WHERE borrowingID = ?";
 
@@ -544,7 +559,6 @@ public class BorrowingController extends Controller {  // Extend Controller
         String statusQuery = "SELECT borrowingStatus FROM borrowings WHERE borrowingID = ?";
 
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
              PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery);
              PreparedStatement statusStmt = conn.prepareStatement(statusQuery)) {
 
@@ -555,19 +569,10 @@ public class BorrowingController extends Controller {  // Extend Controller
             if (rs.next()) {
                 String borrowingStatus = rs.getString("borrowingStatus");
 
-                // If the status is not "returned", update the document quantity
+                // Check if the status is not 'returned'
                 if (!"returned".equals(borrowingStatus)) {
-                    updateStmt.setInt(1, selectedBorrowing.getBorrowingID());
-                    int updatedRows = updateStmt.executeUpdate();
-
-                    if (updatedRows > 0) {
-                        System.out.println("Document quantity updated.");
-                    } else {
-                        showAlert("Error", "Failed to update document quantity.");
-                        return;
-                    }
-                } else {
-                    System.out.println("Document quantity not updated as status is 'returned'.");
+                    showAlert("Cannot Delete", "The borrowing cannot be deleted because it has not been returned yet.");
+                    return;  // Exit the method if the status is not 'returned'
                 }
 
                 // Delete the borrowing record
@@ -580,6 +585,8 @@ public class BorrowingController extends Controller {  // Extend Controller
                 } else {
                     showAlert("Error", "Failed to delete borrowing from the database.");
                 }
+            } else {
+                showAlert("Error", "Borrowing not found.");
             }
 
         } catch (SQLException e) {
