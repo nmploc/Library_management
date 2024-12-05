@@ -16,7 +16,7 @@ public class testEditBookInDatabase {
     void setUp() throws SQLException {
         // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
         DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
-        connection = DatabaseHelper.connection; // Lấy kết nối từ DatabaseHelper
+        connection = DatabaseHelper.getConnection(); // Lấy kết nối từ DatabaseHelper
 
         // Tạo bảng `categories` và `documents` nếu chưa có
         try (Statement stmt = connection.createStatement()) {
@@ -50,27 +50,58 @@ public class testEditBookInDatabase {
     public void testEditBookInDatabase() {
         // Thêm sách vào cơ sở dữ liệu trước khi chỉnh sửa
         Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
+        DatabaseHelper.addBookToDatabase(testBook);
 
-        // Lấy documentID của sách đã thêm vào
+        // Lấy documentID của sách vừa được thêm
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
         int documentID = -1;
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, testBook.getDocumentName());
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                documentID = rs.getInt("documentID");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    documentID = rs.getInt("documentID");
+                } else {
+                    fail("Không tìm thấy sách vừa thêm trong cơ sở dữ liệu");
+                }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            fail("Lỗi SQL khi lấy documentID: " + e.getMessage());
         }
+
+        // Đảm bảo documentID hợp lệ
+        assertTrue(documentID > 0, "Document ID không hợp lệ");
 
         // Chỉnh sửa sách
         Books updatedBook = new Books(documentID, "Updated Book", "Jane Doe", "Fiction", 15);
         DatabaseHelper.updateBookInDatabase(updatedBook);
 
-        // Kiểm tra lại sách sau khi chỉnh sửa
-        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), 1, updatedBook.getQuantity()); // categoryID cho 'Non-Fiction' là 2
+        // Kiểm tra sách sau khi chỉnh sửa
+        int fictionCategoryID = -1;
+        try (PreparedStatement pstmt = connection.prepareStatement("SELECT categoryID FROM categories WHERE categoryName = ?")) {
+            pstmt.setString(1, "Fiction");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    fictionCategoryID = rs.getInt("categoryID");
+                } else {
+                    fail("Không tìm thấy thể loại 'Fiction' trong cơ sở dữ liệu");
+                }
+            }
+        } catch (SQLException e) {
+            fail("Lỗi SQL khi lấy categoryID: " + e.getMessage());
+        }
+
+        verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), fictionCategoryID, updatedBook.getQuantity());
+
+        // Xóa sách sau khi kiểm tra
+        try (PreparedStatement pstmt = connection.prepareStatement("DELETE FROM documents WHERE documentID = ?")) {
+            pstmt.setInt(1, documentID);
+            int rowsDeleted = pstmt.executeUpdate();
+            assertTrue(rowsDeleted > 0, "Không thể xóa sách sau khi kiểm tra");
+        } catch (SQLException e) {
+            fail("Lỗi SQL khi xóa sách: " + e.getMessage());
+        }
     }
+
 
     @AfterEach
     void tearDown() throws SQLException {
