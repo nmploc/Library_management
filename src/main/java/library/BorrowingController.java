@@ -99,38 +99,64 @@ public class BorrowingController extends Controller {  // Extend Controller
         Main.registerStage(addBorrowingWindow);
         addBorrowingWindow.setTitle("Add Borrowing");
 
-        // Reader Name
-        TextField readerField = new TextField();
-        readerField.setPromptText("Reader Name");
-        readerField.setPrefWidth(300);
+        // Reader Search Field
+        TextField readerSearchField = new TextField();
+        readerSearchField.setPromptText("Search Reader");
+        readerSearchField.setPrefWidth(300);
 
-        // Document Search
+        // Reader ListView
+        ListView<String> readerListView = new ListView<>();
+        readerListView.setPrefWidth(300);
+        readerListView.setVisible(false); // Initially hidden
+        readerListView.setMaxHeight(150);
+        readerListView.setTranslateY(-40);
+
+        // Add listener to search and update ListView
+        readerSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty()) {
+                updateReaderListView(newValue, readerListView);
+                readerListView.setVisible(true); // Show list when results exist
+            } else {
+                readerListView.setVisible(false); // Hide list when search field is empty
+            }
+        });
+
+        // Handle selection in Reader ListView
+        readerListView.setOnMouseClicked(event -> {
+            String selectedReader = readerListView.getSelectionModel().getSelectedItem();
+            if (selectedReader != null) {
+                readerSearchField.setText(selectedReader); // Set selected reader in the search field
+                readerListView.setVisible(false); // Hide list after selection
+            }
+        });
+
+        // Document Search Field
         TextField documentSearchField = new TextField();
         documentSearchField.setPromptText("Search Document");
         documentSearchField.setPrefWidth(300);
 
         ListView<String> documentListView = new ListView<>();
         documentListView.setPrefWidth(300);
-        documentListView.setVisible(false); // Ban đầu ẩn danh sách
+        documentListView.setVisible(false);
         documentListView.setMaxHeight(150);
         documentListView.setTranslateY(50);
 
-        // Add listener to search and update ListView
+        // Add listener to search and update Document ListView
         documentSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.isEmpty()) {
                 updateDocumentListView(newValue, documentListView);
-                documentListView.setVisible(true); // Hiển thị danh sách khi có kết quả
+                documentListView.setVisible(true);
             } else {
-                documentListView.setVisible(false); // Ẩn danh sách nếu không có từ khóa
+                documentListView.setVisible(false);
             }
         });
 
-        // Handle selection in ListView
+        // Handle selection in Document ListView
         documentListView.setOnMouseClicked(event -> {
             String selectedDocument = documentListView.getSelectionModel().getSelectedItem();
             if (selectedDocument != null) {
                 documentSearchField.setText(selectedDocument);
-                documentListView.setVisible(false); // Ẩn danh sách sau khi chọn
+                documentListView.setVisible(false);
             }
         });
 
@@ -152,8 +178,7 @@ public class BorrowingController extends Controller {  // Extend Controller
         cancelButton.setPrefWidth(100);
 
         addButton.setOnAction(event -> {
-            // Kiểm tra xem tên người mượn có trong database không
-            String readerName = readerField.getText();
+            String readerName = readerSearchField.getText();
             if (readerName.isEmpty() || !isReaderExists(readerName)) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Reader Not Found");
@@ -163,7 +188,7 @@ public class BorrowingController extends Controller {  // Extend Controller
                 return;
             }
 
-            if (readerField.getText().isEmpty() || documentSearchField.getText().isEmpty() ||
+            if (readerSearchField.getText().isEmpty() || documentSearchField.getText().isEmpty() ||
                     borrowDatePicker.getValue() == null || dueDatePicker.getValue() == null) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Input Error");
@@ -181,7 +206,7 @@ public class BorrowingController extends Controller {  // Extend Controller
                 alert.showAndWait();
                 return;
             }
-            
+
             String documentName = documentSearchField.getText();
             String borrowDate = borrowDatePicker.getValue().toString();
             String dueDate = dueDatePicker.getValue().toString();
@@ -198,26 +223,51 @@ public class BorrowingController extends Controller {  // Extend Controller
         HBox buttonBox = new HBox(10, addButton, cancelButton);
         buttonBox.setAlignment(Pos.CENTER);
 
-        // StackPane Layout để chồng ListView lên các phần tử khác
+        // StackPane Layout
         StackPane stackPane = new StackPane();
         stackPane.setStyle("-fx-padding: 20px; -fx-alignment: center;");
 
-        // Tạo VBox cho phần còn lại của form
-        VBox vbox = new VBox(10); // Khoảng cách giữa các phần tử
+        // VBox for the form
+        VBox vbox = new VBox(10);
         vbox.getChildren().addAll(
-                new Label("Reader Name:"), readerField,
+                new Label("Search Reader:"), readerSearchField,
                 new Label("Search Document:"), documentSearchField,
                 new Label("Borrow Date:"), borrowDatePicker,
                 new Label("Due Date:"), dueDatePicker,
                 buttonBox
         );
 
-        stackPane.getChildren().addAll(vbox, documentListView); // Đặt vbox và ListView chồng lên nhau
+        stackPane.getChildren().addAll(vbox, readerListView, documentListView);
 
         // Scene
-        Scene scene = new Scene(stackPane, 400, 320);
+        Scene scene = new Scene(stackPane, 400, 400);
         addBorrowingWindow.setScene(scene);
         addBorrowingWindow.show();
+    }
+
+    private void updateReaderListView(String searchText, ListView<String> listView) {
+        listView.getItems().clear(); // Clear previous items
+        String query = "SELECT readerName FROM readers WHERE readerName LIKE ? OR fullName LIKE ?"; // Query for readerName and fullName
+
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, "%" + searchText + "%"); // Search by readerName
+            pstmt.setString(2, "%" + searchText + "%"); // Search by fullName
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                listView.getItems().add(rs.getString("readerName")); // Add readerName to ListView
+            }
+
+            if (listView.getItems().isEmpty()) {
+                listView.setVisible(false); // Hide ListView if no results
+            } else {
+                listView.setVisible(true); // Show ListView if results exist
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean isReaderExists(String readerName) {

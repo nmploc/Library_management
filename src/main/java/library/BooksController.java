@@ -459,7 +459,6 @@ public class BooksController extends Controller {
             showAlert("Input Error", "Please enter a search term.");
             return;
         }
-
         // Call the API to search for books
         ObservableList<Books> apiBooks = APIHelper.searchBooks(searchQuery);
         if (apiBooks.isEmpty()) {
@@ -468,6 +467,4 @@ public class BooksController extends Controller {
             APIHelper.showBooksFromAPI(apiBooks);
         }
     }
-
-
 }
