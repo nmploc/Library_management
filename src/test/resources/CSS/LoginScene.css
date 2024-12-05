@@ -53,3 +53,12 @@
     -fx-background-radius: 5;
     -fx-cursor: hand;
 }
+#usernameField:focused {
+    -fx-border-color: #4c70ba;
+    -fx-border-radius: 5;
+}
+
+#usernameField {
+    -fx-border-color: #A0A0A0;
+    -fx-border-radius: 5;
+}

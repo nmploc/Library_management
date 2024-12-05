@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Pos?>
+
+<AnchorPane fx:id="BorrowingsPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" styleClass="base-background" stylesheets="@../CSS/Books.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.BorrowingController">
+    <children>
+        <!-- Top control panel -->
+        <AnchorPane prefHeight="40.0" prefWidth="1200.0" styleClass="top-panel">
+            <HBox alignment="CENTER" spacing="10">
+                <Label styleClass="title-label" text="Borrowings" />
+                <TextField fx:id="searchField" promptText="Search by Reader Name, Document Name, or Status" styleClass="search-bar" />
+                <Button fx:id="findBorrowingButton" onAction="#handleFindBorrowing" styleClass="button" text="Find" />
+                <Button fx:id="addBorrowingButton" onAction="#handleAddBorrowing" styleClass="button" text="Add Borrowing" />
+            </HBox>
+        </AnchorPane>
+
+        <!-- Main working area -->
+        <VBox spacing="10" styleClass="content-area" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+            <TableView fx:id="borrowingsTable" stylesheets="@../CSS/Books.css">
+                <columns>
+                    
+                </columns>
+            </TableView>
+
+            <HBox alignment="CENTER" spacing="20">
+                <Button fx:id="editBorrowingButton" onAction="#handleEditBorrowing" styleClass="button" text="Edit" />
+                <Button fx:id="deleteBorrowingButton" onAction="#handleDeleteBorrowing" styleClass="button" text="Delete" />
+            </HBox>
+        </VBox>
+    </children>
+</AnchorPane>

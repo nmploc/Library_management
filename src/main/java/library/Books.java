@@ -12,6 +12,13 @@ public class Books {
     private String description; // New field for description
 
     // Constructor without cover image, ISBN, and description
+    public Books(String documentName, String authors, String category, int quantity) {
+        this.documentName = documentName;
+        this.authors = authors;
+        this.category = category;
+        this.quantity = quantity;
+    }
+
     public Books(int documentID, String documentName, String authors, String category, int quantity) {
         this.documentID = documentID;
         this.documentName = documentName;

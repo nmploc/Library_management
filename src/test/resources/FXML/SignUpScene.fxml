@@ -15,7 +15,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="Dashboard" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" style="-fx-background-color: transparent;" stylesheets="@../CSS/SignupScene.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.SignUpController">
+<AnchorPane fx:id="Dashboard" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="620.0" prefWidth="1200.0" style="-fx-background-color: transparent;" stylesheets="@../CSS/SignupScene.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.SignUpController">
    <children>
       <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background-color: transparent; -fx-border: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <content>
@@ -26,6 +26,8 @@
                         <VBox alignment="CENTER" layoutX="24.0" layoutY="22.0" prefHeight="536.0" prefWidth="243.0" spacing="5.0">
                            <children>
                               <Label prefHeight="60.0" prefWidth="129.0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-font-family: 'Montserrat';" text="    Sign up" />
+                              <Label style="-fx-font-size: 14px; -fx-font-family: 'Montserrat';" text="Full Name" />
+                              <TextField fx:id="FullName" prefHeight="29.0" prefWidth="249.0" promptText="Full Name" />
                               <Label style="-fx-font-size: 14px; -fx-font-family: 'Montserrat';" text="Username" />
                               <TextField fx:id="nameField" prefHeight="29.0" prefWidth="249.0" promptText="Name" />
                               <Text fx:id="nameError" fill="red" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
@@ -67,7 +69,7 @@
                                           <Font name="System Bold" size="18.0" />
                                        </font>
                                     </Button>
-                                    <Button fx:id="signUpButton" mnemonicParsing="false" style="-fx-background-color: #3b5998; -fx-text-fill: white; -fx-cursor: hand;" text="Sign up" textFill="WHITE">
+                                    <Button fx:id="signUpButton" mnemonicParsing="false" onAction="#handleSignUp" style="-fx-background-color: #3b5998; -fx-text-fill: white; -fx-cursor: hand;" text="Sign up" textFill="WHITE">
                                        <font>
                                           <Font name="System Bold" size="18.0" />
                                        </font>
