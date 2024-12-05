@@ -6,11 +6,14 @@ import javafx.collections.ObservableList;
 import java.io.IOException;
 import java.sql.*;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+
 public class DatabaseHelper {
-    public static final String URL = "jdbc:mysql://localhost:3306/librarydb";
-    public static final String USERNAME = "root";
-    public static final String PASSWORD = "";
-    public static Connection connection;
+    private static final String URL = "jdbc:mysql://localhost:3306/librarydb";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "";
+    private static Connection connection;
 
     // Start XAMPP services
     public static void startXamppServices() {
@@ -56,11 +59,6 @@ public class DatabaseHelper {
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
-
-    public static void setConnection(Connection testConnection) {
-        connection = testConnection; // Gán kết nối kiểm tra
-    }
-
 
     public static void addBookToDatabase(Books newBook) {
         String insertQuery = "INSERT INTO documents (documentName, authors, categoryID, quantity) VALUES (?, ?, ?, ?)";
@@ -152,7 +150,7 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1;
+        return -1; // Return -1 if category is not found
     }
 
     public static boolean isCategoryExists(String categoryName) {
@@ -198,6 +196,30 @@ public class DatabaseHelper {
         }
     }
 
+    // Kiểm tra xem thông tin reader đã tồn tại trong cơ sở dữ liệu chưa
+    public static boolean isReaderExist(Reader reader) {
+        String checkQuery = "SELECT COUNT(*) FROM readers WHERE (readerName = ? OR email = ? OR phoneNumber = ?) AND readerID != ?";
+
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(checkQuery)) {
+
+            pstmt.setString(1, reader.getReaderName());
+            pstmt.setString(2, reader.getEmail());
+            pstmt.setString(3, reader.getPhoneNumber());
+            pstmt.setInt(4, reader.getReaderID());  // Kiểm tra tất cả các reader khác, ngoại trừ reader hiện tại
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    return count > 0;  // Nếu có ít nhất 1 dòng dữ liệu trùng thì trả về true
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false; // Không có dữ liệu trùng
+    }
 
     public static void deleteReaderFromDatabase(int readerID) {
         String deleteQuery = "DELETE FROM readers WHERE readerID = ?";
@@ -209,7 +231,6 @@ public class DatabaseHelper {
             e.printStackTrace();
         }
     }
-
 
     public static void updateReaderInDatabase(Reader updatedReader) {
         String updateQuery = "UPDATE readers SET readerName = ?, fullName = ?, email = ?, phoneNumber = ? WHERE readerID = ?";
