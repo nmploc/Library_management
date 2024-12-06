@@ -258,6 +258,11 @@ public class ReaderController extends Controller {
             showAlert("No Selection", "Please select a reader to delete.");
             return;
         }
+        // Gọi phương thức isReaderBorrowing qua DatabaseHelper
+        if (DatabaseHelper.getInstance().isReaderBorrowing(selectedReader.getReaderID())) {
+            showAlert("Cannot Delete", "The selected reader is currently borrowing books. Please resolve their borrowings first.");
+            return;
+        }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete Confirmation");

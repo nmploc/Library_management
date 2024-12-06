@@ -48,7 +48,7 @@ public class DatabaseHelper {
 
     // Start XAMPP services
     public static void startXamppServices() {
-        String xamppPath = "D:\\App\\Xampp\\"; // Path to your XAMPP installation
+        String xamppPath = "D:\\Xampp\\"; // Path to your XAMPP installation
         try {
             // Start Apache and MySQL services
             new ProcessBuilder(xamppPath + "apache_start.bat").start();
@@ -66,7 +66,7 @@ public class DatabaseHelper {
 
     // Stop XAMPP services
     public static void stopXamppServices() {
-        String xamppPath = "D:\\App\\Xampp\\"; // Path to your XAMPP installation
+        String xamppPath = "D:\\Xampp\\"; // Path to your XAMPP installation
         try {
             // Run the xampp_stop.exe file
             new ProcessBuilder(xamppPath + "xampp_stop.exe").start();
@@ -270,5 +270,21 @@ public class DatabaseHelper {
         }
         return false;
     }
+    public boolean isReaderBorrowing(int readerID) {
+        openConnection(); // Kiểm tra và mở lại kết nối nếu cần
+        String query = "SELECT COUNT(*) FROM borrowings WHERE readerID = ? AND borrowingStatus IN ('borrowing', 'late', 'lost')";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, readerID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error in isReaderBorrowing: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 
 }
