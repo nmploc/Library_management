@@ -113,7 +113,12 @@ Our team:
     - Save the configuration and run `AppStart` to start using the application.
  
 ## Contact
-- **Email**: [quenten9212@gmail.com](mailto:quenten9212@gmail.com)
-- **GitHub**: [DATTB09](https://github.com/DATTB09)
+- **Dao Van Dat**
+  - **Email**: [quenten9212@gmail.com](mailto:quenten9212@gmail.com)
+  - **GitHub**: [DATTB09](https://github.com/DATTB09)
+
+- **Nguyen Manh Phuc Loc**
+  - **Email**: [nmploc@gmail.com](mailto:nmploc@gmail.com)
+  - **GitHub**: [nmploc](https://github.com/nmploc)
 
 ---
