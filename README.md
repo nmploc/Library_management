@@ -23,7 +23,7 @@ Here is the updated README file with the corrected directory for the **Database 
 ---
 
 ## Introduction
-Library Management is a library management application where librarians and administrators share the same user role, managing tasks such as book cataloging and reader (also called member) management. This project is the final assignment of Group 11 for the Object-Oriented Programming course, class 2425I_INT2204_19 at VNU-UET.
+Library Management is a library management application where librarians and administrators share the same user role, managing tasks such as book cataloging and reader (also called member) management. This project is the final assignment of Group 12 for the Object-Oriented Programming course, class 2425I_INT2204_19 at VNU-UET.
 
 Our team:
 
