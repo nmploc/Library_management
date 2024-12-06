@@ -122,4 +122,8 @@ Our team:
   - **Email**: [nmploc@gmail.com](mailto:nmploc@gmail.com)
   - **GitHub**: [nmploc](https://github.com/nmploc)
 
+- **Le Hoang Trung**
+  - **Email**: [trungabc498@gmail.com](mailto:trungabc498@gmail.com)
+  - **GitHub**: [trungabc498](https://github.com/trungabc498)
+
 ---
