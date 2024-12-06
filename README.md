@@ -47,7 +47,7 @@ Our team:
 
 - Database:
 <div align="center">  
-  <img src="/resources/image/Database Diagram.png" alt="Database">  
+  <img src="src/main/resources/image/Database Diagram.png" alt="Database">  
 </div>
 
 ---  
