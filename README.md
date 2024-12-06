@@ -11,6 +11,7 @@
 ### Step by step
 
 - Clone and open this repository in IntelliJ IDEA
+- Dowload and install xampp
 - Config the project SDK to JDK17 (File -> Project Structure -> Project Settings -> Project)
 - Open Maven tool window and run `clean` and `install`
 - Open `Run/Debug Configuration` window

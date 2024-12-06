@@ -250,7 +250,8 @@ public class DatabaseHelper {
 
     // New method to check if a book is currently on loan
     public static boolean isBookOnLoan(int documentID) {
-        String query = "SELECT COUNT(*) FROM borrowings WHERE documentID = ? AND borrowingStatus = 'borrowing'";
+        String query = "SELECT COUNT(*) FROM borrowings " +
+                "WHERE documentID = ? AND borrowingStatus IN ('borrowing', 'late', 'lost')";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 

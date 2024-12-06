@@ -328,7 +328,7 @@ public class BorrowingController extends Controller {  // Extend Controller
             if (rs.next()) {
                 int quantity = rs.getInt("quantity");
                 if (quantity == 0) {
-                    showAlert("Out of Stock", "Cuốn sách đã được mượn hết");
+                    showAlert("Out of Stock", "\n" + "The book has been borrowed all of it quantity");
                     return;
                 }
             } else {

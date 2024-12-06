@@ -138,7 +138,7 @@ public class DashboardController extends Controller {
                 String categoryName = resultSet.getString("categoryName");
                 int totalBooks = resultSet.getInt("totalBooks");
                 int borrowerCount = resultSet.getInt("borrowerCount");
-                
+
                 // Add data to the observable list
                 categoryData.add(new CategoryBookCount(categoryName, totalBooks, borrowerCount));
             }
