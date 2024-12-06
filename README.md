@@ -107,9 +107,7 @@ Our team:
       --module-path {path to sdk}/javafx-sdk-22.0.2/lib --add-modules javafx.controls,javafx.fxml,javafx.web
       ```
     - Download JavaFX 22 SDK from [here](https://jdk.java.net/javafx22/).
-```
-
-This will direct users to the download page for JavaFX 22.
+      ```
 
 9. **Run the application**:
     - Save the configuration and run `AppStart` to start using the application.
