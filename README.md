@@ -17,7 +17,6 @@ Here is the updated README file with the corrected directory for the **Database 
 - <span style="font-size: 18px;">[Diagrams](#diagrams)</span>
 - <span style="font-size: 18px;">[Built with](#built-with)</span>
 - <span style="font-size: 18px;">[Installation](#installation)</span>
-- <span style="font-size: 18px;">[License](#license)</span>
 - <span style="font-size: 18px;">[Contact](#contact)</span>
 ---
 
@@ -116,5 +115,3 @@ Our team:
 - **GitHub**: [DATTB09](https://github.com/DATTB09)
 
 ---
-
-Let me know if you need any further adjustments!
