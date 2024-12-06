@@ -44,14 +44,13 @@ Our team:
 ---  
 ## Diagrams
 
-- Class
-<div align="center">  
+- Class  
+<div align="center" style="margin-bottom: 20px;">  
   <img src="src/main/resources/image/Class Diagram no0.png" alt="Class">  
 </div>
-</div>
-</div>
-- Database:
-<div align="center">  
+
+- Database:  
+<div align="center" style="margin-bottom: 20px;">  
   <img src="src/main/resources/image/Database Diagram.png" alt="Database">  
 </div>
 
