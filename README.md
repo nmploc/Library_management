@@ -47,6 +47,7 @@ Our team:
 - Class  
 <div align="center" style="margin-bottom: 20px;">  
   <img src="src/main/resources/image/Class Diagram no0.png" alt="Class">  
+  <img src="src/main/resources/image/Class Diagram no1.png">
 </div>
 
 - Database:  
