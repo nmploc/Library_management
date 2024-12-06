@@ -14,15 +14,14 @@ public class testEditBookInDatabase {
 
     @BeforeEach
     void setUp() throws SQLException {
-        // Kết nối đến cơ sở dữ liệu thực của bạn thông qua DatabaseHelper
-        DatabaseHelper.connectToDatabase();  // Gọi phương thức kết nối từ DatabaseHelper
-        connection = DatabaseHelper.getConnection(); // Lấy kết nối từ DatabaseHelper
+        // Lấy đối tượng duy nhất của DatabaseHelper thông qua Singleton
+        DatabaseHelper databaseHelper = DatabaseHelper.getInstance();
+        connection = databaseHelper.getConnection();  // Lấy kết nối từ DatabaseHelper
 
         // Tạo bảng `categories` và `documents` nếu chưa có
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS categories (categoryID INT PRIMARY KEY AUTO_INCREMENT, categoryName VARCHAR(255))");
             stmt.execute("CREATE TABLE IF NOT EXISTS documents (documentID INT PRIMARY KEY AUTO_INCREMENT, documentName VARCHAR(255), authors VARCHAR(255), categoryID INT, quantity INT)");
-            //stmt.execute("INSERT IGNORE INTO categories (categoryName) VALUES ('Fiction'), ('Non-Fiction')");
         }
     }
 
@@ -50,7 +49,8 @@ public class testEditBookInDatabase {
     public void testEditBookInDatabase() {
         // Step 1: Add a new book to the database
         Books testBook = new Books("Test Book", "John Doe", "Fiction", 10);
-        DatabaseHelper.addBookToDatabase(testBook);
+        DatabaseHelper databaseHelper = DatabaseHelper.getInstance();  // Lấy đối tượng DatabaseHelper
+        databaseHelper.addBookToDatabase(testBook);
 
         // Step 2: Retrieve the documentID of the added book
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
@@ -73,13 +73,13 @@ public class testEditBookInDatabase {
 
         // Step 3: Edit the book
         Books updatedBook = new Books(documentID, "Updated Book", "Jane Doe", "Fiction", 15);
-        DatabaseHelper.updateBookInDatabase(updatedBook);
+        databaseHelper.updateBookInDatabase(updatedBook);  // Sử dụng phương thức từ đối tượng duy nhất của DatabaseHelper
 
         // Step 4: Verify the book after editing
         verifyBookInDatabase(updatedBook.getDocumentName(), updatedBook.getAuthors(), 1, updatedBook.getQuantity());
 
         // Step 5: Delete the book
-        DatabaseHelper.deleteBookFromDatabase(documentID);
+        databaseHelper.deleteBookFromDatabase(documentID);  // Sử dụng phương thức từ đối tượng duy nhất của DatabaseHelper
 
         // Step 6: Verify the book has been deleted
         query = "SELECT * FROM documents WHERE documentID = ?";

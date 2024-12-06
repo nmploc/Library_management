@@ -139,7 +139,7 @@ public class SignUpController extends Controller {
     public boolean checkIfUserExists(String username, String phoneNumber, String email) {
         String query = "SELECT COUNT(*) FROM users WHERE userName = ? OR phoneNumber = ? OR gmail = ?";
 
-        try (PreparedStatement stmt = DatabaseHelper.getConnection().prepareStatement(query)) {
+        try (PreparedStatement stmt = DatabaseHelper.getInstance().getConnection().prepareStatement(query)) {
             stmt.setString(1, username);
             stmt.setString(2, phoneNumber);
             stmt.setString(3, email);
@@ -189,7 +189,7 @@ public class SignUpController extends Controller {
 
         String insertQuery = "INSERT INTO users (userFullName, username, hashedPassword, phoneNumber, gmail) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection connection = DatabaseHelper.getConnection();
+        try (Connection connection = DatabaseHelper.getInstance().getConnection();
              PreparedStatement stmt = connection.prepareStatement(insertQuery)) {
             String hashedPassword = PasswordEncoder.hashedpassword(password);
 

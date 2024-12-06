@@ -47,9 +47,9 @@ public class ProfileController extends Controller {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle){
         try {
-            DatabaseHelper.connectToDatabase();
+            DatabaseHelper.getInstance();
             // Load user information from the database, including the avatar
-            Connection conn = DatabaseHelper.getConnection();
+            Connection conn = DatabaseHelper.getInstance().getConnection();
             int userId = getCurrentUserId();
             String query = "SELECT * FROM users WHERE userID = ?";
             PreparedStatement pstmt = conn.prepareStatement(query);
@@ -127,8 +127,8 @@ public class ProfileController extends Controller {
     }
 
     private void saveProfileChanges() {
-        DatabaseHelper.connectToDatabase();
-        try (Connection conn = DatabaseHelper.getConnection()) {
+        DatabaseHelper.getInstance();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection()) {
             int userId = getCurrentUserId(); // Retrieve this from the session or login logic
             String updateQuery = "UPDATE users SET userFullName = ?, phoneNumber = ?, gmail = ?, dateOfBirth = ? WHERE userID = ?";
 
@@ -181,8 +181,8 @@ public class ProfileController extends Controller {
                 Files.copy(selectedFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
                 // Update the avatar in the database
-                DatabaseHelper.connectToDatabase();
-                Connection conn = DatabaseHelper.getConnection();
+                DatabaseHelper.getInstance();
+                Connection conn = DatabaseHelper.getInstance().getConnection();
                 String query = "UPDATE users SET avatar = ? WHERE userID = ?";
                 PreparedStatement pstmt = conn.prepareStatement(query);
                 pstmt.setString(1, newAvatarName);
@@ -259,8 +259,8 @@ public class ProfileController extends Controller {
     private void changePasswordInDatabase(String currentPassword, String newPassword) {
         int currentUserId = getCurrentUserId();
         // Check if the current password matches the database record
-        DatabaseHelper.connectToDatabase();
-        try (Connection conn = DatabaseHelper.getConnection()) {
+        DatabaseHelper.getInstance();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection()) {
             String query = "SELECT hashedPassword FROM users WHERE userID = ?";
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, currentUserId);

@@ -160,8 +160,8 @@ public class ReportController extends Controller {
 
     private void fetchReportsFromDatabase() {
         String query = "SELECT reportType, title, content FROM reports";
-        DatabaseHelper.connectToDatabase();
-        try (Connection conn = DatabaseHelper.getConnection();
+        DatabaseHelper.getInstance();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -182,8 +182,8 @@ public class ReportController extends Controller {
     public void insertData() {
         String query = "INSERT INTO reports (userID, reportType, title, content) VALUES (?, ?, ?, ?)";
 
-        DatabaseHelper.connectToDatabase();
-        try (Connection conn = DatabaseHelper.getConnection()) {
+        DatabaseHelper.getInstance();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection()) {
             PreparedStatement stmt = conn.prepareStatement(query);
             int userID = User.getID();
 

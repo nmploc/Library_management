@@ -14,15 +14,14 @@ public class testDeleteBookFromDatabase {
 
     @BeforeEach
     void setUp() throws SQLException {
-        // Kết nối đến cơ sở dữ liệu thông qua DatabaseHelper
-        DatabaseHelper.connectToDatabase();
-        connection = DatabaseHelper.getConnection();
+        // Lấy đối tượng duy nhất của DatabaseHelper thông qua Singleton
+        DatabaseHelper databaseHelper = DatabaseHelper.getInstance();
+        connection = databaseHelper.getConnection();  // Lấy kết nối từ DatabaseHelper
 
         // Tạo bảng `categories` và `documents` nếu chưa có
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS categories (categoryID INT PRIMARY KEY AUTO_INCREMENT, categoryName VARCHAR(255))");
             stmt.execute("CREATE TABLE IF NOT EXISTS documents (documentID INT PRIMARY KEY AUTO_INCREMENT, documentName VARCHAR(255), authors VARCHAR(255), categoryID INT, quantity INT)");
-            //stmt.execute("INSERT IGNORE INTO categories (categoryName) VALUES ('Fiction'), ('Non-Fiction')");
         }
     }
 
@@ -30,7 +29,8 @@ public class testDeleteBookFromDatabase {
     public void testDeleteBookFromDatabase() {
         // Step 1: Thêm sách mới
         Books testBook = new Books("Temporary Book", "Author Name", "Fiction", 10);
-        DatabaseHelper.addBookToDatabase(testBook);
+        DatabaseHelper databaseHelper = DatabaseHelper.getInstance();  // Lấy đối tượng DatabaseHelper
+        databaseHelper.addBookToDatabase(testBook);
 
         // Step 2: Lấy `documentID` của sách vừa thêm
         String query = "SELECT documentID FROM documents WHERE documentName = ?";
@@ -49,7 +49,7 @@ public class testDeleteBookFromDatabase {
         }
 
         // Step 3: Xóa sách vừa thêm
-        DatabaseHelper.deleteBookFromDatabase(documentID);
+        databaseHelper.deleteBookFromDatabase(documentID);  // Sử dụng phương thức từ đối tượng duy nhất của DatabaseHelper
 
         // Step 4: Kiểm tra sách đã bị xóa
         query = "SELECT * FROM documents WHERE documentID = ?";

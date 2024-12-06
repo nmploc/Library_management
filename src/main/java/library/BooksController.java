@@ -117,7 +117,7 @@ public class BooksController extends Controller {
         String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity, d.isbn, d.description " +
                 "FROM documents d LEFT JOIN categories c ON d.categoryID = c.categoryID";
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
@@ -210,17 +210,17 @@ public class BooksController extends Controller {
                         String authors = authorField.getText();
                         String category = categorySearchField.getText();
 
-                        if (!DatabaseHelper.isCategoryExists(category)) {
+                        if (!DatabaseHelper.getInstance().isCategoryExists(category)) {
                             showAddCategoryDialog(category, () -> {
                                 // Add the new category to the database
-                                DatabaseHelper.addCategoryToDatabase(category);
+                                DatabaseHelper.getInstance().addCategoryToDatabase(category);
                                 // Retry adding the book after adding the new category
                                 handleAddBookRetry(title, authors, category, quantity, addBookWindow);
                             });
                         } else {
                             // Create a new book object
                             Books newBook = new Books(0, title, authors, category, quantity);
-                            DatabaseHelper.addBookToDatabase(newBook);  // Add book to database
+                            DatabaseHelper.getInstance().addBookToDatabase(newBook);
                             loadBooksData();
 
                             // Close the window after submission
@@ -268,7 +268,7 @@ public class BooksController extends Controller {
         listView.getItems().clear(); // Clear previous items
         String query = "SELECT categoryName FROM categories WHERE categoryName LIKE ?"; // Query for categories
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, "%" + searchText + "%");
@@ -305,7 +305,7 @@ public class BooksController extends Controller {
     private void handleAddBookRetry(String title, String authors, String category, int quantity, Stage addBookWindow) {
         // Create a new book object
         Books newBook = new Books(0, title, authors, category, quantity);
-        DatabaseHelper.addBookToDatabase(newBook);  // Add book to database
+        DatabaseHelper.getInstance().addBookToDatabase(newBook);
         loadBooksData();
 
         // Close the window after submission
@@ -383,17 +383,17 @@ public class BooksController extends Controller {
                         String authors = authorField.getText();
                         String category = categorySearchField.getText();
 
-                        if (!DatabaseHelper.isCategoryExists(category)) {
+                        if (!DatabaseHelper.getInstance().isCategoryExists(category)) {
                             showAddCategoryDialog(category, () -> {
                                 // Add the new category to the database
-                                DatabaseHelper.addCategoryToDatabase(category);
+                                DatabaseHelper.getInstance().addCategoryToDatabase(category);
                                 // Retry updating the book after adding the new category
                                 handleEditBookRetry(selectedBook, title, authors, category, quantity, editBookWindow);
                             });
                         } else {
                             // Create a new Books object with updated information
                             Books updatedBook = new Books(selectedBook.getDocumentID(), title, authors, category, quantity);
-                            DatabaseHelper.updateBookInDatabase(updatedBook);  // Update book in the database
+                            DatabaseHelper.getInstance().updateBookInDatabase(updatedBook);  // Update book in the database
                             loadBooksData();
 
                             // Close the window after saving
@@ -440,7 +440,7 @@ public class BooksController extends Controller {
     private void handleEditBookRetry(Books selectedBook, String title, String authors, String category, int quantity, Stage editBookWindow) {
         // Create a new Books object with updated information
         Books updatedBook = new Books(selectedBook.getDocumentID(), title, authors, category, quantity);
-        DatabaseHelper.updateBookInDatabase(updatedBook);  // Update book in the database
+        DatabaseHelper.getInstance().updateBookInDatabase(updatedBook);  // Update book in the database
         loadBooksData();
 
         // Close the window after saving
@@ -455,7 +455,7 @@ public class BooksController extends Controller {
             return;
         }
 
-        if (DatabaseHelper.isBookOnLoan(selectedBook.getDocumentID())) {
+        if (DatabaseHelper.getInstance().isBookOnLoan(selectedBook.getDocumentID())) {
             showAlert("Cannot Delete", "This book is currently on loan and cannot be deleted.");
             return;
         }
@@ -472,7 +472,7 @@ public class BooksController extends Controller {
         // Create "Delete" and "Cancel" buttons
         Button deleteButton = new Button("Delete");
         deleteButton.setOnAction(event -> {
-            DatabaseHelper.deleteBookFromDatabase(selectedBook.getDocumentID());  // Delete the book
+            DatabaseHelper.getInstance().deleteBookFromDatabase(selectedBook.getDocumentID());  // Delete the book
             loadBooksData();
             deleteConfirmationWindow.close();  // Close the confirmation window
         });
@@ -502,7 +502,7 @@ public class BooksController extends Controller {
         }
 
         // Search in the local database first
-        ObservableList<Books> localSearchResults = DatabaseHelper.searchBooksInDatabase(searchQuery);
+        ObservableList<Books> localSearchResults = DatabaseHelper.getInstance().searchBooksInDatabase(searchQuery);
 
         if (localSearchResults.isEmpty()) {
             // If no results are found locally, prompt for API search

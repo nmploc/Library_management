@@ -73,7 +73,7 @@ public class BorrowingController extends Controller {  // Extend Controller
                 "JOIN readers r ON b.readerID = r.readerID " +
                 "JOIN documents d ON b.documentID = d.documentID";
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
@@ -249,7 +249,7 @@ public class BorrowingController extends Controller {  // Extend Controller
         listView.getItems().clear(); // Clear previous items
         String query = "SELECT readerName FROM readers WHERE readerName LIKE ? OR fullName LIKE ?"; // Query for readerName and fullName
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, "%" + searchText + "%"); // Search by readerName
@@ -273,17 +273,19 @@ public class BorrowingController extends Controller {  // Extend Controller
     private boolean isReaderExists(String readerName) {
         String query = "SELECT COUNT(*) FROM readers WHERE readerName = ?";
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setString(1, readerName);
 
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0; // Nếu có ít nhất 1 người mượn với tên này
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; // Nếu có ít nhất 1 người mượn với tên này
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return false;
     }
 
@@ -293,7 +295,7 @@ public class BorrowingController extends Controller {  // Extend Controller
                 "LEFT JOIN categories c ON d.categoryID = c.categoryID " +
                 "WHERE d.documentName LIKE ? OR d.authors LIKE ? OR c.categoryName LIKE ?";
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, "%" + searchText + "%");
@@ -317,7 +319,7 @@ public class BorrowingController extends Controller {  // Extend Controller
         String updateQuery = "UPDATE documents SET quantity = quantity - 1 WHERE documentID = " +
                 "(SELECT documentID FROM documents WHERE documentName = ?)";
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkQuantityQuery);
              PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
              PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
@@ -514,7 +516,7 @@ public class BorrowingController extends Controller {  // Extend Controller
 
         String updateQuantityQuery = "UPDATE documents SET quantity = quantity + 1 WHERE documentID = (SELECT documentID FROM documents WHERE documentName = ?)";
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(updateBorrowingQuery);
              PreparedStatement quantityPstmt = conn.prepareStatement(updateQuantityQuery)) {
 
@@ -608,7 +610,7 @@ public class BorrowingController extends Controller {  // Extend Controller
         // SQL query to get the status of the borrowing
         String statusQuery = "SELECT borrowingStatus FROM borrowings WHERE borrowingID = ?";
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery);
              PreparedStatement statusStmt = conn.prepareStatement(statusQuery)) {
 
@@ -656,7 +658,7 @@ public class BorrowingController extends Controller {  // Extend Controller
                 "JOIN documents d ON b.documentID = d.documentID " +
                 "WHERE r.readerName LIKE ? OR d.documentName LIKE ?";
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, "%" + searchText + "%");

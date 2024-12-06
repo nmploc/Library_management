@@ -60,7 +60,7 @@ public class ReaderController extends Controller {
         readerList = FXCollections.observableArrayList();
         String query = "SELECT readerID, readerName, fullName, email, phoneNumber FROM readers";
 
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
@@ -126,14 +126,14 @@ public class ReaderController extends Controller {
                     emailField.getText(), phoneField.getText());
 
             // Kiểm tra xem reader đã tồn tại chưa
-            if (DatabaseHelper.isReaderExist(newReader)) {
+            if (DatabaseHelper.getInstance().isReaderExist(newReader)) {
                 // Nếu reader tồn tại, hiển thị thông báo lỗi
                 showAlert("Duplicate Entry", "A reader with the same name, email, or phone number already exists.");
                 return;
             }
 
             // Nếu không có lỗi, thêm reader vào cơ sở dữ liệu
-            DatabaseHelper.addReaderToDatabase(newReader);
+            DatabaseHelper.getInstance().addReaderToDatabase(newReader);
             loadReaderData();  // Tải lại dữ liệu sau khi thêm thành công
 
             // Close the add reader window
@@ -212,13 +212,13 @@ public class ReaderController extends Controller {
             );
 
             // Kiểm tra trùng lặp thông tin trong cơ sở dữ liệu
-            if (DatabaseHelper.isReaderExist(updatedReader)) {
+            if (DatabaseHelper.getInstance().isReaderExist(updatedReader)) {
                 showAlert("Duplicate Entry", "A reader with the same name, email, or phone number already exists.");
                 return;
             }
 
             // Nếu không trùng lặp, cập nhật thông tin vào cơ sở dữ liệu
-            DatabaseHelper.updateReaderInDatabase(updatedReader);
+            DatabaseHelper.getInstance().updateReaderInDatabase(updatedReader);
             loadReaderData();
 
             // Close the window after saving
@@ -266,7 +266,7 @@ public class ReaderController extends Controller {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            DatabaseHelper.deleteReaderFromDatabase(selectedReader.getReaderID());
+            DatabaseHelper.getInstance().deleteReaderFromDatabase(selectedReader.getReaderID());
             loadReaderData();
         }
     }

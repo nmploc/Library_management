@@ -25,9 +25,11 @@ public class BaseSceneController extends Controller
     private AnchorPane contentPane;
 
     @Override
-    public void initialize(URL url, ResourceBundle resourceBundle)
-    {
-        DatabaseHelper.connectToDatabase();
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Sử dụng Singleton của DatabaseHelper để thiết lập kết nối
+        DatabaseHelper.getInstance();  // Đảm bảo kết nối đã được thiết lập trong constructor của DatabaseHelper
+
+        // Thiết lập sự kiện cho các Button trong navigationBar
         for (Node node : navigationBar.getChildren()) {
             if (node instanceof Button) {
                 Button but = (Button) node;
@@ -35,8 +37,11 @@ public class BaseSceneController extends Controller
                 but.setOnMouseExited(event -> but.setCursor(Cursor.DEFAULT));
             }
         }
+
+        // Tải FXML vào contentPane
         loadFXMLtoAnchorPane("Dashboard", contentPane);
     }
+
     @FXML
     private void handleReportButtonAction() {
         loadFXMLtoAnchorPane("ReportScene", contentPane);

@@ -13,11 +13,42 @@ public class DatabaseHelper {
     private static final String URL = "jdbc:mysql://localhost:3306/librarydb";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "";
-    private static Connection connection;
+    private static DatabaseHelper instance;
+    private Connection connection;
+
+    // Private constructor để ngăn chặn việc tạo thể hiện trực tiếp
+    private DatabaseHelper() {
+        openConnection();
+    }
+
+    // Phương thức để lấy thể hiện duy nhất của DatabaseHelper
+    public static synchronized DatabaseHelper getInstance() {
+        if (instance == null) {
+            instance = new DatabaseHelper();
+        }
+        return instance;
+    }
+
+    // Kiểm tra và mở kết nối mới nếu cần
+    private void openConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            }
+        } catch (SQLException e) {
+            System.err.println("Failed to connect to database: " + e.getMessage());
+        }
+    }
+
+    // Trả về kết nối hiện tại
+    public Connection getConnection() {
+        openConnection();  // Kiểm tra và mở lại kết nối nếu cần
+        return connection;
+    }
 
     // Start XAMPP services
     public static void startXamppServices() {
-        String xamppPath = "D:\\Xampp\\"; // Path to your XAMPP installation
+        String xamppPath = "D:\\App\\Xampp\\"; // Path to your XAMPP installation
         try {
             // Start Apache and MySQL services
             new ProcessBuilder(xamppPath + "apache_start.bat").start();
@@ -35,7 +66,7 @@ public class DatabaseHelper {
 
     // Stop XAMPP services
     public static void stopXamppServices() {
-        String xamppPath = "D:\\Xampp\\"; // Path to your XAMPP installation
+        String xamppPath = "D:\\App\\Xampp\\"; // Path to your XAMPP installation
         try {
             // Run the xampp_stop.exe file
             new ProcessBuilder(xamppPath + "xampp_stop.exe").start();
@@ -46,28 +77,13 @@ public class DatabaseHelper {
         }
     }
 
-    // Connection Database
-    public static void connectToDatabase() {
-        try {
-            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-            System.out.println("Connect to database successfully");
-        } catch (SQLException e) {
-            System.err.println("Failed to connect to database " + e.getMessage());
-        }
-    }
-
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USERNAME, PASSWORD);
-    }
-
-    public static void addBookToDatabase(Books newBook) {
+    public void addBookToDatabase(Books newBook) {
+        openConnection();
         String insertQuery = "INSERT INTO documents (documentName, authors, categoryID, quantity) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery)) {
             pstmt.setString(1, newBook.getDocumentName());
             pstmt.setString(2, newBook.getAuthors());
-            pstmt.setInt(3, DatabaseHelper.getCategoryIdByName(newBook.getCategory()));
+            pstmt.setInt(3, getCategoryIdByName(newBook.getCategory()));
             pstmt.setInt(4, newBook.getQuantity());
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -75,14 +91,13 @@ public class DatabaseHelper {
         }
     }
 
-    public static void updateBookInDatabase(Books updatedBook) {
+    public void updateBookInDatabase(Books updatedBook) {
+        openConnection();
         String updateQuery = "UPDATE documents SET documentName = ?, authors = ?, categoryID = ?, quantity = ? WHERE documentID = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(updateQuery)) {
             pstmt.setString(1, updatedBook.getDocumentName());
             pstmt.setString(2, updatedBook.getAuthors());
-            pstmt.setInt(3, DatabaseHelper.getCategoryIdByName(updatedBook.getCategory()));
+            pstmt.setInt(3, getCategoryIdByName(updatedBook.getCategory()));
             pstmt.setInt(4, updatedBook.getQuantity());
             pstmt.setInt(5, updatedBook.getDocumentID());
             pstmt.executeUpdate();
@@ -91,11 +106,10 @@ public class DatabaseHelper {
         }
     }
 
-    public static void deleteBookFromDatabase(int documentID) {
+    public void deleteBookFromDatabase(int documentID) {
+        openConnection();
         String deleteQuery = "DELETE FROM documents WHERE documentID = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(deleteQuery)) {
             pstmt.setInt(1, documentID);
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -103,21 +117,19 @@ public class DatabaseHelper {
         }
     }
 
-    public static ObservableList<Books> searchBooksInDatabase(String searchQuery) {
+    public ObservableList<Books> searchBooksInDatabase(String searchQuery) {
+        openConnection();
         ObservableList<Books> searchResults = FXCollections.observableArrayList();
         String query = "SELECT d.documentID, d.documentName, d.authors, c.categoryName, d.quantity, d.isbn " +
                 "FROM documents d " +
                 "LEFT JOIN categories c ON d.categoryID = c.categoryID " +
                 "WHERE d.documentName LIKE ? OR d.authors LIKE ? OR c.categoryName LIKE ? OR d.isbn LIKE ?";
 
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            // Use wildcard search to find partial matches
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, "%" + searchQuery + "%");
             pstmt.setString(2, "%" + searchQuery + "%");
             pstmt.setString(3, "%" + searchQuery + "%");
-            pstmt.setString(4, "%" + searchQuery + "%"); // Add for ISBN search
+            pstmt.setString(4, "%" + searchQuery + "%");
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 Books book = new Books(
@@ -133,15 +145,13 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return searchResults;
     }
 
-    public static int getCategoryIdByName(String categoryName) {
+    public int getCategoryIdByName(String categoryName) {
+        openConnection();
         String query = "SELECT categoryID FROM categories WHERE categoryName = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, categoryName);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -150,14 +160,13 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1; // Return -1 if category is not found
+        return -1; // Nếu không tìm thấy category
     }
 
-    public static boolean isCategoryExists(String categoryName) {
+    public boolean isCategoryExists(String categoryName) {
+        openConnection(); // Kiểm tra và mở lại kết nối nếu cần thiết
         String query = "SELECT COUNT(*) FROM categories WHERE categoryName = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, categoryName);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -169,11 +178,10 @@ public class DatabaseHelper {
         return false;
     }
 
-    public static void addCategoryToDatabase(String categoryName) {
+    public void addCategoryToDatabase(String categoryName) {
+        openConnection();
         String insertQuery = "INSERT INTO categories (categoryName) VALUES (?)";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery)) {
             pstmt.setString(1, categoryName);
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -181,11 +189,10 @@ public class DatabaseHelper {
         }
     }
 
-    public static void addReaderToDatabase(Reader newReader) {
+    public void addReaderToDatabase(Reader newReader) {
+        openConnection();
         String insertQuery = "INSERT INTO readers (readerName, fullName, email, phoneNumber) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery)) {
             pstmt.setString(1, newReader.getReaderName());
             pstmt.setString(2, newReader.getFullName());
             pstmt.setString(3, newReader.getEmail());
@@ -197,16 +204,15 @@ public class DatabaseHelper {
     }
 
     // Kiểm tra xem thông tin reader đã tồn tại trong cơ sở dữ liệu chưa
-    public static boolean isReaderExist(Reader reader) {
+    public boolean isReaderExist(Reader reader) {
+        openConnection(); // Kiểm tra và mở lại kết nối nếu cần
         String checkQuery = "SELECT COUNT(*) FROM readers WHERE (readerName = ? OR email = ? OR phoneNumber = ?) AND readerID != ?";
 
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(checkQuery)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(checkQuery)) {
             pstmt.setString(1, reader.getReaderName());
             pstmt.setString(2, reader.getEmail());
             pstmt.setString(3, reader.getPhoneNumber());
-            pstmt.setInt(4, reader.getReaderID());  // Kiểm tra tất cả các reader khác, ngoại trừ reader hiện tại
+            pstmt.setInt(4, reader.getReaderID()); // Kiểm tra tất cả các reader khác, ngoại trừ reader hiện tại
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -221,10 +227,11 @@ public class DatabaseHelper {
         return false; // Không có dữ liệu trùng
     }
 
-    public static void deleteReaderFromDatabase(int readerID) {
+
+    public void deleteReaderFromDatabase(int readerID) {
+        openConnection();
         String deleteQuery = "DELETE FROM readers WHERE readerID = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(deleteQuery)) {
             pstmt.setInt(1, readerID);
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -232,11 +239,10 @@ public class DatabaseHelper {
         }
     }
 
-    public static void updateReaderInDatabase(Reader updatedReader) {
+    public void updateReaderInDatabase(Reader updatedReader) {
+        openConnection();
         String updateQuery = "UPDATE readers SET readerName = ?, fullName = ?, email = ?, phoneNumber = ? WHERE readerID = ?";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(updateQuery)) {
             pstmt.setString(1, updatedReader.getReaderName());
             pstmt.setString(2, updatedReader.getFullName());
             pstmt.setString(3, updatedReader.getEmail());
@@ -249,12 +255,10 @@ public class DatabaseHelper {
     }
 
     // New method to check if a book is currently on loan
-    public static boolean isBookOnLoan(int documentID) {
-        String query = "SELECT COUNT(*) FROM borrowings " +
-                "WHERE documentID = ? AND borrowingStatus IN ('borrowing', 'late', 'lost')";
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
+    public boolean isBookOnLoan(int documentID) {
+        openConnection(); // Kiểm tra và mở lại kết nối nếu cần
+        String query = "SELECT COUNT(*) FROM borrowings WHERE documentID = ? AND borrowingStatus IN ('borrowing', 'late', 'lost')";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, documentID);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -266,4 +270,5 @@ public class DatabaseHelper {
         }
         return false;
     }
+
 }

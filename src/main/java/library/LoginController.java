@@ -154,7 +154,7 @@ public class LoginController extends Controller {
                 String newPassword = generateRandomPassword(8);
                 String updatequery = "UPDATE users SET hashedPassword = ? WHERE gmail = ?";
 
-                try (Connection connection = DatabaseHelper.getConnection()) {
+                try (Connection connection = DatabaseHelper.getInstance().getConnection()) {
                     PreparedStatement stmt = connection.prepareStatement(updatequery);
                     String hashedPassword = PasswordEncoder.hashedpassword(newPassword);
                     stmt.setString(1, hashedPassword);
@@ -178,8 +178,8 @@ public class LoginController extends Controller {
 
     // đăng nhập thành công
     public boolean login(String username, String password) {
-        DatabaseHelper.connectToDatabase();
-        try (Connection conn = DatabaseHelper.getConnection()) {
+        DatabaseHelper.getInstance();
+        try (Connection conn = DatabaseHelper.getInstance().getConnection()) {
             String query = "SELECT * FROM users WHERE username = ?";
             PreparedStatement statement = conn.prepareStatement(query);
             statement.setString(1, username);

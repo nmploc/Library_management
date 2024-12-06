@@ -55,7 +55,7 @@ public class DashboardController extends Controller {
     private PieChart booksPieChart;
 
     @FXML
-    private BarChart  booksBarChart;
+    private BarChart<String, Number> booksBarChart;
 
     @FXML
     private Button btnViewDetailsBooks;
@@ -65,7 +65,7 @@ public class DashboardController extends Controller {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        DatabaseHelper.connectToDatabase();
+        DatabaseHelper.getInstance(); // Ensure that the database connection is initialized.
 
         // Initialize table columns
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
@@ -87,13 +87,16 @@ public class DashboardController extends Controller {
     }
 
     private void loadTotalBooksAndUsers() {
-        try (Connection connection = DatabaseHelper.getConnection()) {
-            String bookQuery = "SELECT COUNT(*) FROM documents";
-            String userQuery = "SELECT COUNT(*) FROM readers";
+        // Using try-with-resources to ensure the connection is closed automatically
+        String bookQuery = "SELECT COUNT(*) FROM documents";
+        String userQuery = "SELECT COUNT(*) FROM readers";
+
+        try (Connection connection = DatabaseHelper.getInstance().getConnection();
+             PreparedStatement bookStatement = connection.prepareStatement(bookQuery);
+             PreparedStatement userStatement = connection.prepareStatement(userQuery)) {
 
             // Query total books
-            try (PreparedStatement bookStatement = connection.prepareStatement(bookQuery);
-                 ResultSet bookResult = bookStatement.executeQuery()) {
+            try (ResultSet bookResult = bookStatement.executeQuery()) {
                 if (bookResult.next()) {
                     int numOfBooks = bookResult.getInt(1);
                     labelTotalBooks.setText("Total books: " + numOfBooks);
@@ -101,8 +104,7 @@ public class DashboardController extends Controller {
             }
 
             // Query total users
-            try (PreparedStatement userStatement = connection.prepareStatement(userQuery);
-                 ResultSet userResult = userStatement.executeQuery()) {
+            try (ResultSet userResult = userStatement.executeQuery()) {
                 if (userResult.next()) {
                     int numOfUsers = userResult.getInt(1);
                     labelTotalUsers.setText("Total readers: " + numOfUsers);
@@ -126,7 +128,7 @@ public class DashboardController extends Controller {
                 "LEFT JOIN borrowings b ON d.documentID = b.documentID " +
                 "GROUP BY c.categoryName";
 
-        try (Connection connection = DatabaseHelper.getConnection();
+        try (Connection connection = DatabaseHelper.getInstance().getConnection();
              PreparedStatement statement = connection.prepareStatement(query);
              ResultSet resultSet = statement.executeQuery()) {
 
@@ -167,10 +169,7 @@ public class DashboardController extends Controller {
 
         // Add data from the categoryBookCounts list to the series
         for (CategoryBookCount categoryBookCount : categoryBookCounts) {
-            XYChart.Data<String, Number> data = new XYChart.Data<>(
-                    categoryBookCount.getCategoryName(),
-                    categoryBookCount.getBorrowerCount()
-            );
+            XYChart.Data<String, Number> data = new XYChart.Data<>(categoryBookCount.getCategoryName(), categoryBookCount.getBorrowerCount());
 
             // Attach a label to display the value on top of each bar
             data.nodeProperty().addListener((observable, oldValue, newValue) -> {

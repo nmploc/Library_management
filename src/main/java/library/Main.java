@@ -20,7 +20,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         DatabaseHelper.startXamppServices();
-        DatabaseHelper.connectToDatabase();
+        DatabaseHelper.getInstance();
         Main.primaryStage = primaryStage;
         Main.primaryStage.setTitle("Library Management System");
         loadScene("/FXML/LoginScene.fxml");

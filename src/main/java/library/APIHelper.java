@@ -230,7 +230,7 @@ public class APIHelper  {
                 }
 
                 // Proceed to add the book with the entered quantity
-                try (Connection connection = DatabaseHelper.getConnection()) {
+                try (Connection connection = DatabaseHelper.getInstance().getConnection()) {
                     // Check the category and add it to the database if necessary
                     String categoryQuery = "SELECT categoryID FROM categories WHERE categoryName = ?";
                     PreparedStatement checkCategoryStmt = connection.prepareStatement(categoryQuery);
