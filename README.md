@@ -45,6 +45,11 @@ Our team:
 ---  
 ## Diagrams
 
+- Class
+<div align="center">  
+  <img src="src/main/resources/image/Class Diagram no0.png" alt="Class">  
+</div>
+
 - Database:
 <div align="center">  
   <img src="src/main/resources/image/Database Diagram.png" alt="Database">  
