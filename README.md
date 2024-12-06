@@ -3,7 +3,6 @@ Here is the updated README file with the corrected directory for the **Database 
 ---
 
 [![Contributors](https://img.shields.io/badge/contributors-3-brightgreen.svg?style=for-the-badge)](#)  
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](#)
 
 # Library Management - Library Management App
 <div align="center">  
