@@ -111,5 +111,3 @@ Our team:
 - **GitHub**: [DATTB09](https://github.com/DATTB09)
 
 ---
-
-Let me know if you need any further adjustments!
