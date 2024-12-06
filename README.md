@@ -6,7 +6,7 @@ Here is the updated README file with the corrected directory for the **Database 
 
 # Library Management - Library Management App
 <div align="center">  
-  <img src="/src/main/resources/graphic/images/logo.png" alt="Logo" width="64" height="64">  
+  <img src="/src/main/resources/images/logo.png" alt="Logo" width="64" height="64">  
 </div>
 
 ---  
