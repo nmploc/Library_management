@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
@@ -11,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
@@ -44,7 +46,10 @@ public class DashboardController extends Controller {
     private TableColumn<CategoryBookCount, Integer> totalBooksColumn;
 
     @FXML
-    private VBox chartVBox;
+    private VBox pieChartVBox;
+
+    @FXML
+    private VBox barChartVBox;
 
     @FXML
     private PieChart booksPieChart;
@@ -73,7 +78,8 @@ public class DashboardController extends Controller {
         loadCategoryData();
 
         // Initially hide the pie chart and its title
-        chartVBox.setVisible(false);
+        pieChartVBox.setVisible(false);
+        barChartVBox.setVisible(false);
 
         // Add event handler for the "View Details" button
         btnViewDetailsBooks.setOnAction(event -> showBooksPieChart());
@@ -132,10 +138,7 @@ public class DashboardController extends Controller {
                 String categoryName = resultSet.getString("categoryName");
                 int totalBooks = resultSet.getInt("totalBooks");
                 int borrowerCount = resultSet.getInt("borrowerCount");
-
-                // Log data for debugging purposes
-                System.out.println("Category: " + categoryName + ", Total Books: " + totalBooks + ", Borrower Count: " + borrowerCount);
-
+                
                 // Add data to the observable list
                 categoryData.add(new CategoryBookCount(categoryName, totalBooks, borrowerCount));
             }
@@ -152,32 +155,63 @@ public class DashboardController extends Controller {
     }
 
     private void showBooksBarChart(ObservableList<CategoryBookCount> categoryBookCounts) {
-        chartVBox.setVisible(true);
-        booksPieChart.setVisible(false);
-        booksBarChart.setVisible(true);
+        // Show the BarChart VBox and hide the PieChart VBox
+        pieChartVBox.setVisible(false); // Hide the PieChart VBox
+        barChartVBox.setVisible(true);  // Show the BarChart VBox
 
-        booksBarChart.getData().clear();
+        booksBarChart.getData().clear(); // Clear existing data
+
+        // Create the series for the BarChart
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Category Reader Count");
 
+        // Add data from the categoryBookCounts list to the series
         for (CategoryBookCount categoryBookCount : categoryBookCounts) {
-            series.getData().add(new XYChart.Data<>(categoryBookCount.getCategoryName(), categoryBookCount.getBorrowerCount()));
-        }
+            XYChart.Data<String, Number> data = new XYChart.Data<>(
+                    categoryBookCount.getCategoryName(),
+                    categoryBookCount.getBorrowerCount()
+            );
 
+            // Attach a label to display the value on top of each bar
+            data.nodeProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    // Create a label to show the value
+                    Label label = new Label(data.getYValue().toString());
+                    label.setStyle("-fx-font-size: 12; -fx-text-fill: black;");
+
+                    // Position the label above the bar
+                    StackPane stackPane = (StackPane) newValue;
+                    stackPane.getChildren().add(label);
+                    label.setTranslateY(-15); // Adjust position above the bar
+                }
+            });
+
+            series.getData().add(data);
+        }
+        // Add the series to the BarChart
         booksBarChart.getData().add(series);
+        // Dynamically adjust the width and height based on the content
+        double chartWidth = categoryBookCounts.size() * 100; // Adjust width based on the number of categories
+        booksBarChart.setPrefWidth(chartWidth);
+        booksBarChart.setPrefHeight(400);
+        // Ensure the x-axis labels are readable
+        CategoryAxis categoryAxis = (CategoryAxis) booksBarChart.getXAxis();
+        categoryAxis.setTickLabelRotation(45); // Rotate labels for readability
+        // Force layout update to make sure everything is properly sized
+        booksBarChart.layout();
     }
 
     private void showBooksPieChart() {
-        chartVBox.setVisible(true);
-        booksBarChart.setVisible(false);
-        booksPieChart.setVisible(true);
-
+        // Show the PieChart VBox and hide the BarChart VBox
+        pieChartVBox.setVisible(true);  // Show the PieChart VBox
+        barChartVBox.setVisible(false); // Hide the BarChart VBox
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
-
+        // Populate PieChart data from the categoryTable items
         for (CategoryBookCount categoryBookCount : categoryTable.getItems()) {
             pieChartData.add(new PieChart.Data(categoryBookCount.getCategoryName(), categoryBookCount.getTotalBooks()));
         }
-
+        // Set the PieChart data
         booksPieChart.setData(pieChartData);
     }
+
 }
