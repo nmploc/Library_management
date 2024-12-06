@@ -75,5 +75,5 @@ VALUES (
     '2000-01-01',
     'adminAvatar.png'
 );
---acc : admin --
---password : lib22022 --
+-- acc : admin --
+-- password : lib22022 --

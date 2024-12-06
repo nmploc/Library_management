@@ -9,6 +9,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
 <AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="library.DashboardController">
    <children>
       <HBox fx:id="mainHBox" alignment="CENTER" spacing="20" style="-fx-padding: 20;">
@@ -32,7 +35,7 @@
                         <VBox fx:id="VBoxTotalUsers" prefHeight="100" prefWidth="200" style="-fx-background-color: #28a745; -fx-padding: 10; -fx-border-radius: 10; -fx-background-radius: 10;">
                            <children>
                               <Label fx:id="labelTotalUsers" style="-fx-text-fill: white; -fx-font-size: 18px;" text="Total users: 0" />
-                              <Button style="-fx-background-color: transparent; -fx-text-fill: white;" text="View Details">
+                              <Button fx:id="btnViewDetailsUser" style="-fx-background-color: transparent; -fx-text-fill: white;" text="View Details">
                                  <graphic>
                                     <Label style="-fx-text-fill: white;" text="&gt;" />
                                  </graphic>
@@ -52,11 +55,21 @@
                </children>
             </VBox>
 
-            <!-- VBox for Pie Chart -->
-            <VBox fx:id="pieChartVBox" alignment="CENTER" spacing="20" prefWidth="500" prefHeight="400">
+            <!-- VBox for Pie Chart and Bar Chart -->
+            <VBox fx:id="chartVBox" alignment="CENTER" spacing="20" prefWidth="500" prefHeight="400">
                <children>
-                  <PieChart fx:id="booksPieChart" prefWidth="400" prefHeight="400"/>
+                  <!-- Pie Chart -->
+                  <PieChart fx:id="booksPieChart" prefWidth="500" prefHeight="400"/>
                   <Label text="Books Distribution By Category" style="-fx-font-size: 16px;"/>
+                  <!-- Bar Chart (hidden initially) -->
+                  <BarChart fx:id="booksBarChart" prefWidth="400" prefHeight="400" visible="false">
+                     <xAxis>
+                        <CategoryAxis fx:id="categoryAxis" label="Category"/>
+                     </xAxis>
+                     <yAxis>
+                        <NumberAxis fx:id="numberAxis" label="Borrower Count"/>
+                     </yAxis>
+                  </BarChart>
                </children>
             </VBox>
          </children>

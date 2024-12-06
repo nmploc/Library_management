@@ -109,7 +109,7 @@ public class BorrowingController extends Controller {  // Extend Controller
         readerListView.setPrefWidth(300);
         readerListView.setVisible(false); // Initially hidden
         readerListView.setMaxHeight(150);
-        readerListView.setTranslateY(-40);
+        readerListView.setTranslateY(-50);
 
         // Add listener to search and update ListView
         readerSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -139,7 +139,7 @@ public class BorrowingController extends Controller {  // Extend Controller
         documentListView.setPrefWidth(300);
         documentListView.setVisible(false);
         documentListView.setMaxHeight(150);
-        documentListView.setTranslateY(50);
+        documentListView.setTranslateY(10);
 
         // Add listener to search and update Document ListView
         documentSearchField.textProperty().addListener((observable, oldValue, newValue) -> {

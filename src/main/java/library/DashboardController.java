@@ -3,7 +3,9 @@ package library;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -42,13 +44,19 @@ public class DashboardController extends Controller {
     private TableColumn<CategoryBookCount, Integer> totalBooksColumn;
 
     @FXML
-    private VBox pieChartVBox;
+    private VBox chartVBox;
 
     @FXML
     private PieChart booksPieChart;
 
     @FXML
+    private BarChart  booksBarChart;
+
+    @FXML
     private Button btnViewDetailsBooks;
+
+    @FXML
+    private Button btnViewDetailsUser;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -62,13 +70,14 @@ public class DashboardController extends Controller {
         loadTotalBooksAndUsers();
 
         // Load category book counts
-        loadCategoryBookCounts();
+        loadCategoryData();
 
         // Initially hide the pie chart and its title
-        pieChartVBox.setVisible(false);
+        chartVBox.setVisible(false);
 
         // Add event handler for the "View Details" button
         btnViewDetailsBooks.setOnAction(event -> showBooksPieChart());
+        btnViewDetailsUser.setOnAction(event -> showBooksBarChart(categoryTable.getItems()));
     }
 
     private void loadTotalBooksAndUsers() {
@@ -101,42 +110,74 @@ public class DashboardController extends Controller {
         }
     }
 
-    private void loadCategoryBookCounts() {
-        String categoryBookCountQuery = "SELECT c.categoryName, COUNT(d.documentID) AS totalBooks " +
-                "FROM categories c LEFT JOIN documents d ON c.categoryID = d.categoryID " +
+    private void loadCategoryData() {
+        // Updated query to handle NULL values using COALESCE
+        String query = "SELECT c.categoryName, " +
+                "COALESCE(COUNT(d.documentID), 0) AS totalBooks, " +
+                "COALESCE(COUNT(DISTINCT b.readerID), 0) AS borrowerCount " +
+                "FROM categories c " +
+                "LEFT JOIN documents d ON c.categoryID = d.categoryID " +
+                "LEFT JOIN borrowings b ON d.documentID = b.documentID " +
                 "GROUP BY c.categoryName";
 
         try (Connection connection = DatabaseHelper.getConnection();
-             PreparedStatement statement = connection.prepareStatement(categoryBookCountQuery);
+             PreparedStatement statement = connection.prepareStatement(query);
              ResultSet resultSet = statement.executeQuery()) {
 
-            ObservableList<CategoryBookCount> categoryBookCounts = FXCollections.observableArrayList();
+            // Create a new observable list for category data
+            ObservableList<CategoryBookCount> categoryData = FXCollections.observableArrayList();
 
+            // Iterate through the result set and populate the observable list
             while (resultSet.next()) {
                 String categoryName = resultSet.getString("categoryName");
                 int totalBooks = resultSet.getInt("totalBooks");
-                categoryBookCounts.add(new CategoryBookCount(categoryName, totalBooks));
+                int borrowerCount = resultSet.getInt("borrowerCount");
+
+                // Log data for debugging purposes
+                System.out.println("Category: " + categoryName + ", Total Books: " + totalBooks + ", Borrower Count: " + borrowerCount);
+
+                // Add data to the observable list
+                categoryData.add(new CategoryBookCount(categoryName, totalBooks, borrowerCount));
             }
 
-            categoryTable.setItems(categoryBookCounts);
+            // Set the category data to the table view
+            categoryTable.setItems(categoryData);
+
+            // Update the bar chart
+            showBooksBarChart(categoryData);
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    private void showBooksBarChart(ObservableList<CategoryBookCount> categoryBookCounts) {
+        chartVBox.setVisible(true);
+        booksPieChart.setVisible(false);
+        booksBarChart.setVisible(true);
+
+        booksBarChart.getData().clear();
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Category Reader Count");
+
+        for (CategoryBookCount categoryBookCount : categoryBookCounts) {
+            series.getData().add(new XYChart.Data<>(categoryBookCount.getCategoryName(), categoryBookCount.getBorrowerCount()));
+        }
+
+        booksBarChart.getData().add(series);
+    }
+
     private void showBooksPieChart() {
-        // Make the pie chart and its title visible
-        pieChartVBox.setVisible(true);
+        chartVBox.setVisible(true);
+        booksBarChart.setVisible(false);
+        booksPieChart.setVisible(true);
 
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
 
-        // Add the data for the pie chart
         for (CategoryBookCount categoryBookCount : categoryTable.getItems()) {
             pieChartData.add(new PieChart.Data(categoryBookCount.getCategoryName(), categoryBookCount.getTotalBooks()));
         }
 
-        // Set the data for the pie chart
         booksPieChart.setData(pieChartData);
     }
 }
