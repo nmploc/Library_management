@@ -43,12 +43,6 @@ Our team:
     - View borrowing records and mark books as returned when readers return them.
     - Access member information and delete members for serious violations.
 
-- **For Readers (Members)**:
-    - Register an account and update personal information if needed.
-    - Borrow and rate when viewing detailed book information.
-    - View borrowing history through borrowing receipts.
-    - Save and print borrowing receipts.
-
 ---  
 ## Diagrams
 
@@ -79,7 +73,7 @@ Our team:
 
 3. **Clone and open this repository in IntelliJ IDEA**:
    ```bash
-   git clone https://github.com/DATTB09/Library_management.git
+   git clone https://github.com/nmploc/Library_management.git
    ```
 
 4. **Open XAMPP and configure the database**:
@@ -112,12 +106,7 @@ Our team:
 
 9. **Run the application**:
     - Save the configuration and run `AppStart` to start using the application.
-
----  
-## License
-Distributed under the MIT License. See LICENSE.txt for more information.
-
----  
+ 
 ## Contact
 - **Email**: [quenten9212@gmail.com](mailto:quenten9212@gmail.com)
 - **GitHub**: [DATTB09](https://github.com/DATTB09)
