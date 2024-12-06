@@ -158,9 +158,35 @@ public class BooksController extends Controller {
         authorField.setPromptText("Author");
         authorField.setPrefWidth(300);
 
-        TextField categoryField = new TextField();
-        categoryField.setPromptText("Category");
-        categoryField.setPrefWidth(300);
+        // Category Search Field
+        TextField categorySearchField = new TextField();
+        categorySearchField.setPromptText("Search Category");
+        categorySearchField.setPrefWidth(300);
+
+        // Category ListView
+        ListView<String> categoryListView = new ListView<>();
+        categoryListView.setPrefWidth(300);
+        categoryListView.setMaxHeight(150);
+        categoryListView.setVisible(false); // Initially hidden
+
+        // Add listener to search and update the ListView
+        categorySearchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty()) {
+                updateCategoryListView(newValue, categoryListView);
+                categoryListView.setVisible(true); // Show the list when there are results
+            } else {
+                categoryListView.setVisible(false); // Hide the list when the search field is empty
+            }
+        });
+
+        // Handle selection in the ListView
+        categoryListView.setOnMouseClicked(event -> {
+            String selectedCategory = categoryListView.getSelectionModel().getSelectedItem();
+            if (selectedCategory != null) {
+                categorySearchField.setText(selectedCategory); // Set selected category in the search field
+                categoryListView.setVisible(false); // Hide the list after selection
+            }
+        });
 
         TextField quantityField = new TextField();
         quantityField.setPromptText("Quantity");
@@ -172,7 +198,7 @@ public class BooksController extends Controller {
         addButton.setOnAction(event -> {
             // Handle the form submission
             if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
-                    categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
+                    categorySearchField.getText().isEmpty() || quantityField.getText().isEmpty()) {
                 showAlert("Input Error", "Please fill in all fields.");
             } else {
                 try {
@@ -182,7 +208,7 @@ public class BooksController extends Controller {
                     } else {
                         String title = titleField.getText();
                         String authors = authorField.getText();
-                        String category = categoryField.getText();
+                        String category = categorySearchField.getText();
 
                         if (!DatabaseHelper.isCategoryExists(category)) {
                             showAddCategoryDialog(category, () -> {
@@ -220,21 +246,42 @@ public class BooksController extends Controller {
         VBox vbox = new VBox(10);
         vbox.setStyle("-fx-padding: 20px;"); // Padding and centering
 
-        // Add labels with left alignment and form fields
+        // Add labels and form fields
         vbox.getChildren().addAll(
                 new Label("Title:"), titleField,
                 new Label("Author:"), authorField,
-                new Label("Category:"), categoryField,
+                new Label("Search Category:"), categorySearchField,
+                categoryListView, // Add the ListView for categories
                 new Label("Quantity:"), quantityField,
                 buttonBox // Add the buttons in the same row
         );
 
         // Create a scene with the VBox and set it on the new window
-        Scene scene = new Scene(vbox, 400, 320);
+        Scene scene = new Scene(vbox, 400, 400);
         addBookWindow.setScene(scene);
 
         // Show the window
         addBookWindow.show();
+    }
+
+    private void updateCategoryListView(String searchText, ListView<String> listView) {
+        listView.getItems().clear(); // Clear previous items
+        String query = "SELECT categoryName FROM categories WHERE categoryName LIKE ?"; // Query for categories
+
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, "%" + searchText + "%");
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                listView.getItems().add(rs.getString("categoryName")); // Add categoryName to ListView
+            }
+
+            listView.setVisible(!listView.getItems().isEmpty()); // Toggle visibility based on results
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void showAddCategoryDialog(String category, Runnable onAddCategory) {
@@ -285,8 +332,35 @@ public class BooksController extends Controller {
         TextField authorField = new TextField(selectedBook.getAuthors());
         authorField.setPrefWidth(300);
 
-        TextField categoryField = new TextField(selectedBook.getCategory());
-        categoryField.setPrefWidth(300);
+        // Category Search Field
+        TextField categorySearchField = new TextField(selectedBook.getCategory());
+        categorySearchField.setPrefWidth(300);
+
+        // Category ListView
+        ListView<String> categoryListView = new ListView<>();
+        categoryListView.setPrefWidth(300);
+        categoryListView.setMaxHeight(150);
+        categoryListView.setVisible(false); // Initially hidden
+
+        // Add listener to show ListView based on search input
+        categorySearchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty()) {
+                // Call your existing updateCategoryListView method here
+                updateCategoryListView(newValue, categoryListView);
+                categoryListView.setVisible(true); // Show the list when there are results
+            } else {
+                categoryListView.setVisible(false); // Hide the list when the search field is empty
+            }
+        });
+
+        // Handle selection in the ListView
+        categoryListView.setOnMouseClicked(event -> {
+            String selectedCategory = categoryListView.getSelectionModel().getSelectedItem();
+            if (selectedCategory != null) {
+                categorySearchField.setText(selectedCategory); // Set selected category in the search field
+                categoryListView.setVisible(false); // Hide the list after selection
+            }
+        });
 
         TextField quantityField = new TextField(String.valueOf(selectedBook.getQuantity()));
         quantityField.setPrefWidth(300);
@@ -297,7 +371,7 @@ public class BooksController extends Controller {
         saveButton.setOnAction(event -> {
             // Validate input fields
             if (titleField.getText().isEmpty() || authorField.getText().isEmpty() ||
-                    categoryField.getText().isEmpty() || quantityField.getText().isEmpty()) {
+                    categorySearchField.getText().isEmpty() || quantityField.getText().isEmpty()) {
                 showAlert("Input Error", "Please fill in all fields.");
             } else {
                 try {
@@ -307,7 +381,7 @@ public class BooksController extends Controller {
                     } else {
                         String title = titleField.getText();
                         String authors = authorField.getText();
-                        String category = categoryField.getText();
+                        String category = categorySearchField.getText();
 
                         if (!DatabaseHelper.isCategoryExists(category)) {
                             showAddCategoryDialog(category, () -> {
@@ -345,17 +419,18 @@ public class BooksController extends Controller {
         VBox vbox = new VBox(10);
         vbox.setStyle("-fx-padding: 20px;"); // Padding and centering
 
-        // Add labels with left alignment and form fields
+        // Add labels and form fields
         vbox.getChildren().addAll(
                 new Label("Title:"), titleField,
                 new Label("Author:"), authorField,
-                new Label("Category:"), categoryField,
+                new Label("Search Category:"), categorySearchField,
+                categoryListView, // Add the ListView for categories
                 new Label("Quantity:"), quantityField,
                 buttonBox // Add the buttons in the same row
         );
 
         // Create a scene with the VBox and set it on the new window
-        Scene scene = new Scene(vbox, 400, 320);
+        Scene scene = new Scene(vbox, 400, 400);
         editBookWindow.setScene(scene);
 
         // Show the window
